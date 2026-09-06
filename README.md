@@ -1,0 +1,67 @@
+# Hinto AI Trader
+
+AI-assisted crypto market research and paper-trading workstation inspired by the open-source Hinto Trader project.
+
+> **Safety scope:** this repository is intentionally paper/testnet-first. Autonomous real-money order execution is not implemented. Public Binance market data, backtesting, paper execution, deterministic risk controls, and AI-assisted signal review are the supported scope.
+
+## Goals
+
+- Consume live Binance market data for multiple symbols.
+- Build a reusable feature engine (trend, momentum, volatility, volume, order-book signals).
+- Keep strategy logic independent from execution.
+- Add an AI Advisor that can approve/reject/flag a candidate signal, but can never bypass deterministic risk controls.
+- Support backtesting and paper trading with realistic commissions/slippage assumptions.
+- Expose the system through FastAPI and a React/Tauri-style dashboard.
+- Preserve a clean path for research, auditing, and reproducible tests.
+
+## Architecture
+
+```text
+Binance public market data
+        |
+        v
+MarketData -> FeatureEngine -> Strategies -> SignalCandidate
+                                      |
+                                      v
+                                  AIAdvisor
+                                      |
+                                      v
+                                DecisionEngine
+                                      |
+                                      v
+                                  RiskEngine
+                                      |
+                                      v
+                             ApprovedTradeIntent
+                                      |
+                                      v
+                               ExecutionGateway
+                                 |           |
+                               Paper       Testnet
+                                 |
+                                 v
+                          Position/PnL Store
+                                 |
+                                 v
+                           FastAPI/WebSocket
+                                 |
+                                 v
+                              Dashboard
+```
+
+## Project status
+
+Phase 1 scaffold is being built. See `CODEX_TASK.md` and `docs/ARCHITECTURE.md`.
+
+## Upstream attribution
+
+This project is derived conceptually and, where later copied, code-wise from **Hinto Trader** by the Hinto contributors:
+
+- Upstream: https://github.com/meiiie/hinto-trader
+- License: MIT
+
+The original MIT notice is preserved in `LICENSE`.
+
+## Security
+
+Never commit API keys, secrets, seed phrases, passwords, or 2FA codes. Secrets belong only in local environment variables and must never be exposed to the frontend or logs.
