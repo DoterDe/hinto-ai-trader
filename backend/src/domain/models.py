@@ -2,9 +2,34 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Literal
+from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    model_validator,
+)
+
+
+Identifier = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=128)
+]
+Symbol = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=3, max_length=32)
+]
+
+
+class DomainModel(BaseModel):
+    """Immutable domain values, revalidated when crossing service boundaries."""
+
+    model_config = ConfigDict(
+        frozen=True,
+        allow_inf_nan=False,
+        revalidate_instances="always",
+    )
 
 
 class TradingMode(str, Enum):
@@ -23,47 +48,47 @@ class AIDecisionType(str, Enum):
     NEUTRAL = "neutral"
 
 
-class SignalCandidate(BaseModel):
-    signal_id: str = Field(min_length=1, max_length=128)
-    symbol: str = Field(min_length=3, max_length=32)
+class SignalCandidate(DomainModel):
+    signal_id: Identifier
+    symbol: Symbol
     side: SignalSide
-    score: float = Field(ge=0.0, le=100.0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-    @field_validator("created_at")
-    @classmethod
-    def require_timezone(cls, value: datetime) -> datetime:
-        if value.tzinfo is None:
-            raise ValueError("created_at must be timezone-aware")
-        return value
+    score: float = Field(strict=True, ge=0.0, le=100.0)
+    created_at: AwareDatetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-class AIDecision(BaseModel):
+class AIDecision(DomainModel):
     decision: AIDecisionType
-    confidence: float = Field(ge=0.0, le=1.0)
-    risk_flags: list[str] = Field(default_factory=list)
+    confidence: float = Field(strict=True, ge=0.0, le=1.0)
+    risk_flags: tuple[str, ...] = ()
     reason: str = Field(default="", max_length=500)
 
 
-class TradeIntent(BaseModel):
-    signal_id: str = Field(min_length=1, max_length=128)
-    symbol: str = Field(min_length=3, max_length=32)
+class TradeIntent(DomainModel):
+    signal_id: Identifier
+    symbol: Symbol
     side: SignalSide
-    quantity: float = Field(gt=0.0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    quantity: float = Field(strict=True, gt=0.0)
+    created_at: AwareDatetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     source: Literal["strategy", "ai_assisted"] = "strategy"
+    confidence: float = Field(default=1.0, strict=True, ge=0.0, le=1.0)
+
+    @model_validator(mode="after")
+    def require_ai_confidence(self) -> Self:
+        if self.source == "ai_assisted" and "confidence" not in self.model_fields_set:
+            raise ValueError("ai_assisted intents require explicit confidence")
+        return self
 
 
 class ApprovedTradeIntent(TradeIntent):
-    approved_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    approved_at: AwareDatetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-class ExecutionResult(BaseModel):
-    execution_id: str
-    signal_id: str
-    symbol: str
+class ExecutionResult(DomainModel):
+    execution_id: Identifier
+    signal_id: Identifier
+    symbol: Symbol
     side: SignalSide
-    quantity: float
-    fill_price: float = Field(gt=0.0)
+    quantity: float = Field(strict=True, gt=0.0)
+    fill_price: float = Field(strict=True, gt=0.0)
     mode: TradingMode
-    executed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    executed_at: AwareDatetime = Field(default_factory=lambda: datetime.now(timezone.utc))
