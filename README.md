@@ -51,7 +51,14 @@ MarketData -> FeatureEngine -> Strategies -> SignalCandidate
 
 ## Project status
 
-Phase 1 scaffold is being built. See `CODEX_TASK.md` and `docs/ARCHITECTURE.md`.
+Phase 1 backend is implemented: immutable domain models, deterministic risk
+checks and decision history, idempotent in-memory paper fills, and health/config
+endpoints. See `backend/README.md` for setup and operating limits, `CODEX_TASK.md`
+for scope, and `docs/ARCHITECTURE.md` for the staged architecture.
+
+Phase 2 adds public Binance USD-M Futures data for eight symbols, normalized
+events, connection/freshness tracking, bounded subscriptions, and read-only
+market-data endpoints. Depth is exposed as deltas; no local order book is built.
 
 ## Upstream attribution
 
