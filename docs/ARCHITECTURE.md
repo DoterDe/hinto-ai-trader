@@ -16,6 +16,9 @@ Binance Public Market Data
       FeatureEngine
           |
           v
+     FeatureSnapshot
+          |
+          v
        Strategies
           |
           v
@@ -97,7 +100,7 @@ finite reference price is the fill price; all recorded executions are `paper`.
 Approval records are an internal application contract rather than proof of origin.
 Only the risk engine should issue them to the execution gateway.
 
-The API currently exposes health and sanitized configuration only. `testnet` is
+Phase 1 exposes health and sanitized configuration. `testnet` is
 an allowed configuration value; no testnet adapter or HTTP trading endpoint is
 implemented. AI provider integration is also deferred.
 
@@ -153,11 +156,94 @@ does not connect market events to strategies or execution.
 Current source contracts and operational limits, including official Binance
 documentation links, are documented in `backend/README.md`.
 
+## Phase 3 implementation
+
+The implemented observation flow is `MarketDataHub -> FeatureEngine ->
+FeatureSnapshot`. Strategy consumption is a future boundary. Feature code has no
+dependency on exchange adapters, strategy decisions, AI, risk, or execution.
+
+`domain/features.py` defines immutable typed values and group readiness. Each
+group is `ready`, `warming_up`, `stale`, or `unavailable`; unavailable groups have
+null values and explicit reasons. A snapshot can be `partial` when some groups
+are ready. Trade, candle returns, trend, momentum, volatility, candle volume,
+top-of-book context, mark/funding, and numerical regime inputs are separate
+groups. Source timestamps, closed-candle timestamps, history size/reset counters,
+and per-stream source diagnostics are included. Decimal fields serialize as
+strings; log statistics and signed funding countdowns use finite floats.
+
+`application/feature_settings.py` owns validated exchange-independent windows.
+`indicators/` contains pure calculations using a fixed 34-digit Decimal context
+with overflow/underflow guards. `application/feature_calculations.py` assembles
+typed values separately from service lifecycle and availability decisions.
+This additional module keeps numerical assembly out of orchestration.
+
+`application/feature_history.py` stores at most 500 closed candles per symbol by
+default. The engine selects one of the Hub's intervals (the first by default;
+the existing feed config supplies one). Open candles never enter calculations.
+UTC interval boundaries, including calendar months, establish continuity without
+relying on an exchange-specific inclusive closing timestamp. A closed flag is
+insufficient if the expected interval end is still in the future. Duplicates and
+older observations cannot extend history. Gaps, overlapping windows, invalid
+OHLC/volume, and conflicting finalized revisions invalidate continuity. No bars
+are synthesized. EMA/RSI/ATR are reseeded from retained history on calculation;
+after eviction they can differ from an indefinitely accumulated recursive series.
+
+`application/feature_engine.py` consumes the Hub on the same event loop. Its
+default queue has 1,000 entries. The subscription remains an `asyncio.Queue`,
+with an additive per-subscriber `dropped_events` counter. Future-clock diagnostic
+events remain stale in Hub snapshots but are not delivered to subscribers; a
+delayed consumer must not admit them after time catches up. These are the two
+small Phase 2 compatibility changes required for trustworthy feature history.
+
+Queue loss, candle connection identity/generation/status changes, and local clock
+rollback clear continuity. Pending observations are discarded and at most one
+fresh current-generation closed candle is used as a new seed. This avoids
+inferring generation from untagged queued timestamps. Other subscribers' losses
+do not reset the engine. Changes on an unrelated book/depth connection do not
+reset candle histories. Reconnects and routine connection rotation require fresh
+warmup; there is no backfill.
+
+Freshness comes from individual Hub streams, not its overall symbol stale flag:
+
+| Feature groups | Required fresh source | Additional condition |
+| --- | --- | --- |
+| Trade | Trade | One valid observation |
+| Returns, trend, momentum, volatility, volume, regime | Selected Kline interval | Contiguous closed history meeting each group's window |
+| Microstructure | BookTicker | Noncrossed prices and nonzero combined top quantity |
+| Mark/funding | MarkPrice | Valid basis arithmetic |
+
+A fresh successor open candle can keep the preceding closed history usable.
+The next expected candle must close by its interval boundary plus the Hub stale
+threshold (10 seconds by default); repeated obsolete open updates cannot extend
+that deadline. Reads drain pending observations and recompute freshness, so API
+responses expire without a timer or incoming event. Instantaneous trade/book/mark
+groups use the current Hub cache and tolerate intermediate observation loss.
+Only candle groups require continuity. Undefined numerical components invalidate
+their group, including a zero volume denominator or a flat directional-efficiency
+path; flat RSI is explicitly 50.
+
+The FastAPI lifespan creates the engine lazily, registers its consumer before
+starting an enabled or injected feed, and cancels/awaits both tasks on shutdown.
+A disabled network feed without an injected source has no consumer task. Engine
+failure exposes the safe `engine_failed` reason and removes its subscription.
+`GET /features/status` and `GET /features/{symbol}/latest` expose typed read-only
+state; unknown symbols return 404 and requests before initialization return 503.
+
+There are no full-book features: depth deltas cannot prove total liquidity or
+book imbalance without snapshots and update-ID reconciliation. The candle taker
+volume delta is explicitly a proxy (`2 * taker_buy_base_volume - base_volume`),
+not exchange-wide true order flow. Numerical features never generate labels,
+signals, approvals, or execution requests. Storage remains bounded, process-local,
+nonpersistent, and single-worker. Sustained live throughput is not yet qualified.
+
+Default windows, formulas, warmup counts, validation results, and remaining limits
+are recorded in `backend/README.md` and `docs/PHASE_3_REPORT.md`.
+
 ## Planned phases
 
 1. Domain + RiskEngine + PaperExecution + FastAPI scaffold.
 2. Binance public market data for 8 symbols.
-3. FeatureEngine and multi-strategy scoring.
+3. FeatureEngine with deterministic numerical snapshots (implemented; strategies deferred).
 4. AIAdvisor interface + structured-output provider.
 5. Backtesting and persistence.
 6. React dashboard.

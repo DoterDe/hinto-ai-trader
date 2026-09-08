@@ -87,6 +87,18 @@ _SYMBOL_ADAPTER = TypeAdapter(MarketSymbol)
 _TIME_ADAPTER = TypeAdapter(AwareDatetime)
 
 
+class MarketEventQueue(asyncio.Queue[NormalizedMarketEvent]):
+    """A normal observation queue with loss accounting local to its subscriber."""
+
+    def __init__(self, maxsize: int) -> None:
+        super().__init__(maxsize=maxsize)
+        self._dropped_events = 0
+
+    @property
+    def dropped_events(self) -> int:
+        return self._dropped_events
+
+
 class MarketDataHub:
     def __init__(
         self,
@@ -124,7 +136,7 @@ class MarketDataHub:
         self._ordering: dict[str, dict[str, _CachedEvent]] = {symbol: {} for symbol in normalized}
         self._connections: dict[str, MarketConnectionState] = {}
         self._event_connections: dict[EventType, str] = {}
-        self._subscribers: set[asyncio.Queue[NormalizedMarketEvent]] = set()
+        self._subscribers: set[MarketEventQueue] = set()
         self._dropped_events = 0
         self._ignored_events = 0
 
@@ -171,10 +183,15 @@ class MarketDataHub:
         self._latest[event.symbol][key] = cached
         if not cached.clock_skew:
             self._ordering[event.symbol][key] = cached
+        else:
+            # Keep diagnostics visible, but never let a queued future observation
+            # become admissible history merely because a slow consumer catches up.
+            return
         for queue in self._subscribers:
             if queue.full():
                 queue.get_nowait()
                 queue.task_done()
+                queue._dropped_events += 1
                 self._dropped_events += 1
             queue.put_nowait(event)
 
@@ -211,16 +228,18 @@ class MarketDataHub:
         return event.event_time > previous.event_time
 
     @contextmanager
-    def subscribe(self, max_queue_size: int = 100) -> Iterator[asyncio.Queue[NormalizedMarketEvent]]:
+    def subscribe(self, max_queue_size: int = 100) -> Iterator[MarketEventQueue]:
         """Yield a bounded queue; drop its oldest item when its consumer is slow.
 
         These subscriptions are lossy observations, unsuitable for reconstructing
-        an order book or an audit log. Overflow is counted in status.dropped_events.
+        an order book or an audit log. Overflow is counted in status.dropped_events
+        and in queue.dropped_events for consumers that must invalidate history.
+        Clock-skewed diagnostic observations remain in latest but aren't queued.
         Context exit always unsubscribes, including exceptions and cancellation.
         """
         if isinstance(max_queue_size, bool) or not isinstance(max_queue_size, int) or max_queue_size < 1:
             raise ValueError("max_queue_size must be a positive integer")
-        queue: asyncio.Queue[NormalizedMarketEvent] = asyncio.Queue(maxsize=max_queue_size)
+        queue = MarketEventQueue(maxsize=max_queue_size)
         self._subscribers.add(queue)
         try:
             yield queue

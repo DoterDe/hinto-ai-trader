@@ -439,3 +439,19 @@ At the end report:
 - remaining technical risks.
 
 Do not commit or push until reviewed.
+
+## Phase 3 implementation status
+
+Implementation and documentation are complete: typed features/settings, pure
+indicators, bounded closed-candle history, Hub integration with independent
+freshness, and read-only API/lifespan integration. The final Batch 5 regression
+and validation results are recorded in `docs/PHASE_3_REPORT.md`.
+
+Final repository-virtual-environment regression: **1106 passed, 2 warnings in
+2.72s** (675 original tests plus 431 Phase 3 tests). Dependency, import/OpenAPI,
+offline lifecycle, and working-tree scope checks passed. Phase 3 is complete;
+no subsequent phase has been started.
+
+Scope remains numerical feature extraction only. Strategies/scoring, AI,
+execution, persistence, backfill, and reconstructed order books are deferred.
+No commit or push is performed automatically.
