@@ -7,6 +7,6 @@ import pytest
 def offline_market_data_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     """Keep ordinary tests independent of network and local feed overrides."""
     for name in tuple(os.environ):
-        if name.startswith("BINANCE_MARKET_DATA_"):
+        if name.startswith(("BINANCE_MARKET_DATA_", "FEATURE_")):
             monkeypatch.delenv(name)
     monkeypatch.setenv("BINANCE_MARKET_DATA_ENABLED", "false")

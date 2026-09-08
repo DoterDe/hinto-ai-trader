@@ -1,195 +1,457 @@
-# Current Codex Task — Phase 2: Binance Public Market Data
+# Current Codex Task — Phase 3: FeatureEngine
 
-Read `AGENTS.md` and `docs/ARCHITECTURE.md` first.
+Read `AGENTS.md`, `docs/ARCHITECTURE.md`, and `docs/PHASE_2_REPORT.md` completely before editing.
 
 ## Model workflow
-This task is written for **GPT-6 Astra in Codex**. Inspect before editing, work in small batches, and verify each batch with tests. Do not perform a broad repository rewrite.
+This task is written for **GPT-6 Astra in Codex**. Inspect before editing, work in small reviewable batches, run targeted tests after each batch, then run the complete backend suite. Do not perform a broad repository rewrite.
+
+The working branch is `phase-3-feature-engine`. Phase 2 has already been merged into `main` and the accepted baseline is **675 backend tests passing**.
 
 ## Objective
-Implement a resilient **public market-data layer for Binance USDⓈ-M Futures** for eight symbols. This phase must not use private account credentials and must not implement real-money execution.
+Build an exchange-independent **FeatureEngine** that consumes normalized market observations from Phase 2 and produces deterministic, typed feature snapshots for future strategy modules.
 
-## Symbols
-- BTCUSDT
-- ETHUSDT
-- SOLUSDT
-- BNBUSDT
-- XRPUSDT
-- ADAUSDT
-- DOGEUSDT
-- LINKUSDT
+Architecture:
 
-## Important current Binance WebSocket routing
-Binance USDⓈ-M Futures now routes WebSocket market streams by data type. Do not assume the older unrouted base URL works for every stream.
+```text
+MarketDataHub
+    -> FeatureEngine
+    -> FeatureSnapshot
+    -> future StrategyEngine
+```
 
-Base: `wss://fstream.binance.com`
+FeatureEngine must not generate trading decisions, TradeIntent, AI decisions, or execution requests.
 
-Current routed endpoints:
-- high-frequency public market data: `/public`
-- regular market data: `/market`
-- private user data: `/private` — NOT USED IN THIS PHASE
+## Non-negotiable boundaries
+Do not add:
+- BUY/SELL/LONG/SHORT decisions,
+- strategy scoring,
+- SignalCandidate generation,
+- AI Advisor or OpenAI API,
+- DecisionEngine changes,
+- private Binance streams,
+- account balances or positions,
+- Binance API keys,
+- order submission,
+- testnet or live execution,
+- database/Redis,
+- frontend redesign,
+- ML/RL models,
+- hyperparameter optimization,
+- full local order book reconstruction.
 
-Examples from current Binance documentation:
-- `wss://fstream.binance.com/market/ws/bnbusdt@aggTrade`
-- `wss://fstream.binance.com/public/ws/bnbusdt@depth/ethusdt@depth`
-- `wss://fstream.binance.com/market/stream?streams=bnbusdt@aggTrade/btcusdt@markPrice`
+FeatureEngine must never directly reach an ExecutionGateway.
 
-Before finalizing stream mappings, verify each selected stream against the current official Binance USDⓈ-M Futures documentation. Do not guess endpoint routing.
+## Baseline first
+Before editing:
+1. confirm `git branch --show-current` is `phase-3-feature-engine`;
+2. confirm `git status`;
+3. run the complete existing backend suite;
+4. inspect at minimum:
+   - `backend/src/domain/market_data.py`
+   - `backend/src/application/market_data_hub.py`
+   - Phase 2 market-data tests
+   - `docs/ARCHITECTURE.md`
+   - `docs/PHASE_2_REPORT.md`.
 
-## Required architecture
-Create exchange-specific infrastructure behind a domain/application-facing interface.
+Do not redesign Phase 1 or Phase 2 unless required for compatibility.
 
-Suggested structure:
+## Core principles
+1. Deterministic calculations.
+2. Typed immutable outputs.
+3. Exchange-independent domain/application code.
+4. Explicit warm-up/readiness state.
+5. Never treat stale or missing required market data as valid.
+6. Avoid look-ahead bias.
+7. Closed-candle indicators use closed candles unless explicitly documented otherwise.
+8. Preserve `Decimal` where precision matters; use float only for numerical calculations where justified.
+9. Keep bounded process-local history.
+10. Prefer small explicit rolling calculations; do not add pandas unless clearly necessary.
+11. Tests must be deterministic and offline.
+12. Never silently replace unavailable/invalid features with arbitrary zeroes.
+
+## Required FeatureSnapshot
+Create a typed per-symbol feature snapshot containing at minimum:
+- symbol,
+- generated_at,
+- relevant source timestamps,
+- readiness state,
+- stale/unavailable reasons,
+- feature-group availability,
+- typed feature values.
+
+Feature values must remain unavailable/null during warm-up or when required data is stale/missing.
+
+## Required feature groups
+
+### 1. Price / returns
+Implement:
+- latest trade/mark context,
+- candle close,
+- simple return,
+- log return where valid,
+- rolling return over configurable windows.
+
+Candle-derived historical calculations must use closed candles.
+
+### 2. Trend
+Implement:
+- EMA fast,
+- EMA slow,
+- EMA long,
+- EMA spreads,
+- price distance from EMA,
+- multi-window numerical trend context.
+
+Default periods:
+- EMA fast: 9
+- EMA slow: 21
+- EMA long: 50
+
+Do not convert these into trading labels or decisions.
+
+### 3. Momentum
+Implement:
+- RSI,
+- ROC / rate of change,
+- close-to-close candle momentum.
+
+Default RSI period: 14.
+Handle all-gain, all-loss, and flat-price cases explicitly and test them.
+
+### 4. Volatility
+Implement:
+- true range,
+- ATR,
+- normalized ATR / ATR percentage,
+- rolling realized volatility.
+
+Default ATR period: 14.
+No future candles may be used.
+
+### 5. VWAP / volume
+Implement:
+- bounded rolling VWAP suitable for the Phase 2 data model,
+- relative volume,
+- taker-buy volume ratio,
+- a clearly named volume-delta proxy derived only from available normalized data.
+
+Document exactly what the volume-delta proxy means and what it does not mean. Do not claim exchange-wide true order-flow delta unless the available data proves it.
+
+### 6. Spread / microstructure
+Using BookTicker implement:
+- bid,
+- ask,
+- midpoint,
+- absolute spread,
+- spread in basis points,
+- top-of-book bid quantity,
+- top-of-book ask quantity,
+- top-of-book imbalance.
+
+Suggested imbalance formula:
+
+```text
+(bid_qty - ask_qty) / (bid_qty + ask_qty)
+```
+
+Handle zero denominator safely.
+
+### 7. Depth context
+Phase 2 depth is **deltas only**, not a reconstructed book.
+
+Therefore:
+- do not compute full-book depth imbalance from raw depth deltas;
+- do not call delta quantities total bid/ask liquidity;
+- only expose clearly named delta/update statistics if useful;
+- defer full-book features until REST snapshot + update-ID reconciliation exists.
+
+### 8. Mark/funding context
+Using MarkPriceEvent implement:
+- mark price,
+- index price,
+- mark/index basis,
+- basis percentage/bps,
+- funding rate,
+- time until next funding where useful.
+
+These are contextual features only.
+
+### 9. Market-regime inputs
+Expose deterministic numerical inputs such as:
+- normalized volatility,
+- EMA separation,
+- directional efficiency / deterministic trend-strength input,
+- relative volume.
+
+Prefer raw numerical inputs. If a descriptive enum is added, it must be deterministic, documented, threshold-tested, and never drive execution directly.
+
+## History/state design
+Implement an application-level bounded rolling history mechanism that:
+- is per symbol,
+- has an explicit maximum size,
+- accepts normalized events only,
+- does not depend on Binance classes,
+- handles duplicates and out-of-order events conservatively,
+- distinguishes open and closed klines,
+- does not invent missing historical candles,
+- keeps closed-candle history suitable for indicator windows,
+- invalidates or marks continuity-dependent state conservatively when needed.
+
+Do not add persistent storage in Phase 3.
+
+## Freshness integration
+This is critical.
+
+FeatureEngine must consume freshness information from `MarketDataHub` and must not mark a feature group ready/fresh when its required source is stale or missing.
+
+Examples:
+- spread/microstructure -> requires fresh BookTicker;
+- funding/basis -> requires fresh MarkPrice;
+- candle indicators -> require enough fresh closed Kline history;
+- trade-derived features -> require fresh trades.
+
+An unrelated stale stream should not automatically invalidate an independent feature group unless that group depends on it.
+
+Partial availability must be explicit in FeatureSnapshot.
+
+## Lossy subscriber handling
+`MarketDataHub.subscribe()` uses bounded lossy queues.
+
+Do not silently claim continuity-dependent features remain valid after an observed gap. Document which features tolerate loss and apply conservative invalidation/readiness where needed. Do not build a local order book from lossy deltas.
+
+## Suggested structure
+Prefer something close to:
 
 ```text
 backend/src/
   domain/
-    market_data.py
+    features.py
   application/
-    market_data_hub.py
-  infrastructure/
-    binance/
-      __init__.py
-      stream_router.py
-      public_market_data.py
-      parsers.py
+    feature_engine.py
+    feature_history.py
+  indicators/
+    __init__.py
+    trend.py
+    momentum.py
+    volatility.py
+    volume.py
+    microstructure.py
   api/
-    market_data.py
+    features.py
 ```
 
-Adjust names only if the existing repository structure makes another layout clearly cleaner. Do not move unrelated Phase 1 files.
+Adjust only after inspecting the repository and explain deviations.
 
-## Required domain models
-Use typed models for normalized events. At minimum:
-- `TradeEvent`
-- `KlineEvent`
-- `BookTickerEvent`
-- `MarkPriceEvent`
-- `DepthEvent` or a clearly documented depth-update model
-- `MarketConnectionState`
-
-Normalized events must include where applicable:
-- symbol
-- exchange event timestamp
-- local receive timestamp
-- event type
-- relevant numeric values using appropriate numeric types
-
-Keep raw Binance payloads out of strategy/domain code.
-
-## MarketDataHub responsibilities
-Implement a service that:
-1. receives normalized Binance events,
-2. stores the latest snapshot/state needed by downstream services,
-3. exposes per-symbol freshness/last-update information,
-4. allows consumers to subscribe without importing Binance-specific code,
-5. does not contain strategy logic.
-
-## WebSocket client requirements
-Implement:
-- async connection lifecycle,
-- combined streams where appropriate,
-- explicit routing between `/public` and `/market`,
-- lowercase symbols in stream names,
-- reconnect with bounded exponential backoff + jitter,
-- resubscribe/state recovery after reconnect,
-- connection-state reporting,
-- stale-data detection,
-- clean cancellation/shutdown,
-- malformed-message handling without crashing the whole service,
-- ping/pong compatibility with Binance WebSocket behavior,
-- proactive handling of Binance's 24-hour connection lifetime.
-
-Do not create one WebSocket per symbol unless there is a demonstrated need. Prefer a small number of routed combined connections.
-
-## Initial streams
-Implement and test these market-data capabilities, choosing the correct current Binance route for each:
-- aggregate trades,
-- klines/candles,
-- book ticker,
-- mark price,
-- depth/order-book updates.
-
-For klines, start with one configurable interval (default `1m`) but design the stream builder so more intervals can be added later.
-
-## Order-book scope
-Do NOT build a production local order book from depth deltas unless the required REST snapshot + update-ID reconciliation algorithm is implemented correctly.
-
-For this phase either:
-A. expose depth updates as normalized events only, or
-B. implement the official Binance snapshot + buffered-delta reconciliation algorithm with dedicated tests.
-
-Prefer A for Phase 2 unless there is a strong architectural reason for B.
-
-## API requirements
-Extend FastAPI with read-only endpoints such as:
-- `GET /market/status`
-- `GET /market/{symbol}/latest`
-
-Responses must show data freshness and connection state. Do not expose credentials or internal exception traces.
-
-Optionally add a backend WebSocket endpoint for normalized live market events if it stays small and testable.
+Keep indicator functions pure where practical.
 
 ## Configuration
-Add settings for:
-- symbol list,
-- kline interval,
-- stale threshold,
-- reconnect min/max delay,
-- Binance WebSocket base URL only if useful for tests.
+Add typed configuration with conservative defaults:
 
-Defaults must work for public market data without API keys.
+```text
+EMA_FAST=9
+EMA_SLOW=21
+EMA_LONG=50
+RSI_PERIOD=14
+ATR_PERIOD=14
+ROC_PERIOD=10
+VOLATILITY_WINDOW=20
+RELATIVE_VOLUME_WINDOW=20
+VWAP_WINDOW=20
+HISTORY_LIMIT=500
+```
 
-## Testing
-Add deterministic tests that do not depend on Binance being online:
-- stream-name/router generation,
-- parsing representative payload fixtures,
-- malformed payload behavior,
-- reconnect/backoff policy,
-- freshness/stale-state calculation,
-- MarketDataHub latest-state updates.
+Validate positive integers, sensible period ordering, and sufficient history capacity.
 
-Network integration tests, if added, must be clearly separated/optional.
+Do not add excessive optimization parameters.
 
-## Dependencies
-Add the minimum dependency needed for async WebSocket support. Avoid unnecessary SDKs if a small direct WebSocket client is sufficient.
+## Feature API
+Add read-only endpoints such as:
+- `GET /features/status`
+- `GET /features/{symbol}/latest`
 
-## Do not do in Phase 2
-- no API keys,
-- no Binance account/user-data stream,
-- no order submission,
-- no live-money execution,
-- no AI provider,
-- no strategy logic,
-- no frontend redesign,
-- no large copy/paste of Hinto modules.
+Responses must clearly distinguish ready, warming-up, stale, and unavailable feature groups.
 
-## Commands to run
-At minimum:
+Unknown symbols should return 404. Do not emit NaN/Infinity in JSON. No mutation/execution endpoints.
+
+## FeatureEngine lifecycle
+Prefer integrating through the existing `MarketDataHub` subscription mechanism rather than coupling to Binance.
+
+The engine should:
+1. consume normalized events,
+2. maintain bounded rolling state,
+3. update deterministic feature snapshots,
+4. expose latest state to read-only API consumers.
+
+Integrate cleanly with the existing FastAPI lifespan without introducing network side effects at import time.
+
+## Numerical safety
+Explicitly guard:
+- zero denominators,
+- empty windows,
+- one-element variance windows,
+- invalid log-return inputs,
+- Decimal-to-float conversion,
+- NaN,
+- Infinity,
+- timestamp ordering.
+
+Do not hide invalid states by substituting fake zeros.
+
+## Testing requirements
+Add comprehensive deterministic offline tests. At minimum cover:
+- EMA known sequence,
+- RSI known sequence,
+- RSI all gains,
+- RSI all losses,
+- RSI flat prices,
+- ATR known OHLC sequence,
+- ROC,
+- simple/log/rolling returns,
+- realized volatility,
+- VWAP,
+- relative volume,
+- taker-buy ratio,
+- midpoint,
+- spread,
+- spread bps,
+- top-of-book imbalance,
+- mark/index basis,
+- funding context,
+- warm-up behavior,
+- insufficient history,
+- stale required stream,
+- missing required stream,
+- fresh recovery,
+- duplicate events,
+- out-of-order candles,
+- open vs closed candle behavior,
+- bounded history,
+- no NaN/Infinity outputs,
+- unknown symbol API behavior,
+- API responses,
+- Phase 1 + Phase 2 regressions.
+
+Use fixed fixtures and independent expected values; do not test formulas by reusing the production implementation to calculate the expected result.
+
+## Documentation
+Update:
+- `CODEX_TASK.md`,
+- `docs/ARCHITECTURE.md`,
+- `backend/README.md`,
+- root README only if needed.
+
+Create `docs/PHASE_3_REPORT.md` at completion.
+
+Document:
+- formulas,
+- default windows,
+- warm-up requirements,
+- freshness dependency matrix,
+- precision choices,
+- closed-candle rules,
+- history behavior,
+- known limitations,
+- why depth-book imbalance is deferred,
+- why outputs are features, not trading signals.
+
+## Development batches
+### Batch 1
+- domain feature models,
+- typed settings,
+- pure indicator primitives,
+- formula tests.
+
+### Batch 2
+- bounded feature history,
+- closed-candle handling,
+- duplicate/out-of-order handling,
+- tests.
+
+### Batch 3
+- FeatureEngine integration with MarketDataHub,
+- freshness/readiness/partial availability,
+- tests.
+
+### Batch 4
+- read-only Feature API,
+- app lifecycle integration,
+- tests.
+
+### Batch 5
+- documentation,
+- regression review,
+- full suite.
+
+After each meaningful batch run targeted tests and fix failures before continuing.
+
+## Completion commands
+At minimum run:
 
 ```bash
 cd backend
 python -m pytest
+python -m pip check
 ```
 
-Also run the application import/startup check appropriate for the implemented code.
+Also run:
+- application import/OpenAPI check,
+- appropriate offline startup/shutdown smoke test,
+- `git diff --check`,
+- `git status`,
+- `git diff --stat`.
+
+Do not commit or push automatically.
 
 ## Acceptance criteria
-Phase 2 is complete only when:
-1. all eight configured symbols are supported by the stream builder,
-2. `/public` vs `/market` routing is explicit and tested,
-3. raw payloads are normalized before reaching application/domain consumers,
-4. stale state can be detected per symbol,
-5. reconnect logic is testable,
-6. existing Phase 1 tests still pass,
-7. new tests pass,
-8. no secrets or private Binance endpoints were introduced,
-9. documentation is updated if architecture changed.
+Phase 3 is complete only when:
+1. FeatureEngine consumes exchange-independent normalized events.
+2. FeatureSnapshot is typed and deterministic.
+3. Required features are implemented and independently tested.
+4. Closed-candle calculations avoid look-ahead behavior.
+5. Warm-up state is explicit.
+6. Required stale/missing sources make affected feature groups unavailable.
+7. Partial feature availability is represented correctly.
+8. History is bounded.
+9. No full order book is falsely reconstructed.
+10. No strategy/trading decision is generated.
+11. No AI provider is added.
+12. No execution/private/account capability is added.
+13. All existing 675 baseline tests still pass.
+14. New Phase 3 tests pass.
+15. Documentation is updated.
 
 ## Completion report
-Return:
-- files changed,
-- tests/commands executed and exact results,
-- current stream-to-route mapping used,
-- architecture decisions,
-- anything intentionally deferred to Phase 3,
+At the end report:
+- baseline test result,
+- files created,
+- files modified,
+- formulas used,
+- window defaults,
+- warm-up rules,
+- freshness dependency matrix,
+- history design,
+- FeatureEngine lifecycle,
+- API endpoints,
+- exact targeted test results,
+- exact complete test result,
+- warnings,
+- intentionally deferred work,
 - remaining technical risks.
+
+Do not commit or push until reviewed.
+
+## Phase 3 implementation status
+
+Implementation and documentation are complete: typed features/settings, pure
+indicators, bounded closed-candle history, Hub integration with independent
+freshness, and read-only API/lifespan integration. The final Batch 5 regression
+and validation results are recorded in `docs/PHASE_3_REPORT.md`.
+
+Final repository-virtual-environment regression: **1106 passed, 2 warnings in
+2.72s** (675 original tests plus 431 Phase 3 tests). Dependency, import/OpenAPI,
+offline lifecycle, and working-tree scope checks passed. Phase 3 is complete;
+no subsequent phase has been started.
+
+Scope remains numerical feature extraction only. Strategies/scoring, AI,
+execution, persistence, backfill, and reconstructed order books are deferred.
+No commit or push is performed automatically.

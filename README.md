@@ -7,7 +7,7 @@ AI-assisted crypto market research and paper-trading workstation inspired by the
 ## Goals
 
 - Consume live Binance market data for multiple symbols.
-- Build a reusable feature engine (trend, momentum, volatility, volume, order-book signals).
+- Build a reusable feature engine (trend, momentum, volatility, volume, top-of-book context).
 - Keep strategy logic independent from execution.
 - Add an AI Advisor that can approve/reject/flag a candidate signal, but can never bypass deterministic risk controls.
 - Support backtesting and paper trading with realistic commissions/slippage assumptions.
@@ -59,6 +59,11 @@ for scope, and `docs/ARCHITECTURE.md` for the staged architecture.
 Phase 2 adds public Binance USD-M Futures data for eight symbols, normalized
 events, connection/freshness tracking, bounded subscriptions, and read-only
 market-data endpoints. Depth is exposed as deltas; no local order book is built.
+
+Phase 3 adds deterministic numerical feature snapshots, bounded closed-candle
+history, per-group freshness/warmup, and read-only `/features/status` and
+`/features/{symbol}/latest` endpoints. Features remain independent of strategies,
+AI, and execution. See `docs/PHASE_3_REPORT.md` for formulas, validation, and limits.
 
 ## Upstream attribution
 
