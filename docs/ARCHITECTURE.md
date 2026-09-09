@@ -6,9 +6,8 @@ Hinto AI Trader separates market observation, signal generation, AI review, dete
 
 ## Core pipeline
 
-This is the target architecture, including future orchestration after analytical
-strategy output. The implemented Phase 4 boundary is detailed below; no connection
-from strategy assessments to risk or execution has been added.
+The implemented Phase 5 flow ends at analytical eligibility. Future sizing,
+risk and execution orchestration are separate steps and are not connected.
 
 ```text
 Binance Public Market Data
@@ -26,16 +25,16 @@ Binance Public Market Data
      StrategyEngine
           |
           v
- StrategyAssessment / StrategyCandidate
-          |
-          v
- (future orchestration / SignalCandidate mapping)
-          |
-          v
-      AIAdvisor
+ StrategySnapshot / StrategyCandidate
           |
           v
     DecisionEngine
+          |
+          v
+    DecisionRecord
+          |
+          v
+ (future deterministic sizing / TradeIntent)
           |
           v
       RiskEngine
@@ -44,9 +43,7 @@ Binance Public Market Data
  ApprovedTradeIntent
           |
           v
-   ExecutionGateway
-      |        |
-    Paper    Testnet
+ PaperExecutionGateway
           |
           v
    Position / PnL
@@ -57,6 +54,9 @@ Binance Public Market Data
           v
      React dashboard
 ```
+
+AI-assisted review and testnet integration remain future work requiring separate
+scope. Advisory AI must never bypass deterministic risk controls.
 
 ## Layer boundaries
 
@@ -328,13 +328,79 @@ scope, validation and limitations are in `docs/PHASE_4_REPORT.md` and
 `backend/README.md`. There is no profitability claim, AI provider, account access,
 order sizing, order execution, strategy-to-risk wiring or additional dependency.
 
+## Phase 5 implementation
+
+`application/decision_engine.py` consumes only the typed
+`StrategyProvider.latest(symbol) -> StrategySnapshot` interface. The pure
+`evaluate(snapshot, now=...)` requires explicit aware time; `latest/status` use an
+injected clock and evaluate on demand. It never calls FeatureEngine, the exchange,
+RiskEngine or an execution gateway. Phase 1–4 production services are unchanged;
+the app factory adds an optional decision settings argument and lifespan instance.
+
+`domain/decisions.py` defines immutable DecisionRecord, policy, reason and status
+models with finite numeric bounds, coherent outcome/value combinations and no
+executable fields. `decision_settings.py` exposes four gates: maximum snapshot
+age 10 seconds, minimum agreement 0.50, minimum contributors 2 and incomplete
+coverage blocking disabled. `DECISION_` process variables override defaults.
+
+`decision_validation.py` revalidates Phase 4 values and checks additional
+candidate time/hash/contributor/provenance constraints. No score is recalculated.
+Phase 4 still owns candidate score/confidence thresholds and consensus semantics;
+confidence is evidence quality, not probability. Contributor count prevents one
+rule family from qualifying alone by default, without assuming independent votes.
+The candidate contributor set must match READY nonzero assessments supporting its
+score sign. Missing-strategy provenance must agree across assessments, snapshot
+and candidate; it is retained even when incomplete coverage is allowed.
+
+ELIGIBLE requires READY, fresh, coherent source output and all policy gates.
+NO_ACTION means valid fresh output with no candidate, including neutral and
+warming/unavailable results. Validation/staleness failures are BLOCKED even if
+there is no candidate, keeping unsafe input distinct from ordinary abstention.
+Agreement and contributor thresholds are inclusive; age is strictly below its
+limit. Both source strategy and feature timestamps are checked independently.
+Future time or reversed source ordering fails closed. Candidate time must match
+strategy evaluation time. Existing Phase 4 readiness remains authoritative for
+individual feature dependencies; Phase 5 does not inspect lower-level data.
+
+Malformed copies yield safe BLOCKED diagnostics when source identifiers are
+usable. Untrusted candidate values are omitted and missing source times remain
+null. Invalid identifiers or wrong object types are programmer errors in pure
+evaluation; an unusable provider becomes a sanitized service/API error.
+Valid policy-blocked or stale candidates retain their supplied analytical values.
+
+`decision_identity.py` reuses Phase 4 canonical hashing. Policy identity contains
+validated settings and sorted symbol scope; decision identity contains engine
+version, policy, symbol, upstream version/settings, observation, candidate (or a
+no-candidate marker), and outcome. Read time and full feature snapshot identity
+are excluded to preserve identity across equivalent analytical reads. Source IDs
+and all evaluation times remain on the record. Changed outcome changes identity.
+These are trusted internal content identities, not authentication, persistent
+deduplication or unique per-read audit IDs. There is no cache or history.
+
+The app constructs DecisionEngine over StrategyEngine before starting the existing
+feed/feature tasks. No task, queue or subscriber is added; cancellation and cleanup
+remain unchanged. `GET /decisions/status` exposes policy and symbol summaries;
+`GET /decisions/{symbol}/latest` exposes DecisionRecord. Unknown symbols return
+404; uninitialized/unusable source state returns sanitized 503; ordinary BLOCKED
+and NO_ACTION records return 200. All decision routes are read-only. Import and
+OpenAPI generation construct no runtime; status evaluates symbols individually.
+
+ELIGIBLE is not execution approval. Phase 1 TradeIntent needs a concrete quantity,
+which Phase 5 does not invent. A future sizing/intent builder and independent
+RiskEngine evaluation must precede PaperExecutionGateway. No Phase 1 risk limit
+or execution contract is changed, and neither intent type is created here.
+No AI, private API, account data, sizing, order submission, database or dependency
+is added. No full order book is reconstructed. Exact rules, tests and remaining
+limits are in `docs/PHASE_5_REPORT.md` and `backend/README.md`.
+
 ## Phase status and future work
 
 1. Domain + RiskEngine + PaperExecution + FastAPI scaffold.
 2. Binance public market data for 8 symbols.
 3. FeatureEngine with deterministic numerical snapshots.
 4. Deterministic StrategyEngine with analytical assessments and read-only API.
+5. Deterministic DecisionEngine with immutable eligibility records and read-only API.
 
-Future tasks require separate scope: backtesting/orchestration and persistence,
+Future tasks require separate scope: sizing, backtesting/orchestration and persistence,
 AIAdvisor interface/provider, React dashboard, testnet adapter/reconciliation,
 and additional operational reliability validation. No later phase is started here.

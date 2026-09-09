@@ -69,7 +69,7 @@ def test_openapi_exposes_typed_analytical_responses_and_no_arbitrary_feature_inp
             "$ref": f"#/components/schemas/{model}"}
     candidate = schema["components"]["schemas"]["StrategyCandidate"]["properties"]
     assert not {"quantity", "leverage", "order_type", "trade_intent", "execution_mode"} & candidate.keys()
-    assert len(schema["paths"]) == 8
+    assert len(schema["paths"]) == 10
 
 
 def test_real_feature_engine_closed_history_drives_read_only_assessments() -> None:

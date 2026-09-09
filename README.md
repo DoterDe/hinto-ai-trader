@@ -18,40 +18,25 @@ AI-assisted crypto market research and paper-trading workstation inspired by the
 
 The target below includes future orchestration. The implemented observation and
 analysis boundary is `MarketDataHub -> FeatureEngine -> FeatureSnapshot ->
-StrategyEngine -> StrategyAssessment / StrategyCandidate`; it ends before execution.
+StrategyEngine -> StrategySnapshot / StrategyCandidate -> DecisionEngine ->
+DecisionRecord`; it ends at analytical eligibility.
 
 ```text
 Binance public market data
         |
         v
-MarketData -> FeatureEngine -> Strategies -> SignalCandidate
-                                      |
-                                      v
-                                  AIAdvisor
-                                      |
-                                      v
-                                DecisionEngine
-                                      |
-                                      v
-                                  RiskEngine
-                                      |
-                                      v
-                             ApprovedTradeIntent
-                                      |
-                                      v
-                               ExecutionGateway
-                                 |           |
-                               Paper       Testnet
-                                 |
-                                 v
-                          Position/PnL Store
-                                 |
-                                 v
-                           FastAPI/WebSocket
-                                 |
-                                 v
-                              Dashboard
+MarketDataHub -> FeatureEngine -> FeatureSnapshot
+        -> StrategyEngine -> StrategySnapshot / StrategyCandidate
+        -> DecisionEngine -> DecisionRecord (ELIGIBLE / BLOCKED / NO_ACTION)
+
+Future orchestration (not connected):
+DecisionRecord -> deterministic sizing -> TradeIntent
+        -> RiskEngine -> ApprovedTradeIntent -> PaperExecutionGateway
+        -> Position/PnL Store -> API/WebSocket -> Dashboard
 ```
+
+AI-assisted review, testnet integration and backtesting remain separately scoped
+future work. AI cannot bypass deterministic risk controls.
 
 ## Project status
 
@@ -75,6 +60,13 @@ and deterministic analytical candidate IDs. `GET /strategies/status` and
 `GET /strategies/{symbol}/latest` are read-only. Candidates have no quantity,
 leverage or order type and do not reach the paper gateway. These engineering
 defaults have no profitability claim. See [the Phase 4 report](docs/PHASE_4_REPORT.md).
+
+Phase 5 adds an on-demand DecisionEngine with explicit freshness, candidate
+identity, agreement and contributor gates. Read-only `GET /decisions/status` and
+`GET /decisions/{symbol}/latest` expose immutable eligibility records and stable
+reason codes. `ELIGIBLE` is analytical eligibility, with no sizing, intent creation,
+risk approval or execution. No task, subscription or dependency is added.
+See [the Phase 5 report](docs/PHASE_5_REPORT.md) for policy defaults and validation.
 
 ## Upstream attribution
 
