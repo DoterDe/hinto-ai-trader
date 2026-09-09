@@ -1,14 +1,24 @@
-# Current Codex Task — Phase 3: FeatureEngine
+# Current Codex Task — Phase 4: StrategyEngine
 
-Read `AGENTS.md`, `docs/ARCHITECTURE.md`, and `docs/PHASE_2_REPORT.md` completely before editing.
+Read `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/PHASE_3_REPORT.md`, and the implemented Phase 3 feature code completely before editing.
 
 ## Model workflow
 This task is written for **GPT-6 Astra in Codex**. Inspect before editing, work in small reviewable batches, run targeted tests after each batch, then run the complete backend suite. Do not perform a broad repository rewrite.
 
-The working branch is `phase-3-feature-engine`. Phase 2 has already been merged into `main` and the accepted baseline is **675 backend tests passing**.
+The working branch is `phase-4-strategy-engine`. Phase 3 has been merged into `main` and the accepted baseline is **1106 backend tests passing**.
+
+## Implementation status
+
+Phase 4 is complete across all five batches. Final regression: **1469 passed,
+2 existing warnings in 5.12s** (1106 baseline + 363 Phase 4 tests). Final targeted
+run: **363 passed, 2 warnings in 2.02s**. Dependency, import/OpenAPI, offline
+lifecycle, scope and whitespace checks passed. See
+[docs/PHASE_4_REPORT.md](docs/PHASE_4_REPORT.md) for the exact contracts, formulas,
+boundaries, changes and validation record. Work remains uncommitted; no push or
+later-phase implementation has been performed.
 
 ## Objective
-Build an exchange-independent **FeatureEngine** that consumes normalized market observations from Phase 2 and produces deterministic, typed feature snapshots for future strategy modules.
+Build an exchange-independent, deterministic **StrategyEngine** that consumes typed `FeatureSnapshot` objects from Phase 3 and produces explainable strategy assessments suitable for future backtesting and paper-trading orchestration.
 
 Architecture:
 
@@ -16,208 +26,247 @@ Architecture:
 MarketDataHub
     -> FeatureEngine
     -> FeatureSnapshot
-    -> future StrategyEngine
+    -> StrategyEngine
+    -> StrategyAssessment / StrategyCandidate
+    -> future DecisionEngine / RiskEngine integration
 ```
 
-FeatureEngine must not generate trading decisions, TradeIntent, AI decisions, or execution requests.
+Phase 4 is **analysis and simulation oriented only**. StrategyEngine must never directly reach an ExecutionGateway.
 
 ## Non-negotiable boundaries
 Do not add:
-- BUY/SELL/LONG/SHORT decisions,
-- strategy scoring,
-- SignalCandidate generation,
-- AI Advisor or OpenAI API,
-- DecisionEngine changes,
 - private Binance streams,
 - account balances or positions,
 - Binance API keys,
 - order submission,
-- testnet or live execution,
-- database/Redis,
+- testnet order execution,
+- live-money execution,
+- direct calls to `PaperExecutionGateway`,
+- TradeIntent generation,
+- RiskEngine bypass,
+- AI Advisor or OpenAI API,
+- ML/RL prediction models,
+- automatic parameter optimization,
+- persistent database/Redis,
 - frontend redesign,
-- ML/RL models,
-- hyperparameter optimization,
-- full local order book reconstruction.
+- full local order-book reconstruction.
 
-FeatureEngine must never directly reach an ExecutionGateway.
+No strategy may submit, place, simulate, or route an order by itself.
 
 ## Baseline first
 Before editing:
-1. confirm `git branch --show-current` is `phase-3-feature-engine`;
+1. confirm `git branch --show-current` is `phase-4-strategy-engine`;
 2. confirm `git status`;
 3. run the complete existing backend suite;
 4. inspect at minimum:
-   - `backend/src/domain/market_data.py`
-   - `backend/src/application/market_data_hub.py`
-   - Phase 2 market-data tests
+   - `backend/src/domain/features.py`
+   - `backend/src/application/feature_engine.py`
+   - `backend/src/application/feature_settings.py`
+   - `backend/src/domain/models.py`
+   - all Phase 3 feature tests
    - `docs/ARCHITECTURE.md`
-   - `docs/PHASE_2_REPORT.md`.
+   - `docs/PHASE_3_REPORT.md`.
 
-Do not redesign Phase 1 or Phase 2 unless required for compatibility.
+Do not redesign Phase 1–3 unless a small compatibility change is clearly required and independently tested.
 
-## Core principles
-1. Deterministic calculations.
-2. Typed immutable outputs.
-3. Exchange-independent domain/application code.
-4. Explicit warm-up/readiness state.
-5. Never treat stale or missing required market data as valid.
-6. Avoid look-ahead bias.
-7. Closed-candle indicators use closed candles unless explicitly documented otherwise.
-8. Preserve `Decimal` where precision matters; use float only for numerical calculations where justified.
-9. Keep bounded process-local history.
-10. Prefer small explicit rolling calculations; do not add pandas unless clearly necessary.
-11. Tests must be deterministic and offline.
-12. Never silently replace unavailable/invalid features with arbitrary zeroes.
+## Core design principles
+1. Deterministic and reproducible strategy logic.
+2. Strategy code consumes typed Phase 3 features only; it must not import Binance-specific payload types.
+3. Every assessment must be explainable from explicit numerical evidence.
+4. Missing/stale/unavailable required feature groups make that strategy unavailable, not guessed.
+5. Strategy outputs are analytical candidates, not execution commands.
+6. No look-ahead bias.
+7. No hidden mutable global state.
+8. Configuration is typed and validated.
+9. Strategy scoring must be bounded and documented.
+10. Avoid magic thresholds scattered through code; centralize them in strategy settings.
+11. No performance claims or profitability claims.
+12. Tests must be deterministic and offline.
 
-## Required FeatureSnapshot
-Create a typed per-symbol feature snapshot containing at minimum:
-- symbol,
-- generated_at,
-- relevant source timestamps,
-- readiness state,
-- stale/unavailable reasons,
-- feature-group availability,
-- typed feature values.
-
-Feature values must remain unavailable/null during warm-up or when required data is stale/missing.
-
-## Required feature groups
-
-### 1. Price / returns
-Implement:
-- latest trade/mark context,
-- candle close,
-- simple return,
-- log return where valid,
-- rolling return over configurable windows.
-
-Candle-derived historical calculations must use closed candles.
-
-### 2. Trend
-Implement:
-- EMA fast,
-- EMA slow,
-- EMA long,
-- EMA spreads,
-- price distance from EMA,
-- multi-window numerical trend context.
-
-Default periods:
-- EMA fast: 9
-- EMA slow: 21
-- EMA long: 50
-
-Do not convert these into trading labels or decisions.
-
-### 3. Momentum
-Implement:
-- RSI,
-- ROC / rate of change,
-- close-to-close candle momentum.
-
-Default RSI period: 14.
-Handle all-gain, all-loss, and flat-price cases explicitly and test them.
-
-### 4. Volatility
-Implement:
-- true range,
-- ATR,
-- normalized ATR / ATR percentage,
-- rolling realized volatility.
-
-Default ATR period: 14.
-No future candles may be used.
-
-### 5. VWAP / volume
-Implement:
-- bounded rolling VWAP suitable for the Phase 2 data model,
-- relative volume,
-- taker-buy volume ratio,
-- a clearly named volume-delta proxy derived only from available normalized data.
-
-Document exactly what the volume-delta proxy means and what it does not mean. Do not claim exchange-wide true order-flow delta unless the available data proves it.
-
-### 6. Spread / microstructure
-Using BookTicker implement:
-- bid,
-- ask,
-- midpoint,
-- absolute spread,
-- spread in basis points,
-- top-of-book bid quantity,
-- top-of-book ask quantity,
-- top-of-book imbalance.
-
-Suggested imbalance formula:
+## Required domain model
+Create immutable typed strategy-domain models. Prefer a structure close to:
 
 ```text
-(bid_qty - ask_qty) / (bid_qty + ask_qty)
+StrategyDirection = LONG | SHORT | NEUTRAL
+StrategyReadiness = READY | UNAVAILABLE | STALE | WARMING_UP
+
+StrategyEvidence
+- name
+- value
+- threshold/reference if relevant
+- contribution
+- note/code
+
+StrategyAssessment
+- strategy_id
+- symbol
+- generated_at
+- direction
+- score
+- confidence
+- readiness
+- reasons
+- required_feature_groups
+- evidence
+- source_feature_timestamp / snapshot identity
+
+StrategyCandidate
+- candidate_id
+- symbol
+- generated_at
+- direction
+- composite_score
+- confidence
+- contributing_strategies
+- reasons/evidence summary
 ```
 
-Handle zero denominator safely.
+You may adjust names after inspecting the repository, but preserve the semantic separation between:
+- one strategy's assessment,
+- optional engine-level aggregation.
 
-### 7. Depth context
-Phase 2 depth is **deltas only**, not a reconstructed book.
+`StrategyCandidate` is **not** a `TradeIntent`, must not contain quantity/leverage/order type, and must not be executable.
 
-Therefore:
-- do not compute full-book depth imbalance from raw depth deltas;
-- do not call delta quantities total bid/ask liquidity;
-- only expose clearly named delta/update statistics if useful;
-- defer full-book features until REST snapshot + update-ID reconciliation exists.
+Use a bounded score convention such as `[-100, 100]` and confidence `[0, 1]`. Validate both.
 
-### 8. Mark/funding context
-Using MarkPriceEvent implement:
-- mark price,
-- index price,
+## Strategy set
+Implement a small, diverse deterministic initial strategy set using only existing Phase 3 features.
+
+Prefer these three families:
+
+### 1. Trend-following strategy
+Use numerical evidence such as:
+- EMA fast/slow/long relationships,
+- normalized EMA separation,
+- distance from EMA,
+- directional efficiency,
+- ROC,
+- normalized ATR as context.
+
+The strategy should reward aligned trend evidence and penalize contradictory evidence.
+
+Do not treat one EMA crossover alone as sufficient evidence.
+
+### 2. Momentum/continuation strategy
+Use numerical evidence such as:
+- ROC,
+- RSI,
+- close-to-close momentum,
+- relative volume,
+- taker-buy ratio / volume delta proxy,
+- spread/microstructure as optional quality context.
+
+Avoid simplistic rules such as `RSI > 70 = buy` or `RSI < 30 = sell`.
+
+The strategy should distinguish continuation evidence from exhausted/extreme conditions in a deterministic documented way.
+
+### 3. Mean-reversion strategy
+Use numerical evidence such as:
+- price distance from fast/slow EMA,
+- RSI deviation from neutral,
+- normalized ATR,
+- directional efficiency,
+- relative volume,
+- spread quality where available.
+
+This strategy must not blindly oppose strong directional movement. Strong trend/efficiency should reduce or invalidate mean-reversion conviction.
+
+## Optional fourth strategy
+Only if the implementation remains small and well-tested, add a microstructure/context strategy based on:
+- spread bps,
+- top-of-book imbalance,
+- taker-buy ratio,
 - mark/index basis,
-- basis percentage/bps,
-- funding rate,
-- time until next funding where useful.
+- funding context.
 
-These are contextual features only.
+It must remain an analytical assessment and must not claim to reconstruct order-book pressure beyond top-of-book data.
 
-### 9. Market-regime inputs
-Expose deterministic numerical inputs such as:
-- normalized volatility,
-- EMA separation,
-- directional efficiency / deterministic trend-strength input,
-- relative volume.
+Do not add this strategy merely to increase strategy count.
 
-Prefer raw numerical inputs. If a descriptive enum is added, it must be deterministic, documented, threshold-tested, and never drive execution directly.
-
-## History/state design
-Implement an application-level bounded rolling history mechanism that:
-- is per symbol,
-- has an explicit maximum size,
-- accepts normalized events only,
-- does not depend on Binance classes,
-- handles duplicates and out-of-order events conservatively,
-- distinguishes open and closed klines,
-- does not invent missing historical candles,
-- keeps closed-candle history suitable for indicator windows,
-- invalidates or marks continuity-dependent state conservatively when needed.
-
-Do not add persistent storage in Phase 3.
-
-## Freshness integration
-This is critical.
-
-FeatureEngine must consume freshness information from `MarketDataHub` and must not mark a feature group ready/fresh when its required source is stale or missing.
+## Strategy readiness and feature dependencies
+Each strategy must explicitly declare its required feature groups.
 
 Examples:
-- spread/microstructure -> requires fresh BookTicker;
-- funding/basis -> requires fresh MarkPrice;
-- candle indicators -> require enough fresh closed Kline history;
-- trade-derived features -> require fresh trades.
+- trend strategy: `trend`, `momentum`, `regime`, possibly `volatility`;
+- momentum strategy: `momentum`, `volume`, possibly `microstructure`;
+- mean reversion: `trend`, `momentum`, `volatility`, `regime`.
 
-An unrelated stale stream should not automatically invalidate an independent feature group unless that group depends on it.
+If any hard-required feature group is stale, warming up, unavailable, or has null values:
+- do not fabricate a score,
+- return an assessment with matching unavailable/readiness state and reasons.
 
-Partial availability must be explicit in FeatureSnapshot.
+Optional feature groups may improve confidence/quality but their absence must be explicitly documented.
 
-## Lossy subscriber handling
-`MarketDataHub.subscribe()` uses bounded lossy queues.
+A stale unrelated group must not invalidate a strategy that does not depend on it.
 
-Do not silently claim continuity-dependent features remain valid after an observed gap. Document which features tolerate loss and apply conservative invalidation/readiness where needed. Do not build a local order book from lossy deltas.
+## Scoring model
+Create a deterministic, auditable scoring framework.
+
+Requirements:
+- score is bounded,
+- contribution from each feature is bounded,
+- every contribution is represented in `StrategyEvidence`,
+- score normalization is deterministic,
+- confidence is derived from evidence completeness/strength, not random or AI-generated,
+- neutral dead zones prevent tiny numerical noise from becoming directional candidates.
+
+Prefer piecewise-linear or similarly simple functions over opaque formulas.
+
+Create reusable pure helpers for:
+- clamping,
+- dead-zone normalization,
+- signed threshold scoring,
+- range/quality scoring if needed.
+
+Do not tune thresholds against historical returns in Phase 4.
+
+## Initial conservative defaults
+Centralize thresholds in typed settings. Suggested starting points are engineering defaults, not claims of profitability.
+
+Examples you may refine after inspecting actual feature units:
+
+```text
+MIN_ABSOLUTE_STRATEGY_SCORE=25
+CANDIDATE_SCORE_THRESHOLD=40
+MIN_CANDIDATE_CONFIDENCE=0.55
+RSI_NEUTRAL_LOW=45
+RSI_NEUTRAL_HIGH=55
+RSI_EXTREME_LOW=30
+RSI_EXTREME_HIGH=70
+MAX_ACCEPTABLE_SPREAD_BPS=15
+TREND_EFFICIENCY_FLOOR=0.25
+STRONG_TREND_EFFICIENCY=0.55
+RELATIVE_VOLUME_BASELINE=1.0
+```
+
+Do not blindly use these if units or Phase 3 semantics make a different value clearly more correct. Document any changes.
+
+Validate ordering/ranges of thresholds.
+
+## Aggregation / StrategyEngine
+Implement a StrategyEngine that:
+1. receives or reads a `FeatureSnapshot` without importing Binance infrastructure;
+2. evaluates each configured deterministic strategy;
+3. preserves individual assessments;
+4. optionally aggregates only READY assessments;
+5. produces a neutral/no-candidate result when evidence is weak or conflicting;
+6. never turns a candidate into an executable intent.
+
+For aggregation, prefer a transparent rule such as weighted consensus rather than hidden heuristics.
+
+Requirements:
+- opposing strategies must offset rather than both increasing confidence;
+- confidence should decrease under strong disagreement;
+- one unavailable strategy must not necessarily invalidate other independent ready strategies;
+- no candidate if aggregate score/confidence thresholds are not satisfied;
+- exact same FeatureSnapshot + settings must produce exactly the same output.
+
+Avoid generating repeated random UUIDs if that would break deterministic equality tests. Candidate IDs may be derived deterministically from stable inputs (for example strategy engine version + symbol + feature generated_at + direction) or excluded until a later orchestration phase.
+
+## No repeated signal spam
+Phase 4 should not implement order execution or persistent deduplication, but the analytical API should make snapshot identity explicit so future orchestration can avoid repeated action on the same underlying feature snapshot.
+
+If you add process-local latest-assessment caching, keep it bounded and do not make correctness depend on timing races.
 
 ## Suggested structure
 Prefer something close to:
@@ -225,113 +274,132 @@ Prefer something close to:
 ```text
 backend/src/
   domain/
-    features.py
-  application/
-    feature_engine.py
-    feature_history.py
-  indicators/
+    strategies.py
+  strategies/
     __init__.py
-    trend.py
+    scoring.py
+    trend_following.py
     momentum.py
-    volatility.py
-    volume.py
-    microstructure.py
+    mean_reversion.py
+  application/
+    strategy_engine.py
+    strategy_settings.py
   api/
-    features.py
+    strategies.py
 ```
 
-Adjust only after inspecting the repository and explain deviations.
+Adjust only if the existing repository structure clearly suggests a cleaner layout. Explain deviations.
 
-Keep indicator functions pure where practical.
+Keep strategy functions/classes pure where practical.
 
-## Configuration
-Add typed configuration with conservative defaults:
-
-```text
-EMA_FAST=9
-EMA_SLOW=21
-EMA_LONG=50
-RSI_PERIOD=14
-ATR_PERIOD=14
-ROC_PERIOD=10
-VOLATILITY_WINDOW=20
-RELATIVE_VOLUME_WINDOW=20
-VWAP_WINDOW=20
-HISTORY_LIMIT=500
-```
-
-Validate positive integers, sensible period ordering, and sufficient history capacity.
-
-Do not add excessive optimization parameters.
-
-## Feature API
+## Strategy API
 Add read-only endpoints such as:
-- `GET /features/status`
-- `GET /features/{symbol}/latest`
+- `GET /strategies/status`
+- `GET /strategies/{symbol}/latest`
 
-Responses must clearly distinguish ready, warming-up, stale, and unavailable feature groups.
+The latest response should include:
+- snapshot identity/time,
+- individual strategy assessments,
+- aggregate state,
+- optional candidate if threshold requirements are satisfied.
 
-Unknown symbols should return 404. Do not emit NaN/Infinity in JSON. No mutation/execution endpoints.
+Unknown symbols -> 404.
+Before initialization -> 503.
+No mutation/execution endpoints.
 
-## FeatureEngine lifecycle
-Prefer integrating through the existing `MarketDataHub` subscription mechanism rather than coupling to Binance.
+Do not add an endpoint that accepts arbitrary user feature values unless there is a strong testability reason. Prefer the actual FeatureEngine output as the source.
 
-The engine should:
-1. consume normalized events,
-2. maintain bounded rolling state,
-3. update deterministic feature snapshots,
-4. expose latest state to read-only API consumers.
+## Lifecycle integration
+Integrate StrategyEngine with FeatureEngine without adding direct Binance coupling.
 
-Integrate cleanly with the existing FastAPI lifespan without introducing network side effects at import time.
+Prefer either:
+- on-demand deterministic evaluation from the latest FeatureSnapshot, or
+- a small bounded feature-snapshot subscription if the existing architecture makes that clearly cleaner.
+
+On-demand is preferred unless continuous evaluation provides a demonstrated benefit.
+
+Do not add polling loops merely to generate strategy scores repeatedly.
+
+Importing the application must still produce no network/runtime side effects.
 
 ## Numerical safety
-Explicitly guard:
+Guard against:
+- NaN/Infinity,
+- invalid confidence,
+- score overflow,
 - zero denominators,
-- empty windows,
-- one-element variance windows,
-- invalid log-return inputs,
-- Decimal-to-float conversion,
-- NaN,
-- Infinity,
-- timestamp ordering.
+- extreme feature magnitudes,
+- contradictory thresholds,
+- missing values,
+- timestamp mismatch or stale snapshots.
 
-Do not hide invalid states by substituting fake zeros.
+Do not silently coerce invalid values into directional evidence.
 
 ## Testing requirements
-Add comprehensive deterministic offline tests. At minimum cover:
-- EMA known sequence,
-- RSI known sequence,
-- RSI all gains,
-- RSI all losses,
-- RSI flat prices,
-- ATR known OHLC sequence,
-- ROC,
-- simple/log/rolling returns,
-- realized volatility,
-- VWAP,
-- relative volume,
-- taker-buy ratio,
-- midpoint,
-- spread,
-- spread bps,
-- top-of-book imbalance,
-- mark/index basis,
-- funding context,
-- warm-up behavior,
-- insufficient history,
-- stale required stream,
-- missing required stream,
-- fresh recovery,
-- duplicate events,
-- out-of-order candles,
-- open vs closed candle behavior,
-- bounded history,
-- no NaN/Infinity outputs,
-- unknown symbol API behavior,
-- API responses,
-- Phase 1 + Phase 2 regressions.
+Add comprehensive deterministic offline tests.
 
-Use fixed fixtures and independent expected values; do not test formulas by reusing the production implementation to calculate the expected result.
+At minimum test:
+
+### Domain/settings
+- immutable models,
+- score bounds,
+- confidence bounds,
+- invalid settings ordering/ranges,
+- deterministic serialization.
+
+### Scoring helpers
+- clamp boundaries,
+- positive/negative saturation,
+- dead zone,
+- exact threshold behavior,
+- Decimal/float edge cases where relevant,
+- NaN/Infinity rejection.
+
+### Trend strategy
+- strong aligned positive trend,
+- strong aligned negative trend,
+- contradictory EMA structure,
+- low directional efficiency,
+- neutral/dead-zone case,
+- required stale/unavailable group.
+
+### Momentum strategy
+- positive continuation evidence,
+- negative continuation evidence,
+- extreme RSI reducing continuation confidence,
+- weak/neutral volume,
+- stale/missing required group,
+- optional microstructure missing if optional.
+
+### Mean-reversion strategy
+- stretched positive distance with weak trend context,
+- stretched negative distance with weak trend context,
+- strong trend suppresses mean reversion,
+- neutral/dead-zone case,
+- stale/unavailable group.
+
+### Engine aggregation
+- all strategies agree positive,
+- all agree negative,
+- mixed disagreement,
+- exact cancellation,
+- one strategy unavailable,
+- all unavailable,
+- below score threshold,
+- below confidence threshold,
+- deterministic repeated evaluation,
+- symbol isolation.
+
+### API/lifecycle
+- status response,
+- latest per symbol,
+- unknown symbol 404,
+- initialization 503 if applicable,
+- no mutation endpoint,
+- app import side-effect free,
+- Phase 1–3 regressions.
+
+Use fixed feature snapshots and independent expected values. Do not compute expected strategy scores by calling the production scoring helper from the test.
 
 ## Documentation
 Update:
@@ -340,62 +408,68 @@ Update:
 - `backend/README.md`,
 - root README only if needed.
 
-Create `docs/PHASE_3_REPORT.md` at completion.
+Create `docs/PHASE_4_REPORT.md` at completion.
 
 Document:
-- formulas,
-- default windows,
-- warm-up requirements,
-- freshness dependency matrix,
-- precision choices,
-- closed-candle rules,
-- history behavior,
-- known limitations,
-- why depth-book imbalance is deferred,
-- why outputs are features, not trading signals.
+- each strategy's purpose,
+- required/optional feature groups,
+- exact formulas or piecewise scoring rules,
+- thresholds/defaults,
+- readiness semantics,
+- aggregation/consensus logic,
+- confidence calculation,
+- candidate threshold rules,
+- deterministic identity behavior,
+- limitations,
+- why assessments are not orders,
+- why no profitability claim is made.
 
 ## Development batches
-### Batch 1
-- domain feature models,
+### Batch 1 — contracts and scoring primitives
+- domain strategy models,
 - typed settings,
-- pure indicator primitives,
-- formula tests.
+- pure bounded scoring helpers,
+- targeted tests.
 
-### Batch 2
-- bounded feature history,
-- closed-candle handling,
-- duplicate/out-of-order handling,
-- tests.
+### Batch 2 — individual strategies
+- trend following,
+- momentum/continuation,
+- mean reversion,
+- evidence/explanation output,
+- targeted tests.
 
-### Batch 3
-- FeatureEngine integration with MarketDataHub,
-- freshness/readiness/partial availability,
-- tests.
+### Batch 3 — StrategyEngine aggregation
+- consume FeatureSnapshot,
+- evaluate strategies,
+- consensus/conflict logic,
+- optional analytical StrategyCandidate,
+- deterministic behavior,
+- targeted tests.
 
-### Batch 4
-- read-only Feature API,
-- app lifecycle integration,
-- tests.
+### Batch 4 — read-only Strategy API
+- `/strategies/status`,
+- `/strategies/{symbol}/latest`,
+- app integration,
+- targeted tests.
 
-### Batch 5
-- documentation,
-- regression review,
-- full suite.
+### Batch 5 — documentation and full regression
+- docs/report,
+- scope review,
+- complete suite.
 
 After each meaningful batch run targeted tests and fix failures before continuing.
 
 ## Completion commands
-At minimum run:
+At minimum run from `backend`:
 
 ```bash
-cd backend
 python -m pytest
 python -m pip check
 ```
 
 Also run:
 - application import/OpenAPI check,
-- appropriate offline startup/shutdown smoke test,
+- appropriate offline lifespan smoke test,
 - `git diff --check`,
 - `git status`,
 - `git diff --stat`.
@@ -403,34 +477,36 @@ Also run:
 Do not commit or push automatically.
 
 ## Acceptance criteria
-Phase 3 is complete only when:
-1. FeatureEngine consumes exchange-independent normalized events.
-2. FeatureSnapshot is typed and deterministic.
-3. Required features are implemented and independently tested.
-4. Closed-candle calculations avoid look-ahead behavior.
-5. Warm-up state is explicit.
-6. Required stale/missing sources make affected feature groups unavailable.
-7. Partial feature availability is represented correctly.
-8. History is bounded.
-9. No full order book is falsely reconstructed.
-10. No strategy/trading decision is generated.
+Phase 4 is complete only when:
+1. StrategyEngine consumes typed FeatureSnapshot data only.
+2. Strategy logic is deterministic and exchange-independent.
+3. At least trend, momentum, and mean-reversion strategies exist.
+4. Each assessment exposes explicit evidence/contributions.
+5. Required stale/unavailable features prevent directional scoring.
+6. Strategy scores and confidence are bounded and validated.
+7. Neutral/dead-zone behavior is explicit.
+8. Aggregation handles agreement and disagreement transparently.
+9. Any StrategyCandidate is analytical only and contains no executable order fields.
+10. No TradeIntent or ExecutionGateway integration is added.
 11. No AI provider is added.
-12. No execution/private/account capability is added.
-13. All existing 675 baseline tests still pass.
-14. New Phase 3 tests pass.
-15. Documentation is updated.
+12. No private/account data is added.
+13. Existing 1106 baseline tests still pass.
+14. New Phase 4 tests pass.
+15. Documentation is complete.
 
 ## Completion report
 At the end report:
-- baseline test result,
+- baseline exact test result,
 - files created,
 - files modified,
-- formulas used,
-- window defaults,
-- warm-up rules,
-- freshness dependency matrix,
-- history design,
-- FeatureEngine lifecycle,
+- strategy models,
+- strategy settings/defaults,
+- exact scoring formulas,
+- feature dependency matrix,
+- readiness rules,
+- aggregation logic,
+- confidence logic,
+- analytical candidate rules,
 - API endpoints,
 - exact targeted test results,
 - exact complete test result,
@@ -439,19 +515,3 @@ At the end report:
 - remaining technical risks.
 
 Do not commit or push until reviewed.
-
-## Phase 3 implementation status
-
-Implementation and documentation are complete: typed features/settings, pure
-indicators, bounded closed-candle history, Hub integration with independent
-freshness, and read-only API/lifespan integration. The final Batch 5 regression
-and validation results are recorded in `docs/PHASE_3_REPORT.md`.
-
-Final repository-virtual-environment regression: **1106 passed, 2 warnings in
-2.72s** (675 original tests plus 431 Phase 3 tests). Dependency, import/OpenAPI,
-offline lifecycle, and working-tree scope checks passed. Phase 3 is complete;
-no subsequent phase has been started.
-
-Scope remains numerical feature extraction only. Strategies/scoring, AI,
-execution, persistence, backfill, and reconstructed order books are deferred.
-No commit or push is performed automatically.

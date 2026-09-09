@@ -1,6 +1,6 @@
 # Backend
 
-Phase 1, Phase 2, and Phase 3 backend for Hinto AI Trader.
+Phase 1–4 backend for Hinto AI Trader.
 
 ## Setup
 
@@ -32,6 +32,8 @@ Then inspect:
 - `GET /market/BTCUSDT/latest`
 - `GET /features/status`
 - `GET /features/BTCUSDT/latest`
+- `GET /strategies/status`
+- `GET /strategies/BTCUSDT/latest`
 
 `/system/config` must report `real_money_execution_enabled: false` in this scaffold.
 It defaults to `paper`, accepts `testnet`, and falls back to `paper` for unknown
@@ -356,3 +358,115 @@ See [the Phase 3 report](../docs/PHASE_3_REPORT.md) for validation results and
 remaining operational limits. Strategy scoring, AI integration, durable history,
 REST backfill, reconciled books, account access and execution adapters remain
 outside Phase 3. FeatureEngine does not call the Phase 1 execution gateway.
+
+## StrategyEngine (Phase 4)
+
+`FeatureSnapshot -> StrategyEngine -> StrategyAssessment / StrategyCandidate`
+is an analytical boundary. The three deterministic strategies consume typed
+Phase 3 groups; they do not read exchange payloads, call execution adapters, or
+produce `TradeIntent`/Phase 1 `SignalCandidate` records. LONG/SHORT are analytical
+directions. No order quantity, leverage, order type, account data or AI is involved.
+
+| Strategy ID | Required groups | Optional group |
+| --- | --- | --- |
+| `trend_following` | trend, momentum, regime, volatility | None |
+| `momentum_continuation` | momentum, volume | microstructure |
+| `mean_reversion` | trend, momentum, volatility, regime | microstructure |
+
+Trend combines two normalized EMA separations, slow-EMA distance and ROC with
+weights 30/30/20/20, requiring at least two components supporting the net direction.
+Efficiency and normalized ATR scale conviction. Momentum combines ROC, RSI,
+close-change/VWAP and taker-buy bias with weights 40/25/20/15; low relative volume
+and extreme RSI reduce conviction. Reversion combines contrarian ATR-normalized
+slow-EMA distance and RSI with weights 60/40, requires confirming fast-EMA distance,
+and suppresses conviction during efficient trends, high volume or high ATR.
+
+Every contribution is `weight * normalized_input * quality_multiplier`; all
+component weights in one strategy sum to 100. Scores stay in `[-100,100]`.
+Confidence in `[0,1]` is `abs(score)/100 * within_strategy_agreement * optional_quality`;
+agreement is `abs(sum(contributions))/sum(abs(contributions))`, or zero for no
+evidence. It is an engineering quality measure, not a probability of profit.
+
+Only READY assessments enter weighted mean score. Aggregate confidence is the
+weighted sum of their confidence divided by the weight of **all enabled**
+strategies, multiplied by `abs(weighted_net_score)/weighted_gross_score` (zero
+when gross is zero). Missing strategies reduce coverage; opposing scores offset
+and reduce confidence. A ready neutral strategy still dilutes the mean score.
+All individual assessments remain in the response, even when no candidate exists.
+
+### Strategy settings and exact scoring reference
+
+`StrategySettings` reads process environment variables with prefix `STRATEGY_`
+at lifespan startup. `.env` files are not automatically loaded. Settings are
+immutable and validate finite values, bounds, unique nonempty strategy selection,
+and strict threshold ordering. Important defaults are:
+
+| Suffix | Default |
+| --- | --- |
+| `ENABLED_STRATEGIES` | `["trend_following","momentum_continuation","mean_reversion"]` |
+| `MIN_ABSOLUTE_STRATEGY_SCORE` | `25` |
+| `CANDIDATE_SCORE_THRESHOLD` | `40` |
+| `MIN_CANDIDATE_CONFIDENCE` | `0.55` |
+| `RSI_NEUTRAL_LOW` / `RSI_NEUTRAL_HIGH` | `45` / `55` |
+| `RSI_EXTREME_LOW` / `RSI_EXTREME_HIGH` | `30` / `70` |
+| `MAX_ACCEPTABLE_SPREAD_BPS` | `15` |
+| `TREND_EFFICIENCY_FLOOR` / `STRONG_TREND_EFFICIENCY` | `0.25` / `0.55` |
+| `RELATIVE_VOLUME_BASELINE` / `RELATIVE_VOLUME_EXHAUSTION` | `1` / `3` |
+| `OPTIONAL_CONTEXT_MISSING_QUALITY` | `0.75` |
+| `MAX_FEATURE_AGE_SECONDS` | `10` |
+| `TREND_WEIGHT` / `MOMENTUM_WEIGHT` / `MEAN_REVERSION_WEIGHT` | `1` / `1` / `1` |
+
+See [the Phase 4 report](../docs/PHASE_4_REPORT.md) for every setting, exact
+piecewise formula, evidence semantics and worked consensus examples. Thresholds
+are engineering defaults; no return optimization or profitability study was done.
+
+### Readiness, identity and lifecycle
+
+Required groups must be ready with values, adequate closed-candle sample counts
+and coherent source metadata. A missing/unavailable or warming group produces a
+neutral assessment with null score/confidence and explicit reasons. Any stale
+hard dependency makes that assessment stale. Unrelated stale groups do not block
+independent strategies. Optional missing/stale/invalid book context retains the
+score with a 0.75 confidence factor; a fresh spread scales that factor linearly
+from 1 at zero bps to 0 at 15 bps. Missing optional context can therefore score
+better than known poor context; it does not certify acceptable execution spread.
+
+Both snapshot age and relevant source event/receipt ages must be strictly below
+10 seconds by default; future timestamps are stale. This adds an independent
+strategy limit to Phase 3 freshness. Closed history may be older than 10 seconds
+while the current successor kline is fresh; the Phase 3 continuity/expiry rules
+still apply. Strategies never reconstruct history or use an open candle's price.
+Arithmetic overflow/inexact underflow or invalid semantic values produce no
+directional assessment. Invalid typed input/settings are rejected at the boundary.
+
+`StrategyEngine.evaluate(snapshot)` is pure and uses `snapshot.generated_at` as
+its as-of time; pass `now` explicitly to evaluate age against another time.
+`latest(symbol)` and `status()` read the actual FeatureEngine and use an injectable
+wall clock for live freshness. No polling, subscriber, cache, history or background
+task is added. Status reads evaluate each configured symbol on the application
+event loop. Keep the existing single-worker operating model.
+
+The full `snapshot_id` includes the feature read timestamp. `observation_id`
+identifies enabled strategies' relevant groups, closed-candle time, history reset
+and source provenance; it excludes API read time and subsequent open-kline refresh
+times but retains book observation timestamps when book quality is used.
+`candidate_id` hashes engine version, validated settings, observation ID and
+direction. Equivalent read-time refreshes keep that ID. This supports future
+deduplication but implements no persistent suppression or execution authorization.
+
+Startup creates the StrategyEngine after the FeatureEngine and before feed tasks.
+Import and OpenAPI generation construct no runtime. Shutdown continues to cancel
+and await only feed/feature tasks, remove the feature subscription and clear its
+history. The strategy service has nothing to cancel or persist.
+
+`GET /strategies/status` returns version/settings identity, dependencies, weights
+and per-symbol readiness. `GET /strategies/{symbol}/latest` returns source/evaluation
+times, identities, assessments/evidence, consensus and an optional candidate.
+Candidate thresholds are inclusive: `abs(composite_score) >= 40` and
+`confidence >= 0.55`. Otherwise the aggregate direction is NEUTRAL and candidate
+is null. Unknown symbols return 404; before initialization, 503. Decimal fields
+serialize as strings. There is no arbitrary-feature submission endpoint.
+
+Backtesting, durable orchestration/deduplication, strategy-to-risk integration,
+account access, execution, AI and full-book reconstruction are deliberately
+outside Phase 4. Existing Phase 1 risk/paper services remain separate.
