@@ -1,5 +1,14 @@
 # Current Codex Task — Phase 5: DecisionEngine
 
+## Implementation status
+
+Phase 5 is complete on `phase-5-decision-engine`. All five batches are finished.
+Baseline: **1469 passed, 2 warnings in 4.92s**. Final complete backend regression:
+**1645 passed, 2 warnings in 5.90s**, including **176 Phase 5 tests**. Dependency,
+import/OpenAPI, offline lifecycle, scope and whitespace checks passed.
+See `docs/PHASE_5_REPORT.md` for exact rules, commands, results and limitations.
+No Phase 6 work, commit or push was performed. Changes remain uncommitted for review.
+
 Read `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/PHASE_4_REPORT.md`, and the implemented Phase 4 strategy code completely before editing.
 
 ## Model workflow

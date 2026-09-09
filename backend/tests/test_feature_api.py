@@ -166,7 +166,8 @@ def test_openapi_declares_typed_read_only_feature_contracts() -> None:
         assert response_schema == {"$ref": f"#/components/schemas/{model}"}
     assert set(schema["paths"]) == {"/health", "/system/config", "/market/status",
                                      "/market/{symbol}/latest", "/strategies/status",
-                                     "/strategies/{symbol}/latest", *expected}
+                                     "/strategies/{symbol}/latest", "/decisions/status",
+                                     "/decisions/{symbol}/latest", *expected}
 
 
 def test_ready_feature_api_uses_closed_history_and_exact_decimal_json() -> None:

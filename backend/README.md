@@ -1,6 +1,6 @@
 # Backend
 
-Phase 1–4 backend for Hinto AI Trader.
+Phase 1–5 backend for Hinto AI Trader.
 
 ## Setup
 
@@ -34,6 +34,8 @@ Then inspect:
 - `GET /features/BTCUSDT/latest`
 - `GET /strategies/status`
 - `GET /strategies/BTCUSDT/latest`
+- `GET /decisions/status`
+- `GET /decisions/BTCUSDT/latest`
 
 `/system/config` must report `real_money_execution_enabled: false` in this scaffold.
 It defaults to `paper`, accepts `testnet`, and falls back to `paper` for unknown
@@ -470,3 +472,93 @@ serialize as strings. There is no arbitrary-feature submission endpoint.
 Backtesting, durable orchestration/deduplication, strategy-to-risk integration,
 account access, execution, AI and full-book reconstruction are deliberately
 outside Phase 4. Existing Phase 1 risk/paper services remain separate.
+
+## DecisionEngine (Phase 5)
+
+`StrategySnapshot / StrategyCandidate -> DecisionEngine -> DecisionRecord`
+adds deterministic analytical eligibility. The immutable record contains source
+identities and timestamps, candidate direction/score/confidence/agreement,
+contributors, outcome/readiness, bounded reason codes and policy/version identity.
+It has no quantity, leverage, price, order type, execution mode or execution method.
+
+| Outcome | Meaning |
+| --- | --- |
+| `ELIGIBLE` | A READY candidate passed validation, freshness and decision policy. This is analytical eligibility only. |
+| `NO_ACTION` | A valid, fresh source has no candidate; neutral, below-threshold and warming/unavailable source results remain distinguishable by readiness. |
+| `BLOCKED` | Validation/freshness failed, the symbol is unsupported, or an existing candidate failed a decision gate. Invalid/stale inputs are blocked even without a candidate. |
+
+### Policy and validation
+
+`DecisionSettings` reads these process environment variables at lifespan startup.
+Explicit `create_app(decision_settings=...)` settings take precedence; `.env` is
+not automatically loaded. There are exactly four decision settings:
+
+| Variable | Default | Gate |
+| --- | --- | --- |
+| `DECISION_MAX_STRATEGY_SNAPSHOT_AGE_SECONDS` | `10` | Strategy and source feature snapshot ages must each be strictly less than this positive finite value. |
+| `DECISION_MIN_DECISION_AGREEMENT` | `0.50` | Candidate requires Phase 4 agreement greater than or equal to this value in `[0,1]`. |
+| `DECISION_MIN_CONTRIBUTING_STRATEGIES` | `2` | Candidate requires at least this many unique agreeing strategy families; integer in `[1,3]`. |
+| `DECISION_BLOCK_INCOMPLETE_STRATEGY_COVERAGE` | `false` | When true, a candidate with incomplete strategy coverage is blocked. |
+
+Phase 4 continues to own score/confidence thresholds (defaults 40 and 0.55).
+DecisionEngine checks typed bounds and candidate threshold provenance without
+recomputing scores or introducing another score/confidence cutoff. Confidence
+means evidence quality; agreement means directional consensus. Neither is a
+win probability. Contributor count is an engineering guard, not independent votes.
+
+The boundary revalidates typed models, including malformed copy/construct values.
+Candidate time, symbol, snapshot/observation IDs, direction and numeric values
+must match the containing snapshot; its hash must match the Phase 4 formula.
+Contributors must equal the supplied READY, nonzero, same-sign assessment IDs.
+Incomplete coverage is preserved as a boolean and reason, even when allowed.
+Reasons expose numeric observed/threshold values for age, agreement and count
+failures; exception text and raw source payloads are not included.
+
+All times must be actual timezone-aware datetimes. At decision time, feature
+time must not exceed strategy time, which must not be in the future. Candidate
+time must equal strategy time. Age exactly at the limit is stale. A fresh
+strategy wrapper cannot conceal an old feature snapshot. DecisionEngine uses
+Phase 4 readiness and does not reread feature groups or raw market events.
+
+Malformed input produces `BLOCKED/unavailable` where safe source identifiers
+can be retained; known stale/future timing produces `BLOCKED/stale` when both
+source times are available. Untrusted candidate fields are omitted rather than
+repaired. Missing source times remain null. Wrong input types or unsafe/missing
+identifiers raise programmer errors in pure evaluation. Provider failures are
+sanitized at the service/API boundary.
+
+### Identity, API and lifecycle
+
+`evaluate(snapshot, now=...)` requires an explicit aware evaluation time and is
+pure. `latest(symbol)` uses the injected StrategyProvider and clock. A policy ID
+hashes validated settings and the sorted symbol allowlist. A decision ID hashes
+decision version, policy ID, symbol, upstream version/settings, observation ID,
+candidate ID (or a no-candidate marker), and outcome using the existing canonical
+SHA-256 helper. A later read alone does not create a new eligible identity;
+changed observation, policy, upstream settings or outcome does. Evaluation/source
+timestamps remain visible even when the decision ID is unchanged.
+
+There is no cache, history, polling task, subscriber or persistent deduplication.
+IDs describe analytical identity, not unique audit events or authorization.
+The source IDs and scoring provenance are trusted internal producer metadata;
+hash validation does not authenticate a producer or independently prove its
+score calculation. The HTTP API accepts no submitted candidate/snapshot.
+
+Lifespan constructs DecisionEngine over the existing StrategyEngine before feed
+tasks start. Import/OpenAPI generation starts no runtime. Shutdown still cancels
+and awaits only the existing feed/feature tasks and removes the feature subscriber.
+Single-worker operation remains intended. Status evaluates symbols on demand;
+it is not an atomic cross-symbol snapshot.
+
+`GET /decisions/status` returns version, policy/ID and per-symbol outcomes/reasons.
+`GET /decisions/{symbol}/latest` returns a typed DecisionRecord. Symbols are
+normalized to uppercase; unknown symbols return 404. Uninitialized or unusable
+providers return sanitized 503 responses; valid blocked/no-action records return
+200. Mutation methods return 405. Decimal fields serialize as finite strings.
+
+An ELIGIBLE record stops here. A future deterministic sizing layer would have to
+create a concrete Phase 1 `TradeIntent`; independent `RiskEngine` evaluation
+would then be required before any paper gateway use. Phase 5 does not call either
+service or create either intent type. No AI, account access, private API, order
+submission, backtest runner, persistence or new dependency is added.
+See [the Phase 5 report](../docs/PHASE_5_REPORT.md) for exact tests and limitations.
