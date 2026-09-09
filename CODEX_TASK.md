@@ -7,6 +7,16 @@ This task is written for **GPT-6 Astra in Codex**. Inspect before editing, work 
 
 The working branch is `phase-4-strategy-engine`. Phase 3 has been merged into `main` and the accepted baseline is **1106 backend tests passing**.
 
+## Implementation status
+
+Phase 4 is complete across all five batches. Final regression: **1469 passed,
+2 existing warnings in 5.12s** (1106 baseline + 363 Phase 4 tests). Final targeted
+run: **363 passed, 2 warnings in 2.02s**. Dependency, import/OpenAPI, offline
+lifecycle, scope and whitespace checks passed. See
+[docs/PHASE_4_REPORT.md](docs/PHASE_4_REPORT.md) for the exact contracts, formulas,
+boundaries, changes and validation record. Work remains uncommitted; no push or
+later-phase implementation has been performed.
+
 ## Objective
 Build an exchange-independent, deterministic **StrategyEngine** that consumes typed `FeatureSnapshot` objects from Phase 3 and produces explainable strategy assessments suitable for future backtesting and paper-trading orchestration.
 

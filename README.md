@@ -16,6 +16,10 @@ AI-assisted crypto market research and paper-trading workstation inspired by the
 
 ## Architecture
 
+The target below includes future orchestration. The implemented observation and
+analysis boundary is `MarketDataHub -> FeatureEngine -> FeatureSnapshot ->
+StrategyEngine -> StrategyAssessment / StrategyCandidate`; it ends before execution.
+
 ```text
 Binance public market data
         |
@@ -64,6 +68,13 @@ Phase 3 adds deterministic numerical feature snapshots, bounded closed-candle
 history, per-group freshness/warmup, and read-only `/features/status` and
 `/features/{symbol}/latest` endpoints. Features remain independent of strategies,
 AI, and execution. See `docs/PHASE_3_REPORT.md` for formulas, validation, and limits.
+
+Phase 4 adds on-demand trend-following, momentum/continuation and mean-reversion
+assessments with explicit evidence, bounded scores/confidence, weighted consensus,
+and deterministic analytical candidate IDs. `GET /strategies/status` and
+`GET /strategies/{symbol}/latest` are read-only. Candidates have no quantity,
+leverage or order type and do not reach the paper gateway. These engineering
+defaults have no profitability claim. See [the Phase 4 report](docs/PHASE_4_REPORT.md).
 
 ## Upstream attribution
 

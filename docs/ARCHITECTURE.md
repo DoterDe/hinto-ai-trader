@@ -6,6 +6,10 @@ Hinto AI Trader separates market observation, signal generation, AI review, dete
 
 ## Core pipeline
 
+This is the target architecture, including future orchestration after analytical
+strategy output. The implemented Phase 4 boundary is detailed below; no connection
+from strategy assessments to risk or execution has been added.
+
 ```text
 Binance Public Market Data
           |
@@ -19,10 +23,13 @@ Binance Public Market Data
      FeatureSnapshot
           |
           v
-       Strategies
+     StrategyEngine
           |
           v
-   SignalCandidate
+ StrategyAssessment / StrategyCandidate
+          |
+          v
+ (future orchestration / SignalCandidate mapping)
           |
           v
       AIAdvisor
@@ -159,7 +166,7 @@ documentation links, are documented in `backend/README.md`.
 ## Phase 3 implementation
 
 The implemented observation flow is `MarketDataHub -> FeatureEngine ->
-FeatureSnapshot`. Strategy consumption is a future boundary. Feature code has no
+FeatureSnapshot`. Phase 4 consumes that boundary without changing feature code. It has no
 dependency on exchange adapters, strategy decisions, AI, risk, or execution.
 
 `domain/features.py` defines immutable typed values and group readiness. Each
@@ -239,13 +246,95 @@ nonpersistent, and single-worker. Sustained live throughput is not yet qualified
 Default windows, formulas, warmup counts, validation results, and remaining limits
 are recorded in `backend/README.md` and `docs/PHASE_3_REPORT.md`.
 
-## Planned phases
+## Phase 4 implementation
+
+```text
+FeatureSnapshot
+    -> independent deterministic strategies
+    -> StrategyAssessment (one per enabled strategy)
+    -> weighted consensus
+    -> optional analytical StrategyCandidate
+```
+
+`domain/strategies.py` defines immutable evidence, assessments, candidates,
+aggregate snapshots and API status. Scores are Decimal values in `[-100,100]`,
+confidence/agreement in `[0,1]`, and timestamps are aware. Evidence carries raw
+value, reference, normalized input, weight, multiplier, contribution and code.
+The model validates each contribution and the sum represented by a ready score.
+Unready assessments carry reasons and null score/confidence, never guessed zeros.
+Candidates contain no executable fields and are not Phase 1 `TradeIntent` or
+`SignalCandidate` records.
+
+`strategies/scoring.py` supplies bounded piecewise-linear helpers using a fixed
+34-digit Decimal context. `strategies/base.py` centralizes feature readiness,
+source time checks, evidence assembly and numerical rejection. `identity.py`
+provides canonical content hashes. These two supporting modules keep common
+validation and identity policy out of the three pure strategy implementations.
+`application/strategy_settings.py` centralizes validated thresholds and fixed
+component weights. No exchange adapter, FastAPI or execution code is imported by
+the strategy modules or the StrategyEngine.
+
+| Strategy | Required groups | Optional confidence context |
+| --- | --- | --- |
+| Trend following | trend, momentum, regime, volatility | None |
+| Momentum continuation | momentum, volume | microstructure spread |
+| Mean reversion | trend, momentum, volatility, regime | microstructure spread |
+
+Trend requires corroborated EMA/distance/ROC evidence and scales by efficiency
+and ATR. Momentum scales ROC/RSI/change/taker-bias evidence by relative volume and
+RSI exhaustion. Mean reversion opposes stretch only with confirming fast-EMA
+distance and suppresses conviction in strong trends, high relative volume and
+high ATR. All score contributions are exposed; contradictions offset. Candle
+taker volume remains a proxy, and depth is never interpreted as a full book.
+
+Hard dependencies inherit per-group unavailable/warming/stale states; multiple
+failures prioritize stale, unavailable, then warming. Source timestamps and
+generation metadata are checked even when a supplied group claims ready.
+Snapshot and source event/receipt age limits default to 10 seconds, with no
+future-clock allowance. Sufficient finalized history is required; fresh successor
+open-kline observations can maintain its freshness under Phase 3 expiry rules.
+Optional absent/stale book context applies a documented quality penalty without
+invalidating independent candle evidence. Unrelated stale groups are ignored.
+
+`application/strategy_engine.py` consumes an injected `FeatureProvider.latest`
+protocol returning only `FeatureSnapshot`. It preserves individual assessments
+and averages scores over READY strategy weights. Aggregate confidence includes
+coverage of all configured weights and net/gross directional agreement, so
+missing strategies and opposing scores reduce conviction. Any ready strategy
+makes the aggregate ready; this means evaluable, not actionable. Inclusive
+candidate thresholds default to absolute score 40 and confidence 0.55. Weak or
+conflicting results are neutral with no candidate. An individual assessment's
+direction uses a separate absolute score threshold of 25.
+
+`evaluate(snapshot)` has no wall-clock dependency unless `now` is supplied.
+On-demand `latest/status` reads use an injected clock for live age checks.
+Canonical SHA-256 identities distinguish the entire feature snapshot/read from
+the relevant analytical observation. Candidate IDs combine engine version,
+settings identity, observation identity and direction. API read time and fresh
+open-kline heartbeat times alone do not create a new closed-candle observation;
+relevant book event times, values, closed time, resets and reconnect provenance do.
+No persistent deduplication or action authorization is implied by these hashes.
+
+The app constructs this service lazily during lifespan, after the FeatureEngine
+and before starting the existing tasks. It adds no polling loop, consumer queue,
+mutable history, cache or task. Existing feed/feature shutdown behavior is unchanged.
+`GET /strategies/status` and `GET /strategies/{symbol}/latest` return typed read-only
+state, with 404 for unknown symbols and 503 before initialization. No arbitrary
+user-feature or execution endpoint is introduced. Each application worker would
+still own separate feed/history state; single-worker operation remains intended.
+
+Exact formulas, defaults, confidence/consensus equations, deterministic identity
+scope, validation and limitations are in `docs/PHASE_4_REPORT.md` and
+`backend/README.md`. There is no profitability claim, AI provider, account access,
+order sizing, order execution, strategy-to-risk wiring or additional dependency.
+
+## Phase status and future work
 
 1. Domain + RiskEngine + PaperExecution + FastAPI scaffold.
 2. Binance public market data for 8 symbols.
-3. FeatureEngine with deterministic numerical snapshots (implemented; strategies deferred).
-4. AIAdvisor interface + structured-output provider.
-5. Backtesting and persistence.
-6. React dashboard.
-7. Binance testnet adapter and order reconciliation.
-8. Reliability tests: disconnects, stale streams, duplicate events, malformed AI output.
+3. FeatureEngine with deterministic numerical snapshots.
+4. Deterministic StrategyEngine with analytical assessments and read-only API.
+
+Future tasks require separate scope: backtesting/orchestration and persistence,
+AIAdvisor interface/provider, React dashboard, testnet adapter/reconciliation,
+and additional operational reliability validation. No later phase is started here.

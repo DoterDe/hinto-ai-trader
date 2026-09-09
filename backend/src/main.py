@@ -10,9 +10,12 @@ from fastapi import FastAPI
 
 from src.api.features import router as features_router
 from src.api.market_data import router as market_data_router
+from src.api.strategies import router as strategies_router
 from src.application.feature_engine import FeatureEngine
 from src.application.feature_settings import FeatureSettings
 from src.application.market_data_hub import MarketDataHub
+from src.application.strategy_engine import StrategyEngine
+from src.application.strategy_settings import StrategySettings
 from src.domain.market_data import (
     ConnectionStatus,
     EventType,
@@ -65,6 +68,7 @@ def create_app(
     settings: MarketDataSettings | None = None,
     source: MarketDataSource | None = None,
     feature_settings: FeatureSettings | None = None,
+    strategy_settings: StrategySettings | None = None,
 ) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
@@ -78,6 +82,7 @@ def create_app(
         application.state.market_data_hub = hub
         features = FeatureEngine(hub, feature_settings)
         application.state.feature_engine = features
+        application.state.strategy_engine = StrategyEngine(features, strategy_settings, symbols=config.symbols)
         feed = source if source is not None else BinancePublicMarketData(config)
         # A disabled feed needs no consumer. Injected offline sources still run.
         feature_task = None
@@ -107,6 +112,7 @@ def create_app(
     application = FastAPI(title="Hinto AI Trader", version="0.1.0", lifespan=lifespan)
     application.include_router(market_data_router)
     application.include_router(features_router)
+    application.include_router(strategies_router)
     application.add_api_route("/health", health, methods=["GET"])
     application.add_api_route("/system/config", system_config, methods=["GET"])
     return application
