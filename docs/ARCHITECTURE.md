@@ -89,7 +89,8 @@ React/TypeScript Trader Desk. It receives only sanitized application data.
 - `PAPER` is the default mode.
 - `LIVE` is intentionally absent from the mode enum in the initial implementation.
 - AI cannot call an execution adapter directly.
-- `RiskEngine` is deterministic and must approve every simulated/testnet action.
+- Phase 1 gateway execution requires independent `RiskEngine` approval. Phase 7
+  historical virtual ledger transitions are separate, non-executable artifacts.
 - stale data blocks execution.
 - signal IDs are idempotency keys.
 - secrets never cross into the frontend.
@@ -456,6 +457,58 @@ intent builder, RiskEngine approval, gateway call, account API, AI or Phase 7 is
 introduced. This measures hypothetical historical signals, with explicit latency,
 microstructure and portfolio limitations; it makes no profitability claim.
 
+## Phase 7 implementation
+
+`PaperPortfolioEngine` consumes the unchanged `HistoricalReplay` into complete
+same-time groups of immutable bars/decisions. The existing FeatureEngine,
+StrategyEngine and DecisionEngine preserve their formulas, freshness and warm-up.
+Phase 6 continues to measure independent signals; Phase 7 measures competition
+for one shared pool of virtual capital. Neither path feeds returns into strategy
+settings or creates an execution request.
+
+`paper_portfolio_policy.py` implements a separate pure policy. Marked equity times
+the configured target fraction sets desired virtual notional. Allocation is
+all-or-none. Gates check current/known state, positive equity, drawdown, active
+symbol, open-plus-reserved count, gross exposure and symbol exposure. Defaults
+are 100000 initial units, 0.10 target, 0.40 gross, 0.15 symbol, four positions and
+0.20 drawdown. Same-symbol multiplicity is unsupported even if the setting is
+explicitly false. Scores/confidence/agreement rank simultaneous decisions, then
+symbol and decision ID break ties; confidence does not change notional.
+
+Reservations consume capacity before next-open entry. The ledger applies due
+entries, all known close marks/exits, then arbitrates the current timestamp's
+decisions. An initial anchor and one canonical close snapshot per timestamp form
+the curve. Entry is open(t+1), exit close(t+H), with Phase 6 H/cost settings.
+Completed PnL uses Phase 6 `outcome_returns`; open marks subtract entry-side costs
+only. Closing removes the unrealized mark and adds complete net PnL once.
+
+Gross exposure adds open and reserved fixed notional without LONG/SHORT netting.
+New reservations must fit current marked-equity limits. Passive equity losses may
+raise existing exposure fractions beyond limits; no liquidation or forced exit
+is invented. Drawdown >= its threshold blocks new reservations until recovery;
+existing positions continue their fixed horizons.
+
+An absent next bar expires its reservation. An absent required holding bar makes
+that position incomplete and aggregate marked equity unknown permanently. New
+reservations fail closed while other existing positions can finish on known bars.
+End-of-data reservations expire, and remaining open positions become explicit
+incomplete exposure with no final marked equity. Historical curve points retain
+their original as-of values rather than being rewritten at dataset end.
+
+Immutable domain artifacts include policy decisions, reservations, expiries,
+positions, closes, state/curve points, metrics and reports. Pure metrics reconcile
+counts, provenance and realized PnL, reporting known-mark drawdown/exposure maxima,
+turnover and symbol/rejection breakdowns. Incomplete valuation and nonpositive
+equity are explicit flags. Canonical identities include settings, state and
+normalized observed evidence; hashes are not authentication.
+
+The simulator owns finite-run audit history and bounded active exposure/mark
+state. Existing 500-candle default history and replay cancellation cleanup remain
+unchanged. No existing production code, dependency, HTTP route or app lifespan
+task changes. Phase 1 RiskEngine and PaperExecutionGateway remain separate because
+they consume executable quantity-bearing intents and have process-local execution
+state/identities. Exact formulas and validation are in `docs/PHASE_7_REPORT.md`.
+
 ## Phase status and future work
 
 1. Domain + RiskEngine + PaperExecution + FastAPI scaffold.
@@ -464,7 +517,8 @@ microstructure and portfolio limitations; it makes no profitability claim.
 4. Deterministic StrategyEngine with analytical assessments and read-only API.
 5. Deterministic DecisionEngine with immutable eligibility records and read-only API.
 6. Offline deterministic historical replay and signal-level validation reports.
+7. Offline deterministic shared-capital virtual portfolio and risk simulation.
 
-Future tasks require separate scope: sizing, portfolio orchestration and persistence,
+Future tasks require separate scope: execution sizing, production portfolio orchestration and persistence,
 AIAdvisor interface/provider, React dashboard, testnet adapter/reconciliation,
 and additional operational reliability validation. No later phase is started here.

@@ -1,5 +1,15 @@
 # Current Codex Task — Phase 7: Deterministic Paper Portfolio & Risk Simulation
 
+## Implementation status
+
+All five batches and completion checks are complete on `phase-7-paper-portfolio`.
+Baseline: **1873 passed, 2 warnings in 21.68s**. Final Phase 7 + Phase 6 targeted
+selection: **414 passed in 43.11s**. Full suite: **2059 passed, 2 warnings in 48.14s**.
+Dependency, import/OpenAPI, offline lifecycle, deterministic replay/permutation
+and source audits passed. See `docs/PHASE_7_REPORT.md` for rules and exact evidence.
+No Phase 1–6 production file, dependency, HTTP route or lifecycle behavior changed.
+No Phase 8, commit or push is included.
+
 ## Model workflow
 This task is written for **GPT-6 Astra in Codex**. Inspect before editing, work in small reviewable batches, run targeted tests after every meaningful batch, then run the complete backend suite. Do not broadly rewrite previous phases.
 
