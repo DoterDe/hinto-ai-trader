@@ -58,6 +58,15 @@ Binance Public Market Data
 AI-assisted review and testnet integration remain future work requiring separate
 scope. Advisory AI must never bypass deterministic risk controls.
 
+Phase 6 adds a separate offline validation branch, without connecting execution:
+
+```text
+Historical finalized KlineEvent iterator -> ReplayClock / MarketDataHub
+    -> existing FeatureEngine -> existing StrategyEngine -> existing DecisionEngine
+    -> captured historical decisions -> BacktestEvaluator
+    -> hypothetical signal outcomes -> metrics / cohorts / chronological segments
+```
+
 ## Layer boundaries
 
 ### Domain
@@ -393,6 +402,60 @@ No AI, private API, account data, sizing, order submission, database or dependen
 is added. No full order book is reconstructed. Exact rules, tests and remaining
 limits are in `docs/PHASE_5_REPORT.md` and `backend/README.md`.
 
+## Phase 6 implementation
+
+Historical input reuses KlineEvent. `historical_bars.py` validates finalized OHLCV,
+aware times, UTC interval alignment and volume consistency, normalizing supported
+close-time conventions to exclusive interval ends. Event/receipt time equal that
+end by explicit historical-availability assumption. Ordered input is streamed;
+same-time symbols sort lexically with at most one next-time look-ahead record.
+Duplicates/unsorted or misaligned input fail, and gaps remain gaps.
+
+`historical_replay.py` injects a monotonic historical clock into MarketDataHub and
+the production engines. It registers the existing feature task once and uses its
+public synchronous read to drain each published bar before evaluating. No future
+bar is published early; no historical-duration sleep or freshness bypass exists.
+Gap/continuity resets, warm-up, bounded-history reseeding, strategy thresholds and
+decision policy remain unchanged. Missing microstructure/context stays unavailable.
+No Phase 1–5 production file is changed.
+
+`backtest_evaluator.py` separately advances pending eligible signals with future
+bars. Entry is the next open and exit is close of the Hth following complete bar
+(H=5 by default). The default interpretation is independent overlapping signal
+outcomes. Missing next/intermediate/exit bars yield INCOMPLETE; no bar or exit is
+fabricated. DecisionCapture deduplicates stable IDs and rejects conflicting reuse.
+NO_ACTION/BLOCKED records remain diagnostic. MFE/MAE use only the entry-through-exit
+window and raw entry normalization, without costs or intrabar path assumptions.
+
+`backtest_math.py` applies adverse LONG/SHORT slippage and effective-price fees
+with fixed 34-digit Decimal arithmetic. Defaults are 5 bps fees and 2 bps slippage
+per side. Gross, fee/slippage cost and net returns are separately retained, all
+normalized to raw entry price. No quantity, portfolio capital or execution service
+participates. Exact formulas are in the backend guide and Phase 6 report.
+
+`backtest_metrics.py` calculates independently tested signal counts, expectancy,
+win/loss/flat, costs, profit factor, streaks and an additive normalized curve.
+The curve starts at 1; drawdown is running-peak-relative and may exceed 100% if
+the hypothetical sequence becomes negative. It is not account drawdown.
+Symbol/direction/outcome/coverage cohorts retain semantics; numeric regime context
+is stored rather than classified. Equal elapsed-time segments censor horizons
+extending past their own end. Settings never change between segments and no
+training, threshold fitting or optimization occurs.
+
+`backtest_engine.py` owns each finite run, streams replay frames into the evaluator
+and assembles immutable domain report models. Dataset identity incrementally hashes
+normalized records. Run/outcome IDs include relevant settings, data evidence and
+versions. Dedupe and final report records are run-local O(decisions); feature
+history remains bounded and pending horizon state is O(symbols*H) for default
+one-decision-per-bar sampling. No full raw or feature dataset is retained twice.
+
+Replay cleanup cancels/awaits its feature task and removes its subscription on
+completion, error or cancellation. Existing FastAPI import/OpenAPI/lifespan and
+its ten routes are unchanged. No loader/downloader, endpoint, database, dependency,
+intent builder, RiskEngine approval, gateway call, account API, AI or Phase 7 is
+introduced. This measures hypothetical historical signals, with explicit latency,
+microstructure and portfolio limitations; it makes no profitability claim.
+
 ## Phase status and future work
 
 1. Domain + RiskEngine + PaperExecution + FastAPI scaffold.
@@ -400,7 +463,8 @@ limits are in `docs/PHASE_5_REPORT.md` and `backend/README.md`.
 3. FeatureEngine with deterministic numerical snapshots.
 4. Deterministic StrategyEngine with analytical assessments and read-only API.
 5. Deterministic DecisionEngine with immutable eligibility records and read-only API.
+6. Offline deterministic historical replay and signal-level validation reports.
 
-Future tasks require separate scope: sizing, backtesting/orchestration and persistence,
+Future tasks require separate scope: sizing, portfolio orchestration and persistence,
 AIAdvisor interface/provider, React dashboard, testnet adapter/reconciliation,
 and additional operational reliability validation. No later phase is started here.
