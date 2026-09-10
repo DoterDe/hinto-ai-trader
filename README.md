@@ -35,8 +35,10 @@ DecisionRecord -> deterministic sizing -> TradeIntent
         -> Position/PnL Store -> API/WebSocket -> Dashboard
 ```
 
-AI-assisted review, testnet integration and backtesting remain separately scoped
-future work. AI cannot bypass deterministic risk controls.
+Phase 6 also provides an offline branch: historical finalized bars replay through
+the same analytical engines, then an independent evaluator measures hypothetical
+signal outcomes. AI-assisted review, portfolio orchestration and testnet integration
+remain future work. AI cannot bypass deterministic risk controls.
 
 ## Project status
 
@@ -67,6 +69,14 @@ identity, agreement and contributor gates. Read-only `GET /decisions/status` and
 reason codes. `ELIGIBLE` is analytical eligibility, with no sizing, intent creation,
 risk approval or execution. No task, subscription or dependency is added.
 See [the Phase 5 report](docs/PHASE_5_REPORT.md) for policy defaults and validation.
+
+Phase 6 adds deterministic offline signal validation, next-bar-open entry,
+fixed-horizon outcomes, explicit fee/slippage assumptions and reproducible
+metrics/cohort/time-segment reports. Historical replay preserves production
+warm-up and freshness checks using simulated time. It creates no intent, quantity,
+account or execution path and performs no parameter optimization. Historical
+signal-return curves are not account performance or a profitability guarantee.
+See [the Phase 6 report](docs/PHASE_6_REPORT.md) and the backend usage guide.
 
 ## Upstream attribution
 

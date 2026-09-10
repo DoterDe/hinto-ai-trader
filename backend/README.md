@@ -1,6 +1,6 @@
 # Backend
 
-Phase 1–5 backend for Hinto AI Trader.
+Phase 1–6 backend for Hinto AI Trader.
 
 ## Setup
 
@@ -562,3 +562,169 @@ would then be required before any paper gateway use. Phase 5 does not call eithe
 service or create either intent type. No AI, account access, private API, order
 submission, backtest runner, persistence or new dependency is added.
 See [the Phase 5 report](../docs/PHASE_5_REPORT.md) for exact tests and limitations.
+
+## Offline backtesting and validation (Phase 6)
+
+`BacktestEngine` replays finalized historical bars through the unchanged Hub,
+FeatureEngine, StrategyEngine and DecisionEngine. An independent evaluator then
+measures each unique eligible decision as a hypothetical signal outcome. This is
+an offline Python service; no new HTTP endpoint or application lifespan work is added.
+
+```python
+import asyncio
+from src.application.backtest_engine import BacktestEngine
+from src.application.backtest_settings import BacktestSettings
+
+# bars is a finite iterable of normalized KlineEvent objects, described below.
+engine = BacktestEngine(
+    symbols=("BTCUSDT",), interval="1m",
+    settings=BacktestSettings(holding_period_bars=5),
+)
+report = asyncio.run(engine.run(bars))
+print(report.model_dump_json(indent=2))
+```
+
+Inside an existing event loop use `await engine.run(bars)`. Optional
+`feature_settings`, `strategy_settings` and `decision_settings` are fixed inputs;
+they are not fitted to returns. Defaults come from their existing process
+environment prefixes. Each run gets fresh replay/history/evaluation state.
+
+### Historical input and replay
+
+Input reuses immutable `domain.market_data.KlineEvent`: symbol, interval, aware
+open/close/event/receipt timestamps, Decimal OHLC/base/quote volumes, trade count,
+closed flag, taker-buy base and quote volumes. No redundant historical bar model,
+file loader or network downloader is introduced.
+
+`validate_bar` requires positive finite prices, consistent high/low/OHLC,
+nonnegative volumes, taker volumes no greater than totals, and zero quote volume
+when base volume is zero. Only finalized bars are accepted. Event and receipt
+time must equal the exclusive interval end. Close time can equal that boundary
+or end minus 1 ms; both are normalized to the exclusive UTC end. Other observed
+publication latency is outside this bar-only contract. Numeric/naive timestamps
+and malformed validation-bypassing model copies are refused.
+
+Fixed intervals align to a UTC epoch grid; weekly grids anchor to Monday
+1970-01-05, other fixed units to 1970-01-01. Calendar months use actual UTC month
+boundaries, with multi-month alignment anchored to January 1970. Input times must
+be nondecreasing. Equal-time groups are sorted by symbol; duplicates, misalignment,
+older times and interval/symbol mismatches fail the run. Gaps are preserved.
+`symbols` must be supplied up front; it is not inferred from future observations.
+
+Replay advances an injected historical clock to each finalized bar's end,
+publishes only that bar and calls FeatureEngine's public `latest()` to drain its
+queue before evaluation. StrategyEngine and DecisionEngine receive explicit
+replay time; their freshness limits are never disabled. Missing book/trade/mark
+data remain missing, including the production optional-book confidence penalty.
+Warm-up, bounded-history reseeding and gap invalidation remain production behavior.
+
+An equal-time sorting iterator may read one future record to detect a group end;
+it never publishes it early. Decisions at bar t cannot see t+1 prices. The replay
+task only yields for startup and periodic cancellation checkpoints, never sleeps
+for historical gaps. Exhaustion, input errors and cancellation clean up the
+existing feature task/subscription. Direct `HistoricalReplay.frames()` consumers
+must use `contextlib.aclosing` when ending iteration early; BacktestEngine does so.
+
+### Entry, horizon and costs
+
+| Environment variable | Default | Validation |
+| --- | --- | --- |
+| `BACKTEST_HOLDING_PERIOD_BARS` | `5` | Positive integer |
+| `BACKTEST_FEE_BPS_PER_SIDE` | `5` | Finite, nonnegative Decimal |
+| `BACKTEST_SLIPPAGE_BPS_PER_SIDE` | `2` | Finite Decimal in `[0,10000)`; effective prices must stay positive |
+| `BACKTEST_CHRONOLOGICAL_SEGMENTS` | `4` | Integer in `[1,100]`; reporting only |
+
+These are simulation assumptions, not claims about current exchange fees/fills.
+`.env` files are not automatically loaded. No optimizer or best-policy selection
+exists. Changing costs or segments cannot change the analytical decisions.
+
+Decision from closed bar t enters at **open(t+1)** and exits at **close(t+H)**.
+For H=1 both prices belong to the next bar. The exclusive end of t and open of
+t+1 share a timestamp; event ordering is close/evaluate, then hypothetical next
+open. Entry is not the source bar's close price. This assumes bar-end availability
+and zero processing latency, not achievable exchange execution.
+
+Every required intermediate bar must exist. Missing entry, missing horizon bar,
+and dataset truncation produce explicit INCOMPLETE outcomes without invented
+exits, returns or costs. Observed entry information can remain on incomplete
+records. Unique eligible decisions overlap independently; BLOCKED/NO_ACTION
+remain diagnostic. Run-local decision IDs suppress duplicates; conflicting reuse
+is rejected. This is not persistent or cross-run action suppression.
+
+For raw entry E, raw exit X, direction d=+1 LONG/-1 SHORT,
+slippage s=`slippage_bps/10000`, and fee f=`fee_bps/10000`:
+
+```text
+effective_entry = E * (1 + d*s)
+effective_exit  = X * (1 - d*s)
+gross_return   = d * (X-E) / E
+slippage_cost  = s * (1 + X/E)
+fee_cost       = f * (effective_entry + effective_exit) / E
+total_cost     = slippage_cost + fee_cost
+net_return     = gross_return - total_cost
+```
+
+All returns normalize to the **raw entry price**, with no quantity or balance.
+Both fee sides use effective prices. `returns` on a completed outcome stores
+effective prices, gross return, both cost components, total cost and net return.
+MFE is nonnegative and MAE nonpositive, measured from raw entry using highs/lows
+of t+1 through t+H only. They exclude the source bar, post-exit bars and costs.
+Arithmetic uses a fixed 34-digit Decimal context; invalid/nonfinite arithmetic
+fails rather than yielding a synthetic result.
+
+### Metrics, cohorts and segments
+
+The immutable report retains sampled DecisionRecords with optional numeric regime
+inputs, completed/incomplete outcomes, IDs, counts and summaries. Input count is
+in metadata. LONG/SHORT counts cover eligible outcomes including incomplete ones.
+Win/loss/flat, returns and costs use only completed signals, in deterministic
+`(exit_time, decision_time, symbol, decision_id)` order.
+
+- Win rate is `wins/(wins+losses)`, excluding flats; undefined is null.
+- Expectancy is mean net return per completed signal, including flats. Mean gross,
+  median net, return/cost sums and best/worst net results are also reported.
+- `gross_profit` sums positive **net** signal returns; `gross_loss` is the absolute
+  sum of negative **net** returns. These differ from pre-cost `sum_gross_returns`.
+  Profit factor is profit/loss. Zero loss yields null with `no_losses`,
+  `no_nonflat_outcomes`, or `no_completed_outcomes`; loss-only yields zero.
+- Flats break both consecutive win/loss streaks.
+- The normalized additive curve starts at 1 and adds each net signal return.
+  Drawdown is `(running_peak-current_value)/running_peak`; maximum is reported.
+  The curve can be negative and drawdown exceed 1. It is not compounded capital,
+  margin, liquidation or account drawdown.
+
+Cohorts cover symbol, direction (including NEUTRAL diagnostics), decision outcome
+and source incomplete-coverage flag. `not_marked_incomplete` does not claim all
+strategies were ready. Numeric regime inputs stay on sampled decisions; no opaque
+category or clustering is invented.
+
+N chronological segments divide the entire historical open-to-final-close range
+into equal elapsed-time spans. Decisions belong to `[start,end)`, with the final
+end included. Only horizons fully ending by that segment's end can score there;
+cross-boundary horizons count as incomplete/boundary-censored even if the full
+run later completes them. No future return contributes to an earlier segment.
+Thus segment completed/return totals need not sum to full-run totals. Settings
+remain unchanged throughout; this is walk-forward reporting, not optimization.
+
+### Identities and resource limits
+
+Dataset identity incrementally hashes canonical normalized records in replay
+order. Decision identity remains Phase 5's. Outcome identity includes decision,
+backtest settings, source bar, observed horizon evidence and completion/reason.
+Run identity combines dataset, all supplied settings identities, symbol/interval
+scope and analytical/backtest versions. There are no random or wall-clock run IDs.
+Retain supplied configurations with the report; metadata stores their hashes.
+
+Input is single-pass with O(symbols) ordering look-ahead. Feature history remains
+bounded (500 per symbol by default). Pending horizon state is O(symbols*H) under
+one-decision-per-bar sampling; each pending item hashes evidence incrementally.
+Decision dedupe, final decisions/outcomes and report curves use O(input decisions)
+memory for a finite run. No complete feature/strategy snapshot history or duplicate
+raw-bar dataset is retained. Work includes existing bounded feature calculations
+per bar, O(H) active horizon work, and sorting/grouping for final metrics.
+
+No API/account access, credentials, intent creation, risk approval, gateway call,
+real quantity, leverage, AI, P2P, database, optimization or full order book is
+introduced. Signal-level validation omits funding, market impact, queue priority,
+account constraints and exchange latency. Historical results cannot establish
+future profitability. See [the Phase 6 report](../docs/PHASE_6_REPORT.md).

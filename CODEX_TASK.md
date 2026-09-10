@@ -1,5 +1,16 @@
 # Current Codex Task — Phase 6: Deterministic Backtesting & Validation
 
+## Implementation status
+
+All five batches are complete on `phase-6-backtesting`.
+Baseline: **1645 passed, 2 warnings in 5.74s**. Final Phase 6 targeted tests:
+**228 passed in 15.83s**. Complete backend regression:
+**1873 passed, 2 warnings in 20.99s**. Dependency, import/OpenAPI, offline lifespan
+and repeated-replay identity/serialization checks passed. See
+`docs/PHASE_6_REPORT.md` for exact rules, commands and validation evidence.
+No previous engine semantics, dependency or HTTP route changed. No Phase 7,
+commit or push is included.
+
 Read `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/PHASE_4_REPORT.md`, `docs/PHASE_5_REPORT.md`, and the implemented Phase 3–5 production code completely before editing.
 
 ## Model workflow
