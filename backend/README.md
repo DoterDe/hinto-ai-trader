@@ -1,6 +1,6 @@
 # Backend
 
-Phase 1–6 backend for Hinto AI Trader.
+Phase 1–7 backend for Hinto AI Trader.
 
 ## Setup
 
@@ -728,3 +728,131 @@ real quantity, leverage, AI, P2P, database, optimization or full order book is
 introduced. Signal-level validation omits funding, market impact, queue priority,
 account constraints and exchange latency. Historical results cannot establish
 future profitability. See [the Phase 6 report](../docs/PHASE_6_REPORT.md).
+
+## Offline shared-capital paper portfolio (Phase 7)
+
+Phase 6 scores independent signals; `PaperPortfolioEngine` adds shared **virtual
+capital units**, with deterministic reservations and exposure/drawdown gates.
+It reuses the same finalized KlineEvent contract and HistoricalReplay. There is
+no new HTTP route, application background task, dependency or exchange connection.
+
+```python
+from src.application.paper_portfolio_engine import PaperPortfolioEngine
+from src.application.paper_portfolio_settings import PaperPortfolioSettings
+from src.application.backtest_settings import BacktestSettings
+
+engine = PaperPortfolioEngine(
+    symbols=("BTCUSDT", "ETHUSDT"), interval="1m",
+    settings=PaperPortfolioSettings(),
+    backtest_settings=BacktestSettings(holding_period_bars=5),
+)
+report = await engine.run(bars)  # finite typed iterator; asyncio.run outside a loop
+print(report.model_dump_json(indent=2))
+```
+
+Optional feature/strategy/decision settings remain fixed validation inputs.
+Portfolio settings read `PORTFOLIO_` process variables without loading `.env`:
+
+| Suffix | Default | Bounds |
+| --- | --- | --- |
+| `INITIAL_VIRTUAL_EQUITY` | `100000` | Positive finite Decimal |
+| `TARGET_POSITION_FRACTION` | `0.10` | `(0,1]` |
+| `MAX_GROSS_EXPOSURE_FRACTION` | `0.40` | `(0,1]` |
+| `MAX_SYMBOL_EXPOSURE_FRACTION` | `0.15` | `(0,max gross]` |
+| `MAX_OPEN_POSITIONS` | `4` | Strict positive integer |
+| `MAX_DRAWDOWN_FRACTION` | `0.20` | `(0,1)` |
+| `ONE_POSITION_PER_SYMBOL` | `true` | Explicit true/false parsing; false is rejected as unsupported |
+
+No pyramiding, reversal or partial allocation is implemented. Desired notional
+is `current_marked_equity * target_position_fraction`; confidence is not a size
+multiplier or probability. Reservations immediately count toward both exposure
+and position-count capacity. LONG and SHORT notionals add; they do not net.
+
+At each complete market timestamp, apply previously reserved entries from the
+current bars' opens, process all close marks/exits, then rank current decisions
+by descending absolute score, confidence, agreement, followed by ascending symbol
+and decision ID. All-or-none gates run against state including earlier reservations
+in this rank order. The ledger sees only that group's immutable observations;
+the grouping iterator's next-time frame cannot affect its sizing or arbitration.
+
+Only ELIGIBLE upstream records can reserve. BLOCKED/NO_ACTION are ignored
+diagnostically. Invalid/stale/unknown state, nonpositive equity, drawdown at or
+above the limit, active symbol, maximum open-plus-reserved count, gross capacity
+and symbol capacity reject with stable reason codes. State and decision times
+must exactly match the explicit historical evaluation boundary. The upstream
+decision is unchanged. Equivalent duplicate reads are suppressed; conflicting
+identity reuse fails. Dedupe is run-local, not durable action suppression.
+
+Entry remains `open(t+1)` and exit `close(t+H)`, with H=5, fee=5 bps and slippage=2
+bps per side by default from BacktestSettings. Source close and next open share
+an exclusive boundary timestamp but may have different prices. Entries are
+represented when finalized next-bar data arrive, with no same-source-close fill.
+Reservations fix notional before future prices are visible. The unused Phase 6
+segment setting remains in the reused settings identity; it does not segment
+the Phase 7 curve.
+
+For notional N, raw entry E, known close C, direction d=+1 LONG/-1 SHORT,
+s=slippage_bps/10000 and f=fee_bps/10000, open marks are:
+
+```text
+gross_mark = N * d * (C-E)/E
+entry_slippage = N*s
+entry_fee = N*f*(1+d*s)
+unrealized_net = gross_mark - entry_slippage - entry_fee
+realized_equity = initial_equity + sum(completed_net_pnl)
+marked_equity = realized_equity + sum(known_unrealized_net)
+peak = max(initial_equity, all prior/current known marked equities)
+drawdown = (peak-marked_equity)/peak
+gross_exposure = open_fixed_notional + reserved_fixed_notional
+gross_exposure_fraction = gross_exposure/marked_equity, if equity > 0
+```
+
+On close, each PnL/cost component is N times the corresponding Phase 6
+`outcome_returns` component, including two-sided costs. The old unrealized mark
+is removed; full net PnL is realized once. `total_closed_pnl` excludes entry costs
+on unfinished positions, which appear separately as outstanding entry fee and
+slippage costs. Arithmetic uses the existing 34-digit Decimal context. PnL
+reconciliation tolerates only `1e-32 * largest component` for separately rounded
+multiplications; net remains exactly the calculated `N * net_return`.
+
+Limits constrain new reservations. Existing exposure fractions can rise after
+costs/losses, even above one if equity collapses; the model does not borrow or
+fabricate liquidation. Nonpositive equity is preserved and blocks new capacity.
+Drawdown recovery permits later reservations if the other gates pass.
+
+A missing exact entry bar expires its reservation and releases capacity. A
+missing holding bar makes exposure INCOMPLETE; total marked equity/drawdown/
+exposure fraction become null, and new reservations remain blocked. Later prices
+cannot repair that unknown path. Other existing positions can finish. Dataset-end
+reservations expire; still-open positions remain incomplete, with no fabricated
+exit or final mark. Previously known curve points remain unchanged. Report status
+is INCOMPLETE for any reservation expiry or incomplete position.
+
+Metrics cover input/upstream/portfolio counts, opened/completed/incomplete and
+LONG/SHORT counts, initial/final equity, closed gross/fee/slippage/net totals,
+outstanding entry costs, realized return, peak and maximum known drawdown,
+maximum gross notional/observed positive-equity fraction, peak simultaneous open
+count (including H=1 positions), average close-snapshot open count, turnover,
+win/loss/flat, win rate, symbol PnL/counts and rejection reasons. Turnover is
+`sum(opened virtual notionals)/initial equity`; win rate excludes flats and is
+null if undefined. `valuation_complete` and `nonpositive_equity_observed` qualify
+the result. Maxima are sampled observations, not intrabar risk guarantees.
+
+Canonical IDs cover policy settings, decision/state/action, reservation inputs,
+entry/horizon evidence and full run settings/dataset/version scope. The report
+uses `metadata.run_id`; there is no random ID or wall-clock run time. Retain the
+supplied settings and code revision alongside it.
+
+Each run uses fresh state and cleans up the existing replay consumer on completion,
+error or cancellation. Input grouping is O(symbols); active positions/reservations
+are bounded by configured capacity, and feature history remains bounded. Finite
+audit records and curve snapshots grow with decisions/timestamps (each state
+includes symbol exposures); no whole raw/feature dataset is retained.
+
+Phase 1 RiskEngine/PaperExecutionGateway are intentionally not called: their
+quantity-bearing execution contracts and process-local fill/approval history do
+not define this deterministic virtual ledger. No intent, real quantity, account
+access, private endpoint, credential, order, AI/ML, optimizer or database is added.
+Funding, market impact, intrabar paths, margin/liquidation, persistence and actual
+execution orchestration remain deferred. This is no profitability guarantee.
+See [the Phase 7 report](../docs/PHASE_7_REPORT.md) for exact validation evidence.

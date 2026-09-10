@@ -37,7 +37,7 @@ DecisionRecord -> deterministic sizing -> TradeIntent
 
 Phase 6 also provides an offline branch: historical finalized bars replay through
 the same analytical engines, then an independent evaluator measures hypothetical
-signal outcomes. AI-assisted review, portfolio orchestration and testnet integration
+signal outcomes. AI-assisted review, production portfolio orchestration and testnet integration
 remain future work. AI cannot bypass deterministic risk controls.
 
 ## Project status
@@ -77,6 +77,13 @@ warm-up and freshness checks using simulated time. It creates no intent, quantit
 account or execution path and performs no parameter optimization. Historical
 signal-return curves are not account performance or a profitability guarantee.
 See [the Phase 6 report](docs/PHASE_6_REPORT.md) and the backend usage guide.
+
+Phase 7 adds offline shared-capital simulation with virtual notional reservations,
+deterministic simultaneous arbitration, fixed-horizon positions and marked-equity
+exposure/drawdown gates. Unknown holding marks block new reservations and remain
+explicitly incomplete. This separate PaperPortfolioPolicy does not call Phase 1
+risk/execution services or create executable intents. See
+[the Phase 7 report](docs/PHASE_7_REPORT.md) for formulas, tests and limitations.
 
 ## Upstream attribution
 
