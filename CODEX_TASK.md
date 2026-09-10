@@ -1,765 +1,749 @@
-# Current Codex Task — Phase 6: Deterministic Backtesting & Validation
-
-## Implementation status
-
-All five batches are complete on `phase-6-backtesting`.
-Baseline: **1645 passed, 2 warnings in 5.74s**. Final Phase 6 targeted tests:
-**228 passed in 15.83s**. Complete backend regression:
-**1873 passed, 2 warnings in 20.99s**. Dependency, import/OpenAPI, offline lifespan
-and repeated-replay identity/serialization checks passed. See
-`docs/PHASE_6_REPORT.md` for exact rules, commands and validation evidence.
-No previous engine semantics, dependency or HTTP route changed. No Phase 7,
-commit or push is included.
-
-Read `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/PHASE_4_REPORT.md`, `docs/PHASE_5_REPORT.md`, and the implemented Phase 3–5 production code completely before editing.
+# Current Codex Task — Phase 7: Deterministic Paper Portfolio & Risk Simulation
 
 ## Model workflow
-This task is written for **GPT-6 Astra in Codex**. Inspect before editing, work in small reviewable batches, run targeted tests after each meaningful batch, then run the complete backend suite. Do not perform a broad repository rewrite.
+This task is written for **GPT-6 Astra in Codex**. Inspect before editing, work in small reviewable batches, run targeted tests after every meaningful batch, then run the complete backend suite. Do not broadly rewrite previous phases.
 
-The working branch is `phase-6-backtesting`. Phase 5 has been merged into `main` and the accepted baseline is **1645 backend tests passing**.
+Working branch: `phase-7-paper-portfolio`.
+
+Phase 6 is merged into `main`. Accepted starting baseline: **1873 backend tests passing**.
+
+Read completely before editing:
+- `AGENTS.md`
+- `docs/ARCHITECTURE.md`
+- `docs/PHASE_5_REPORT.md`
+- `docs/PHASE_6_REPORT.md`
+- `backend/src/domain/backtesting.py`
+- `backend/src/application/historical_replay.py`
+- `backend/src/application/backtest_engine.py`
+- `backend/src/application/backtest_evaluator.py`
+- `backend/src/application/backtest_math.py`
+- `backend/src/application/backtest_metrics.py`
+- `backend/src/application/backtest_identity.py`
+- `backend/src/application/decision_engine.py`
+- `backend/src/domain/decisions.py`
+- `backend/src/application/risk_engine.py`
+- `backend/src/domain/models.py`
+- `backend/src/infrastructure/paper_execution.py`
+- the Phase 6 test suite.
 
 ## Objective
-Build an offline, deterministic **Backtesting & Validation layer** that replays historical public market observations through the existing analytical pipeline and measures what the existing StrategyEngine + DecisionEngine actually did.
+Build a deterministic **offline paper-portfolio simulator** over the existing historical analytical pipeline.
 
-The goal is validation, not optimization and not execution.
+Phase 6 validates every eligible signal independently. Phase 7 must answer a different question: what would happen to one shared pool of **virtual capital units** when eligible decisions compete for limited portfolio capacity and positions overlap in time?
 
 Target architecture:
 
 ```text
-Historical public market observations
-    -> deterministic replay clock / replay source
-    -> existing MarketDataHub / FeatureEngine where practical
-    -> FeatureSnapshot
+Historical finalized bars
+    -> existing HistoricalReplay
+    -> existing FeatureEngine
     -> existing StrategyEngine
-    -> StrategySnapshot / StrategyCandidate
     -> existing DecisionEngine
-    -> DecisionRecord
-    -> BacktestEvaluator
-    -> hypothetical outcome records
-    -> BacktestReport / validation metrics
+    -> HistoricalDecision / DecisionRecord
+    -> PaperPortfolioPolicy
+    -> deterministic entry reservation / portfolio arbitration
+    -> virtual PaperPosition(s)
+    -> deterministic close at the configured fixed horizon
+    -> PaperPortfolioLedger
+    -> equity / exposure / drawdown / rejection metrics
+    -> PaperPortfolioReport
 ```
 
-A backtest result is a historical simulation artifact. It is not an order, approval, recommendation, profitability guarantee, or authorization for real trading.
+This is simulation only. A portfolio acceptance is **not** a trade recommendation, order approval, profitability guarantee or permission to use real money.
 
-## Non-negotiable boundaries
+## Critical architectural decision: do not wire Phase 1 execution contracts into the simulator
+The existing Phase 1 `RiskEngine` consumes a concrete `TradeIntent` containing a quantity, keeps process-local approval history, and its `RiskDecision` currently uses a random UUID. The existing `PaperExecutionGateway` consumes `ApprovedTradeIntent` and also produces process-local simulated fills.
+
+Those contracts are execution-oriented and are not the right deterministic historical portfolio primitive for Phase 7.
+
+Therefore Phase 7 must **not**:
+- create `TradeIntent` or `ApprovedTradeIntent`,
+- call `RiskEngine`,
+- call `PaperExecutionGateway`,
+- modify `RiskEngine` just to make historical simulation fit,
+- modify `PaperExecutionGateway` just to make historical simulation fit.
+
+Instead, create a separate deterministic **PaperPortfolioPolicy** and portfolio-domain contracts using virtual notional/capital units only.
+
+The future architectural boundary remains:
+
+```text
+DecisionRecord(ELIGIBLE)
+    -> paper/live-independent portfolio/risk research
+    -> future explicitly designed intent builder
+    -> independent deterministic pre-execution RiskEngine
+    -> paper execution only unless a later separately reviewed phase changes scope
+```
+
+Do not collapse those boundaries in Phase 7.
+
+## Non-negotiable scope boundaries
 Do not add or use:
-- Binance API keys or secrets,
+- Binance API keys, secrets or signed requests,
 - private Binance REST/WebSocket endpoints,
-- balances, positions, account state or user assets,
-- real order submission,
+- balances, positions or account state from any exchange,
+- real-money order submission,
 - testnet order submission,
-- live-money execution,
-- P2P transaction automation,
-- deposits, withdrawals or transfers,
-- autonomous payment flows,
-- leverage or margin execution logic,
-- live position sizing,
-- `TradeIntent` / `ApprovedTradeIntent` generation from the backtester,
-- `RiskEngine` approval as a shortcut for historical replay,
-- `PaperExecutionGateway` as a path to live/testnet execution,
+- deposits, withdrawals, transfers or P2P transaction automation,
+- exchange order IDs,
+- leverage or margin execution,
+- liquidation simulation presented as exchange-accurate,
+- real quantity sizing,
+- `TradeIntent` / `ApprovedTradeIntent`,
+- `RiskEngine` approval,
+- `PaperExecutionGateway`,
 - AI Advisor / OpenAI API,
-- ML/RL prediction models,
-- automatic parameter search or optimization,
-- grid search for profitable thresholds,
-- genetic/Bayesian optimization,
-- database/Redis unless strictly required (prefer none),
+- ML/RL models,
+- automatic parameter optimization,
+- grid/genetic/Bayesian search for profitable settings,
+- return-based tuning of StrategyEngine or DecisionEngine,
+- persistent database/Redis unless strictly necessary (prefer none),
 - frontend redesign,
-- reconstructed full order book,
-- performance/profitability claims.
+- network downloads of historical market data,
+- profitability claims.
 
-Phase 6 must remain completely offline and deterministic in tests.
-
-## Critical anti-overfitting rule
-Do **not** tune StrategyEngine or DecisionEngine thresholds against historical returns in Phase 6.
-
-The existing Phase 4 and Phase 5 settings are inputs to validation, not parameters to optimize.
-
-If multiple policies/settings are compared in tests or examples, they must be explicitly supplied fixed configurations for engineering verification only. Do not add an optimizer or choose a “best” configuration based on return.
+Everything must remain deterministic and offline in tests.
 
 ## Baseline first
 Before editing:
-1. confirm `git branch --show-current` is `phase-6-backtesting`;
-2. confirm `git status`;
-3. run the complete backend suite and confirm the accepted baseline of **1645 passing tests**;
-4. inspect at minimum:
-   - `backend/src/domain/market_data.py`
-   - `backend/src/application/market_data_hub.py`
-   - `backend/src/application/feature_engine.py`
-   - `backend/src/domain/features.py`
-   - `backend/src/application/strategy_engine.py`
-   - `backend/src/domain/strategies.py`
-   - `backend/src/application/decision_engine.py`
-   - `backend/src/domain/decisions.py`
-   - existing replay/offline test fixtures and source abstractions
-   - Phase 3–5 tests
-   - `docs/ARCHITECTURE.md`
-   - `docs/PHASE_4_REPORT.md`
-   - `docs/PHASE_5_REPORT.md`.
+1. confirm `git branch --show-current` is `phase-7-paper-portfolio`;
+2. confirm `git status` is clean except for this already-pulled task commit;
+3. run the complete backend suite;
+4. confirm **1873 tests pass** before implementation;
+5. inspect all files listed at the top of this task.
 
-Do not redesign Phase 1–5 unless a minimal compatibility change is clearly required and independently tested.
+Do not change Phase 1–6 semantics unless a very small compatibility fix is independently justified and tested.
 
 ## Core design principles
-1. **No look-ahead bias.** A decision may use only information available at or before its source observation.
-2. **Next-observation execution convention.** Historical evaluation must not assume a fill at the same closing price that produced the signal unless that behavior is explicitly justified. Prefer entry at the next bar/open observation.
-3. **Deterministic replay clock.** Historical timestamps, not wall-clock time, drive freshness and evaluation.
-4. **Reuse production analytical code.** Do not create a separate “backtest strategy” implementation with different formulas.
-5. **Separate market replay from outcome evaluation.** Replayed market data creates decisions; future bars are used only afterward to evaluate outcomes.
-6. **No optimization.** Measure existing rules; do not fit them.
-7. **Explicit transaction-cost assumptions.** Fees/slippage are configurable simulation assumptions, never hidden.
-8. **Stable identities and deduplication.** Equivalent analytical observations must not be counted repeatedly.
-9. **Bounded memory.** Support streaming/incremental evaluation rather than loading unlimited histories into mutable structures when practical.
-10. **Deterministic offline tests.** No exchange/network dependency.
-11. **Transparent limitations.** Metrics must state exactly what they measure.
-12. **No profitability claims.** Historical simulation does not imply future performance.
+1. **Shared virtual capital.** Unlike Phase 6, positions compete for one portfolio capacity.
+2. **No look-ahead.** Portfolio acceptance, sizing and arbitration may use only information available at decision time.
+3. **Next-bar entry.** Preserve the Phase 6 anti-look-ahead entry convention.
+4. **Fixed-horizon exit.** Reuse the same explicit holding-horizon semantics as Phase 6.
+5. **No leverage.** Gross virtual notional must stay within configured non-leveraged exposure limits.
+6. **Transparent deterministic sizing.** No Kelly criterion, optimizer or inferred win probability.
+7. **Portfolio risk is separate from strategy confidence.** Confidence remains evidence quality, not a probability of profit.
+8. **Deterministic arbitration.** Simultaneous eligible decisions must not depend on input ordering.
+9. **Reservation prevents overbooking.** Accepted decisions reserve capacity before next-bar entry.
+10. **Conservative missing-data behavior.** Never fabricate a portfolio exit or mark through an unknown required bar.
+11. **Explicit cost accounting.** Reuse Phase 6 fee/slippage assumptions rather than creating hidden costs.
+12. **Deterministic identities.** No UUIDs for analytical portfolio artifacts.
+13. **Immutable report artifacts.** Mutable state may exist inside one finite simulator run only.
+14. **No execution semantics.** Names should say paper/virtual/simulated, not approved order/execution.
+15. **No claim that historical portfolio results predict future returns.**
 
-## Scope: Phase 6 validates signals, not a real portfolio
-Do not build a live portfolio/risk/position-management system in this phase.
+## Portfolio settings
+Create a frozen, validated `PaperPortfolioSettings` (or similarly clear name) with a small transparent policy.
 
-Prefer a **normalized hypothetical signal outcome model**:
-- each accepted historical decision can produce one hypothetical outcome,
-- no real quantity is required,
-- no leverage is used,
-- no account balance is required,
-- returns are expressed as dimensionless percentages/Decimal fractions,
-- transaction costs are expressed in basis points or fractional return,
-- metrics describe the historical signal-return sequence.
-
-If an equity-like curve is provided, name and document it honestly as a normalized hypothetical curve. Do not imply that it models liquidation, margin, exchange funding, taxes, or an actual user account.
-
-## Historical data contract
-Create immutable typed historical-input contracts suitable for offline replay.
-
-Prefer a minimal normalized OHLCV bar contract close to:
+Preferred defaults:
 
 ```text
-HistoricalBar
-- symbol
-- interval
-- open_time
-- close_time
-- open
-- high
-- low
-- close
-- volume
-- quote_volume if required by existing feature semantics
-- taker_buy_base_volume / other already-required public kline fields if needed
-- closed = true
+PORTFOLIO_INITIAL_VIRTUAL_EQUITY=100000
+PORTFOLIO_TARGET_POSITION_FRACTION=0.10
+PORTFOLIO_MAX_GROSS_EXPOSURE_FRACTION=0.40
+PORTFOLIO_MAX_SYMBOL_EXPOSURE_FRACTION=0.15
+PORTFOLIO_MAX_OPEN_POSITIONS=4
+PORTFOLIO_MAX_DRAWDOWN_FRACTION=0.20
+PORTFOLIO_ONE_POSITION_PER_SYMBOL=true
 ```
 
-Use `Decimal` for prices/volumes where consistent with the existing market-data domain.
+All monetary/notional values are abstract **virtual capital units**. Do not label them as actual USDT/USD unless an explicit reporting label says they are hypothetical units.
 
-Validation must reject:
-- naive timestamps,
-- non-finite values,
-- nonpositive prices,
-- high < low,
-- OHLC outside high/low,
-- negative volume,
-- non-increasing bar time,
-- duplicate bars for the same symbol/time,
-- overlapping/misaligned intervals where the replay contract forbids them.
+Validation requirements:
+- finite Decimal values only;
+- initial equity strictly positive;
+- fractions in sensible bounded ranges;
+- target position fraction > 0 and <= 1;
+- max gross exposure > 0 and <= 1;
+- max symbol exposure > 0 and <= max gross exposure;
+- max drawdown > 0 and < 1;
+- max open positions strict positive integer;
+- booleans parsed explicitly from environment;
+- extra settings forbidden;
+- no negative/NaN/Infinity values.
 
-Do not fabricate missing bars.
+Do not add more settings unless the existing contracts clearly require them.
 
-If the existing normalized kline event model already provides everything needed, reuse it instead of creating redundant types.
+## Shared-capital sizing policy
+Sizing is virtual notional sizing, not exchange quantity sizing.
 
-## Historical input loader
-Add a small offline loader only if useful.
+At each decision time define a deterministic sizing basis from currently known portfolio state. Prefer **marked virtual equity** if the mark calculation is implemented safely; otherwise use an explicitly named realized-equity basis and document the limitation.
 
-Preferred supported source for Phase 6:
-- deterministic in-memory typed bars for tests;
-- optionally a local CSV/NDJSON loader for public historical bars.
-
-Requirements for a file loader:
-- local files only;
-- no automatic network download;
-- strict schema validation;
-- deterministic ordering;
-- clear duplicate/gap behavior;
-- streaming iterator where practical;
-- no secret/account fields.
-
-Do not add a Binance historical downloader in this phase.
-
-## Replay engine
-Implement a deterministic replay mechanism that feeds historical observations in chronological order.
-
-Reuse existing production components wherever practical. The ideal path is:
+Preferred desired notional:
 
 ```text
-HistoricalBar/Event
-    -> MarketDataHub
-    -> FeatureEngine
-    -> StrategyEngine
-    -> DecisionEngine
+desired_notional = sizing_equity * target_position_fraction
 ```
 
-However, inspect the existing asynchronous architecture first. Do not force a fragile async polling design just to reuse a class.
+The desired notional must fit all configured limits, including reservations:
+- maximum gross exposure,
+- maximum per-symbol exposure,
+- maximum open position count,
+- one-position-per-symbol rule,
+- drawdown halt,
+- positive-equity requirement.
 
-The replay mechanism must:
-- preserve per-symbol chronological ordering;
-- define deterministic ordering for equal timestamps across symbols;
-- advance a simulated/replay clock explicitly;
-- allow FeatureEngine to fully consume an event before reading the resulting snapshot;
-- never use `datetime.now()` for replay correctness;
-- never sleep based on historical wall-clock gaps;
-- not create synthetic missing candles;
-- preserve Phase 3 reconnect/gap semantics where relevant;
-- be offline and finite.
+Prefer **all-or-none capacity allocation** in Phase 7: if the desired notional does not fully fit the configured limits, reject the eligible decision with an explicit reason rather than silently shrinking it. This keeps comparisons auditable.
 
-For multi-symbol replay, define and document ordering. Prefer `(event_time, symbol, stable input index)` or another explicit deterministic order.
+Do not use confidence as a multiplier for size in Phase 7. Do not interpret confidence as probability.
 
-## Freshness under historical replay
-Phase 4 and 5 intentionally reject old wall-clock snapshots. The backtester must not disable these safety rules globally.
+## Portfolio risk gates
+PaperPortfolioPolicy should be a pure deterministic gate over:
+- a valid Phase 5 `DecisionRecord`,
+- current immutable portfolio state/snapshot,
+- configured `PaperPortfolioSettings`,
+- explicit evaluation time where relevant.
 
-Instead, pass the historical replay time explicitly so that:
-- a historical snapshot is fresh relative to the simulated clock at that moment;
-- production `latest()` behavior remains unchanged;
-- no production maximum-age default is weakened for backtesting;
-- tests can prove the same snapshot is stale under real later time but valid at its historical evaluation time.
+Only `DecisionOutcome.ELIGIBLE` can be considered for a reservation.
 
-Do not patch production code to “ignore freshness in backtest mode.”
+Stable rejection/ignore reasons should cover at minimum:
+- `decision_not_eligible` for BLOCKED/NO_ACTION diagnostic decisions,
+- `portfolio_drawdown_limit`,
+- `nonpositive_equity`,
+- `max_open_positions`,
+- `gross_exposure_limit`,
+- `symbol_exposure_limit`,
+- `symbol_position_active`,
+- `duplicate_decision`,
+- `invalid_or_stale_portfolio_state`,
+- `missing_entry_bar` / reservation expiry where appropriate.
 
-## Decision sampling / deduplication
-Only count stable analytical observations once.
+Do not change the upstream DecisionRecord outcome. A Phase 5 ELIGIBLE decision may be rejected by the portfolio policy while remaining ELIGIBLE upstream.
 
-At minimum:
-- use `decision_id`, `observation_id`, or an equally stable upstream identity;
-- repeated reads of the same observation must not create multiple hypothetical entries;
-- NO_ACTION and BLOCKED outcomes are counted for diagnostics but never become hypothetical trades/outcomes;
-- only `DecisionOutcome.ELIGIBLE` may enter the hypothetical outcome evaluator;
-- a changed outcome/observation may be a new evaluation event.
+## Simultaneous-decision arbitration
+Multiple symbols may produce eligible decisions at the same timestamp and available capacity may be insufficient for all of them.
 
-Keep dedupe state bounded when feasible. For a finite backtest, a run-local set of already-counted decision IDs is acceptable; document memory behavior.
+Do not let arbitrary iterator/input order decide who gets capacity.
 
-## Entry convention — anti-look-ahead
-Use a conservative deterministic convention.
+Collect decisions sharing the same decision timestamp and evaluate them as one deterministic batch after the market state for that timestamp is fully known.
 
-Default Phase 6 convention:
-- Decision is produced from closed bar **t**.
-- Hypothetical entry uses the **next bar t+1 open**.
-- If no next bar exists, no completed outcome is created and the reason is recorded.
-
-Never fill at bar `t` close when that same close contributed to the decision unless a separate test mode explicitly demonstrates why it is non-look-ahead. Do not make such same-bar mode the default.
-
-## Exit convention
-Keep Phase 6 simple and auditable.
-
-Use a configurable fixed holding horizon in complete bars, for example:
+Use a small documented arbitration key based only on information available at that timestamp. Prefer:
 
 ```text
-holding_period_bars = 5
+1. larger absolute composite_score first
+2. higher confidence
+3. higher agreement
+4. symbol lexical order
+5. decision_id lexical order
 ```
 
-Define exact semantics in code/docs. Prefer:
-- entry = open of bar t+1;
-- exit = close of bar t+holding_period_bars;
-- all required bars must exist and be chronologically valid.
+Do not claim this ranking predicts returns. It is only a deterministic tie/capacity policy.
 
-If the chosen indexing differs after inspecting existing interval semantics, document it with concrete examples and test exact boundaries.
+Test that permuting equal-time input ordering yields the same portfolio reservations and report.
 
-Do not add stop-loss, take-profit, trailing stops, liquidation, leverage, or dynamic exit optimization in Phase 6.
+## Reservation semantics
+A portfolio-accepted decision creates a deterministic **PaperEntryReservation** for the next expected bar open of that symbol.
 
-## Overlapping signal policy
-Choose one explicit deterministic policy and document it.
+Reservations:
+- count against gross/symbol capacity immediately,
+- prevent simultaneous accepted decisions from overbooking future entry capacity,
+- have deterministic IDs,
+- contain decision ID, symbol, direction, planned virtual notional, decision time and expected entry time,
+- contain no exchange quantity/order fields,
+- expire/cancel if the required next bar is missing,
+- never become a real order.
 
-Preferred default for Phase 6 validation:
-- each unique eligible decision is evaluated independently as a **signal outcome** even if horizons overlap;
-- metrics must clearly be called signal-level metrics, not portfolio-capital metrics.
+If the next expected bar exists, the reservation becomes a virtual `PaperPosition` at that bar's raw open using the same adverse-entry cost assumptions as Phase 6.
 
-This is preferable for strategy validation because it measures every eligible decision without inventing portfolio sizing.
+A reservation must not be created twice for the same decision identity.
 
-If you instead enforce one active hypothetical position per symbol, document why and record skipped signals explicitly. Do not silently drop overlapping signals.
+## Position semantics
+Create immutable output/domain models and a finite-run mutable ledger/service.
 
-Do not mix both interpretations in one metric without labeling them.
-
-## Transaction-cost model
-Add deterministic simulation settings with conservative, explicit defaults.
-
-Prefer settings close to:
+Prefer concepts close to:
 
 ```text
-BACKTEST_HOLDING_PERIOD_BARS=5
-BACKTEST_FEE_BPS_PER_SIDE=5
-BACKTEST_SLIPPAGE_BPS_PER_SIDE=2
+PortfolioAction = IGNORED | REJECTED | RESERVED
+PortfolioDecisionRecord
+PaperEntryReservation
+PaperPosition
+PaperPositionClose
+PaperPortfolioCurvePoint
+PaperPortfolioMetrics
+PaperPortfolioRunMetadata
+PaperPortfolioReport
 ```
 
-These are engineering assumptions only, not claims about current exchange fees or actual achievable fills.
+`PaperPosition` should contain only simulation fields such as:
+- deterministic position_id,
+- reservation_id / decision_id,
+- symbol,
+- LONG/SHORT direction,
+- decision_time,
+- entry_time,
+- raw entry price,
+- virtual notional,
+- configured horizon,
+- bars held / expected next bar time,
+- deterministic policy/settings provenance.
 
-For LONG:
-- adverse entry slippage raises effective entry price;
-- adverse exit slippage lowers effective exit price.
+Do not include exchange account IDs, API credentials, margin, leverage, order types or real quantity.
 
-For SHORT:
-- adverse entry slippage lowers effective sale/entry price;
-- adverse exit slippage raises effective buyback/exit price.
+Prefer one open position per symbol by default. New same-symbol signals while a position/reservation exists are rejected and recorded; do not pyramid in Phase 7.
 
-Apply the configured fee on each side consistently.
+Do not automatically reverse a position on an opposite signal.
 
-Store both:
-- gross return before costs,
+## Entry/exit and cost model
+Preserve Phase 6 conventions:
+- decision from finalized bar `t`,
+- entry at `open(t+1)`,
+- fixed horizon of H complete bars,
+- exit at `close(t+H)`,
+- H comes from the existing `BacktestSettings` or an explicitly reused compatible configuration,
+- every required horizon bar must exist.
+
+Reuse Phase 6 deterministic cost math (`outcome_returns`) where practical instead of reimplementing a slightly different fee/slippage formula.
+
+At a completed close:
+
+```text
+virtual_pnl = position_virtual_notional * net_return
+```
+
+where `net_return` is the same two-sided fee/slippage-adjusted signal return defined and tested in Phase 6.
+
+Store separately:
+- gross hypothetical PnL,
+- simulated fee cost,
+- simulated slippage cost,
 - total simulated cost,
-- net return after costs.
+- net hypothetical PnL.
 
-Validate all cost settings as finite and nonnegative. Do not permit a hidden negative fee/rebate unless explicitly modeled in a future phase.
+Do not silently double-count entry/exit costs.
 
-## Hypothetical outcome domain
-Create immutable typed models close to:
+## Mark-to-market equity
+Prefer implementing marked virtual equity because drawdown gates should reflect known open-position losses rather than only completed positions.
 
-```text
-BacktestOutcomeStatus = COMPLETED | INCOMPLETE
+If implemented, define it explicitly and conservatively.
 
-BacktestSignalOutcome
-- outcome_id
-- decision_id
-- observation_id
-- symbol
-- direction
-- decision_time
-- entry_time
-- exit_time
-- entry_price_raw
-- exit_price_raw
-- effective_entry_price
-- effective_exit_price
-- holding_period_bars
-- gross_return
-- simulated_cost_return
-- net_return
-- favorable_excursion (optional if exact semantics are implemented)
-- adverse_excursion (optional if exact semantics are implemented)
-- status / reason
-```
+At bar close for an open position, use only that bar's current close and information already known. A simple acceptable model is:
+- directional gross return from raw entry to current raw close;
+- subtract entry-side slippage and entry-side fee already incurred;
+- do **not** charge exit-side cost until the position actually exits;
+- no post-bar or future price may enter the mark.
 
-Do not include a real-money quantity, account balance, leverage, exchange order ID or execution credential.
-
-`outcome_id` must be deterministic from stable inputs and backtest settings.
-
-Incomplete outcomes must be explicit rather than fabricated.
-
-## MFE / MAE (optional but preferred)
-If implemented, calculate maximum favorable excursion and maximum adverse excursion only from bars **after entry** and through the exit horizon.
-
-For LONG and SHORT, define signs consistently and test them independently.
-
-Do not use post-exit bars.
-
-If exact MFE/MAE semantics would make the batch too large, defer them rather than implement ambiguous formulas.
-
-## Validation metrics
-Implement pure deterministic metric functions over completed hypothetical outcomes.
-
-Required metrics:
-- total input bars/events;
-- evaluated decision count;
-- ELIGIBLE count;
-- BLOCKED count;
-- NO_ACTION count;
-- unique completed signal outcomes;
-- incomplete outcome count;
-- LONG/SHORT counts;
-- win count / loss count / flat count;
-- win rate among completed non-flat outcomes (document denominator);
-- mean gross return;
-- mean net return / expectancy per completed signal;
-- median net return if implemented cleanly;
-- sum of gross returns;
-- sum of simulated costs;
-- sum of net returns;
-- gross profit;
-- gross loss absolute magnitude;
-- profit factor (`gross_profit / abs(gross_loss)`) with explicit zero-loss semantics;
-- best / worst net outcome;
-- consecutive win/loss streaks;
-- normalized cumulative-return curve;
-- maximum drawdown of that explicitly defined normalized signal-return curve.
-
-Do not label additive signal-return drawdown as “account drawdown” unless a true portfolio model exists.
-
-If you implement a compounded curve, define behavior for returns <= -100% and do not silently clamp impossible values.
-
-## Regime and cohort breakdowns
-Use existing Phase 3/4 analytical context where available to produce deterministic cohort summaries.
-
-At minimum consider breakdowns by:
-- symbol;
-- LONG vs SHORT;
-- Strategy/Decision outcome;
-- incomplete vs complete strategy coverage;
-- simple existing regime labels/inputs if the repository already exposes a stable regime category.
-
-Do not invent opaque clustering.
-
-If Phase 3 exposes only numeric regime inputs and no stable category label, either:
-- report those inputs separately, or
-- define a very small documented deterministic bucketing helper solely for reporting.
-
-Do not change strategy decisions based on these post-hoc breakdowns.
-
-## Time-segment / walk-forward reporting
-Add chronological segmentation for validation without optimization.
-
-Preferred capability:
-- split a completed backtest chronologically into N fixed segments or explicit date ranges;
-- compute the same metrics independently per segment;
-- preserve settings unchanged across all segments.
-
-This is a **walk-forward report**, not walk-forward optimization.
-
-Do not train/tune on an earlier segment and automatically alter strategy parameters for later segments.
-
-Tests must ensure no segment sees future outcomes from another segment.
-
-## Backtest run/report contracts
-Create immutable typed run-level output close to:
+Then:
 
 ```text
-BacktestRunMetadata
-- run_id
-- engine_version
-- started_from / ended_at historical timestamps
-- symbols
-- interval
-- input_count
-- strategy_settings_id
-- decision_policy_id
-- backtest_settings_id
-
-BacktestMetrics
-BacktestCohortMetrics
-BacktestRunReport
-- metadata
-- counts
-- metrics
-- per_symbol
-- per_direction
-- chronological_segments
-- warnings/limitations
+realized_equity = initial_virtual_equity + cumulative_closed_net_pnl
+marked_equity = realized_equity + sum(current_known_unrealized_net_pnl)
 ```
 
-All IDs should be deterministic from dataset identity + relevant settings where practical.
+Document exact formulas and test LONG/SHORT independently.
 
-Do not use random UUIDs for analytical reproducibility.
+If exact marked-equity implementation would be ambiguous or inconsistent with Phase 6 costs, defer marked equity and use an explicitly named realized-equity policy instead. Do not implement a misleading mark formula.
 
-## Dataset identity
-Create a stable run/dataset identity without loading arbitrary secret material into hashes.
+## Equity peak and drawdown gate
+Track a deterministic portfolio equity peak using the selected documented equity basis.
 
-For in-memory test data, derive identity from canonical normalized historical records and schema/version.
+Drawdown:
 
-For local file inputs, prefer hashing normalized parsed records or file bytes plus parser version. Document the choice.
+```text
+drawdown = max(0, (peak_equity - current_equity) / peak_equity)
+```
 
-Same historical data + same analytical settings + same backtest settings must yield the same run ID and same outputs.
+When drawdown is **>= configured max drawdown**, block new reservations until the selected equity basis recovers below the threshold. Existing virtual positions continue according to their fixed horizon; do not fabricate emergency liquidation.
 
-Changed data/settings must change the corresponding identity.
+Do not add dynamic stop-loss or liquidation in Phase 7.
+
+## Exposure accounting
+Track at minimum:
+- open virtual notional,
+- reserved virtual notional,
+- gross exposure = open + reserved notional,
+- gross exposure fraction relative to the documented equity basis,
+- per-symbol open + reserved exposure,
+- open position count,
+- reservation count.
+
+Gross exposure is absolute notional; LONG and SHORT do not cancel each other for risk-limit purposes.
+
+No leverage means the configured max gross exposure must never exceed 1.0.
+
+## Missing bars and gaps
+Portfolio accounting must never invent prices.
+
+Reservation gap:
+- if the exact next entry bar is missing, cancel/expire the reservation with an explicit reason;
+- no position is opened;
+- reserved capacity is released.
+
+Open-position gap before its required horizon is more serious because the simulator cannot know the missing mark/path.
+
+Use a fail-closed deterministic behavior. Preferred approach:
+- mark that position unresolved/incomplete,
+- mark the portfolio run `INCOMPLETE` (or equivalent explicit status),
+- do not fabricate an exit, return or final marked equity for the unresolved exposure,
+- continue only if the report semantics remain truthful; otherwise stop the run cleanly and report where it became incomplete.
+
+Do not forward-fill a price through a missing required bar.
+
+Tests must cover missing entry and missing horizon data separately.
+
+## Empty / insolvent states
+Handle explicitly:
+- empty dataset,
+- zero eligible decisions,
+- all portfolio-rejected eligible decisions,
+- dataset ending with pending reservations,
+- dataset ending with open positions,
+- virtual equity <= 0 due to a modeled SHORT/market move.
+
+If virtual equity becomes nonpositive:
+- block all new reservations,
+- do not clamp equity to zero,
+- do not claim exchange liquidation behavior,
+- preserve the actual simulated negative/zero value where model validation permits,
+- clearly flag insolvency/unsupported-realism limitation.
+
+## Deterministic identity contract
+Do not use random UUIDs.
+
+Use/extend the existing canonical identity helper.
+
+Prefer identities similar to:
+
+```text
+portfolio_policy_id = hash(validated portfolio settings + version)
+portfolio_decision_id = hash(policy_id, upstream decision_id, portfolio state identity, action/reason)
+reservation_id = hash(policy_id, decision_id, expected_entry_time, virtual_notional)
+position_id = hash(reservation_id, normalized entry-bar evidence)
+close_id = hash(position_id, normalized exit/horizon evidence, cost settings)
+portfolio_run_id = hash(
+    portfolio_engine_version,
+    dataset_id,
+    feature_settings_id,
+    strategy_settings_id,
+    decision_policy_id,
+    backtest_settings_id,
+    portfolio_policy_id,
+    symbols,
+    interval
+)
+```
+
+Equivalent dataset + settings must produce byte-for-byte equivalent report serialization where existing Pydantic ordering allows it.
+
+Changed portfolio settings or dataset must change the relevant identities.
+
+## Portfolio curve
+Create a chronological curve using the documented equity basis.
+
+Each point should contain enough provenance to audit the state, preferably:
+- timestamp,
+- realized equity,
+- marked equity if implemented,
+- peak equity,
+- drawdown,
+- open position count,
+- reservation count,
+- gross exposure,
+- gross exposure fraction,
+- cumulative gross PnL,
+- cumulative simulated costs,
+- cumulative net PnL.
+
+Equal-time updates must follow one documented deterministic event order.
+
+Prefer one canonical portfolio snapshot per completed market timestamp after:
+1. entries due at that timestamp open are applied,
+2. bar-close marks/exits are processed,
+3. all same-time decisions are arbitrated and reservations created.
+
+Document the exact sequence and test it.
+
+## Metrics
+Create pure deterministic portfolio metrics, distinct from Phase 6 independent signal metrics.
+
+Required metrics should include at minimum:
+- input bar count,
+- evaluated decision count,
+- upstream ELIGIBLE/BLOCKED/NO_ACTION counts,
+- portfolio accepted/reserved count,
+- portfolio rejected count,
+- ignored diagnostic decision count,
+- opened position count,
+- completed position count,
+- unresolved/incomplete position count,
+- missing-entry reservation count,
+- LONG/SHORT opened counts,
+- initial virtual equity,
+- final realized equity,
+- final marked equity when defined,
+- total gross PnL,
+- total simulated fee cost,
+- total simulated slippage cost,
+- total simulated costs,
+- total net PnL,
+- realized total return relative to initial equity,
+- peak equity,
+- maximum portfolio drawdown on the documented equity basis,
+- maximum gross exposure,
+- maximum gross exposure fraction,
+- maximum simultaneous open positions,
+- average open-position count across curve snapshots if implemented cleanly,
+- turnover = sum opened virtual notional / initial virtual equity (clearly documented),
+- win/loss/flat completed positions,
+- win rate excluding flats,
+- per-symbol completed PnL and counts,
+- portfolio rejection counts by stable reason.
+
+Do not call Phase 6's additive normalized signal-return curve an account curve. Phase 7 is the first shared-capital curve, but it is still a virtual simplified portfolio model.
+
+Sharpe/Sortino are optional and should be deferred unless sampling-frequency/annualization semantics are fully explicit and independently tested.
+
+## Relationship to Phase 6
+Do not replace Phase 6.
+
+Phase 6 remains useful for measuring every eligible signal independently.
+
+Phase 7 adds a second interpretation:
+
+```text
+Phase 6: signal-level outcome quality
+Phase 7: shared-capital portfolio feasibility/risk under overlapping signals
+```
+
+Where practical, reuse:
+- `HistoricalReplay`,
+- historical bar validation/ordering,
+- `BacktestSettings` holding horizon and fee/slippage settings,
+- `outcome_returns`,
+- dataset identity helpers,
+- deterministic Phase 4/5 identities.
+
+Do not duplicate indicator, strategy, decision or fee formulas.
 
 ## Suggested structure
-Prefer something close to:
+Prefer a compact structure close to:
 
 ```text
-backend/src/
-  domain/
-    backtesting.py
-  application/
-    backtest_engine.py
-    backtest_settings.py
-    backtest_metrics.py
-    historical_replay.py
-  infrastructure/
-    historical_files.py          # only if a local loader is added
+backend/src/domain/
+  paper_portfolio.py
+
+backend/src/application/
+  paper_portfolio_settings.py
+  paper_portfolio_identity.py
+  paper_portfolio_policy.py
+  paper_portfolio_ledger.py
+  paper_portfolio_metrics.py
+  paper_portfolio_engine.py
 ```
 
-Small helpers for deterministic identity or outcome calculations are acceptable.
+Adjust names after inspection if a simpler design fits the repository better.
 
-Avoid a large framework.
+Avoid a giant all-in-one service.
 
-## API boundary
-Phase 6 does **not** require a public HTTP endpoint.
+## API / lifecycle
+Phase 7 is offline validation infrastructure.
 
-Prefer the backtester as an offline Python/application service first.
+Do **not** add a live HTTP mutation API.
 
-If an API is added, it must be read-only over already-computed in-memory results and must not accept paths that allow arbitrary server filesystem access.
+Prefer no new FastAPI routes at all. Existing OpenAPI path count should remain unchanged.
 
-Do not add an endpoint that triggers a long-running historical backtest from arbitrary user input in this phase.
+Do not add background tasks to the application lifespan. Historical portfolio simulation should be explicitly invoked by code/tests, as Phase 6 backtesting is.
 
-Do not add network download endpoints.
-
-## Performance and resource behavior
-Phase 6 should work for moderately large offline datasets without obviously unbounded duplicate copies.
-
-Requirements:
-- streaming/iterator input where practical;
-- bounded feature history remains owned by existing FeatureEngine;
-- do not retain every raw event twice;
-- retain completed outcome records only when needed for final metrics/reporting;
-- document complexity and memory trade-offs;
-- tests should include at least one longer deterministic replay to catch accidental quadratic behavior.
-
-Do not perform premature micro-optimization.
-
-## Error handling
-Fail closed and explicitly for:
-- malformed historical bars,
-- duplicate/unsorted bars where ordering cannot be resolved safely,
-- interval mismatch,
-- missing required next-entry bar,
-- missing exit horizon,
-- nonfinite arithmetic,
-- invalid transaction-cost settings,
-- invalid direction,
-- malformed DecisionRecord/StrategySnapshot,
-- duplicated analytical decision identity,
-- impossible timestamp ordering.
-
-A missing future bar at dataset end is normally an **INCOMPLETE** signal outcome, not a fabricated fill.
+Import must remain side-effect free and no network call may occur.
 
 ## Testing requirements
-Add comprehensive deterministic offline tests.
+Add comprehensive deterministic offline tests. Expected tests should not calculate their expected answer by calling the same production helper under test.
 
-### Historical domain / loader
-Test:
-- immutable records;
-- timestamp awareness;
-- OHLC consistency;
-- finite numeric validation;
-- volume bounds;
-- duplicate handling;
-- deterministic ordering;
-- file schema validation if loader exists;
-- no network access.
+### Batch 1 — domain/settings/pure sizing math
+Implement and test:
+- immutable portfolio models,
+- setting validation,
+- extra-field rejection,
+- NaN/Infinity rejection,
+- deterministic settings/policy IDs,
+- desired-notional formula,
+- all-or-none capacity checks,
+- gross/symbol exposure math,
+- LONG/SHORT mark math if marked equity is implemented,
+- drawdown formula and exact threshold boundary,
+- no executable/order/account fields.
 
-### Replay / anti-look-ahead
-Test at minimum:
-- chronological replay;
-- same historical data -> same feature/strategy/decision sequence;
-- simulated historical clock keeps historical snapshots valid at historical time;
-- later real clock would make the same snapshot stale;
-- decision from bar t never receives bar t+1 data before it is created;
-- entry uses bar t+1 open;
-- changing only future bars cannot change the decision at t;
-- missing next bar -> incomplete outcome;
-- missing exit bar -> incomplete outcome;
-- no synthetic bars are inserted;
-- multi-symbol equal-timestamp ordering is deterministic.
+### Batch 2 — PaperPortfolioPolicy + arbitration
+Implement and test:
+- ELIGIBLE can be accepted when capacity exists,
+- BLOCKED/NO_ACTION ignored diagnostically,
+- duplicate decision refused/deduped deterministically,
+- max-open-position gate,
+- gross-exposure gate,
+- symbol-exposure gate,
+- one-position-per-symbol gate,
+- nonpositive-equity gate,
+- drawdown gate exactly at threshold,
+- reservation counts toward capacity,
+- equal-time arbitration independent of input order,
+- arbitration score/confidence/agreement/symbol tie boundaries,
+- upstream DecisionRecord remains unmodified.
 
-### Decision filtering / dedupe
-Test:
-- ELIGIBLE -> possible hypothetical outcome;
-- BLOCKED -> diagnostic count only;
-- NO_ACTION -> diagnostic count only;
-- repeated same decision ID counted once;
-- changed observation creates new eligible evaluation;
-- no TradeIntent/RiskEngine/ExecutionGateway calls.
+### Batch 3 — ledger, reservations, entries, exits
+Implement and test:
+- reservation at decision t,
+- exact entry at next bar open,
+- no same-bar fill,
+- missing next bar releases reservation without position,
+- exact fixed H-bar exit,
+- H=1 boundary,
+- LONG/SHORT PnL symmetry examples,
+- Phase 6 fees/slippage reused consistently,
+- no double-counted costs,
+- overlapping positions across different symbols,
+- same-symbol signal rejected while position/reservation active,
+- deterministic position/close IDs,
+- data gap with open exposure fails closed/incomplete,
+- dataset end with open position is explicit and not fabricated.
 
-### Outcome math
-Test exact LONG and SHORT formulas independently:
-- zero fees/slippage;
-- fee only;
-- slippage only;
-- combined costs;
-- flat market;
-- positive move;
-- adverse move;
-- Decimal precision;
-- exact horizon boundary;
-- invalid/nonfinite settings;
-- deterministic outcome ID.
+### Batch 4 — portfolio curve + metrics
+Implement and independently test:
+- realized equity reconciliation,
+- marked equity reconciliation if supported,
+- peak equity,
+- drawdown and maximum drawdown,
+- gross exposure curve,
+- max simultaneous positions,
+- cumulative gross/cost/net PnL,
+- turnover,
+- win/loss/flat counts,
+- per-symbol PnL/counts,
+- rejection-reason counts,
+- empty dataset,
+- no eligible decisions,
+- all rejected,
+- insolvency/nonpositive-equity state,
+- report count reconciliation.
 
-Do not compute expected returns by calling the production helper under test.
-
-### Metrics
-Test:
-- empty completed set;
-- one winner;
-- one loser;
-- all wins;
-- all losses;
-- mixed flat/win/loss;
-- profit-factor zero-loss semantics;
-- mean/median if implemented;
-- cumulative normalized return;
-- maximum drawdown exact cases;
-- best/worst;
-- streak calculations;
-- LONG/SHORT split;
-- symbol split;
-- chronological segment split;
-- counts reconcile exactly with raw records.
-
-### Integration
-Build a deterministic small historical dataset that flows through the actual implemented production analytical pipeline where practical:
+### Batch 5 — end-to-end deterministic portfolio replay
+Use deterministic synthetic multi-symbol historical bars and the actual production:
 
 ```text
-historical bars
--> feature generation
--> strategy evaluation
--> decision evaluation
--> backtest outcome
--> metrics
+HistoricalReplay
+ -> FeatureEngine
+ -> StrategyEngine
+ -> DecisionEngine
+ -> PaperPortfolioEngine
 ```
 
-Verify:
-- Phase 3 warm-up behavior is preserved;
-- early bars do not magically produce warmed indicators;
-- Phase 4 candidate rules are unchanged;
-- Phase 5 eligibility rules are unchanged;
-- repeated runs are byte/serialization deterministic where intended;
-- no wall-clock/network dependency exists.
+Test:
+- no look-ahead prefix invariance,
+- same-time multi-symbol arbitration is stable under input permutation,
+- repeated identical run produces identical portfolio decisions, reservations, positions, curve, IDs and serialized report,
+- changed portfolio policy changes policy/run IDs,
+- changed market data changes dataset/run IDs,
+- Phase 6 independent signal report remains unchanged by Phase 7,
+- bounded feature history remains intact,
+- no task/subscriber leaks after cancellation/error,
+- no network calls,
+- existing OpenAPI routes unchanged,
+- all Phase 1–6 tests remain intact.
 
-### Regression / scope
-Explicitly verify:
-- no API keys/secrets;
-- no account endpoints;
-- no order submission;
-- no live/testnet execution;
-- no P2P automation;
-- no AI provider;
-- no ML/RL optimizer;
-- no parameter optimization;
-- no production strategy threshold modification based on returns.
-
-All Phase 1–5 tests must remain passing.
+## Scope/security audit tests
+Explicitly assert/review that Phase 7 production modules:
+- do not import Binance private/account APIs,
+- do not import or construct `TradeIntent`,
+- do not import or construct `ApprovedTradeIntent`,
+- do not import/call `RiskEngine`,
+- do not import/call `PaperExecutionGateway`,
+- do not submit orders,
+- do not request API keys,
+- do not expose account/balance fields,
+- do not implement P2P transfers,
+- do not add leverage/margin/liquidation execution,
+- do not add AI/OpenAI/ML/RL,
+- do not add parameter optimization,
+- do not add network-dependent tests.
 
 ## Documentation
 Update:
-- `CODEX_TASK.md`,
+- `CODEX_TASK.md` implementation status at completion,
 - `docs/ARCHITECTURE.md`,
 - `backend/README.md`,
-- root README only if useful.
+- root `README.md` only if useful.
 
-Create `docs/PHASE_6_REPORT.md` at completion.
+Create:
+- `docs/PHASE_7_REPORT.md`.
 
 Document exactly:
-- historical input schema;
-- replay ordering;
-- simulated clock behavior;
-- anti-look-ahead guarantees;
-- decision deduplication;
-- entry convention;
-- exit horizon convention;
-- transaction-cost formulas;
-- LONG/SHORT return formulas;
-- outcome status semantics;
-- metric formulas and denominators;
-- profit-factor edge cases;
-- normalized drawdown definition;
-- cohort/regime reporting;
-- chronological segment reporting;
-- deterministic identity rules;
-- performance/memory characteristics;
-- limitations and missing market microstructure;
-- why this is validation rather than optimization;
-- why historical results do not imply future returns.
+- why Phase 7 is separate from Phase 6 signal validation,
+- why Phase 1 RiskEngine/PaperExecutionGateway are intentionally not wired into historical portfolio simulation,
+- virtual-capital semantics,
+- settings/defaults,
+- sizing formula,
+- risk gates,
+- simultaneous-decision arbitration,
+- reservation semantics,
+- event ordering,
+- entry/exit horizon,
+- cost model,
+- equity/mark formulas,
+- exposure formulas,
+- drawdown gate,
+- missing-bar behavior,
+- deterministic identity contract,
+- metrics,
+- limitations,
+- insolvency behavior,
+- why this is not an exchange-accurate account/margin model,
+- no profitability claim.
 
-## Development batches
-
-### Batch 1 — historical contracts + settings + pure outcome math
-- typed historical bars / normalized input reuse;
-- BacktestSettings;
-- BacktestSignalOutcome contracts;
-- deterministic identities;
-- pure LONG/SHORT cost/return calculation;
-- targeted tests.
-
-### Batch 2 — deterministic replay + decision capture
-- replay clock/source;
-- chronological ordering;
-- production Feature/Strategy/Decision integration where practical;
-- stable decision capture/deduplication;
-- anti-look-ahead tests;
-- targeted tests.
-
-### Batch 3 — horizon/outcome evaluator
-- next-bar entry;
-- fixed-bar exit horizon;
-- incomplete outcomes;
-- fee/slippage handling;
-- optional MFE/MAE if precise;
-- targeted tests.
-
-### Batch 4 — metrics + cohort/segment reporting
-- aggregate counts;
-- win/loss/flat;
-- expectancy;
-- profit factor;
-- cumulative normalized returns;
-- normalized maximum drawdown;
-- streaks;
-- symbol/direction breakdown;
-- chronological segment reporting;
-- targeted tests.
-
-### Batch 5 — full integration, longer replay, documentation
-- deterministic end-to-end historical fixture;
-- Phase 1–5 regression verification;
-- performance sanity check;
-- docs/report;
-- full suite.
-
-After each batch, run targeted tests and fix failures before proceeding.
-
-## Completion commands
-At minimum from `backend` run:
-
-```bash
-python -m pytest
-python -m pip check
-```
-
-Also run:
-- import/OpenAPI check to ensure existing API remains stable;
-- offline lifespan smoke test;
-- deterministic replay twice and compare report identity/output;
-- `git diff --check`;
-- `git status`;
-- `git diff --stat`.
-
-Do not commit or push automatically.
-
-## Acceptance criteria
-Phase 6 is complete only when:
-1. Existing production FeatureEngine, StrategyEngine and DecisionEngine semantics are preserved.
-2. Historical replay is deterministic and offline.
-3. Historical freshness uses an explicit simulated clock, not disabled safety checks.
-4. No look-ahead path exists in the tested default flow.
-5. Default hypothetical entry is after the decision-producing bar, preferably next-bar open.
-6. Exit horizon is fixed, explicit and deterministic.
-7. Fees/slippage assumptions are explicit, validated and included in net returns.
-8. BLOCKED/NO_ACTION never become hypothetical trades/outcomes.
-9. Duplicate reads of one analytical observation are not double-counted.
-10. Missing future data produces INCOMPLETE, not fabricated outcomes.
-11. Core metrics are independently tested.
-12. Cohort/time-segment reports do not change decisions or settings.
-13. No parameter optimizer is introduced.
-14. No TradeIntent, RiskEngine approval, or execution is triggered by Phase 6.
-15. No private/account/API-key/P2P integration exists.
-16. All 1645 baseline tests remain passing.
-17. New Phase 6 tests pass.
-18. Documentation precisely states limitations and no-profitability guarantee.
+## Final validation
+After all batches:
+1. run all Phase 7 targeted tests;
+2. run complete `python -m pytest`;
+3. run `python -m pip check`;
+4. run import/OpenAPI validation and confirm existing GET path count is unchanged;
+5. run offline lifespan smoke tests and confirm zero leaked tasks/subscribers;
+6. run the same deterministic portfolio replay twice and compare IDs plus serialized report bytes;
+7. run an equal-time multi-symbol input-permutation test and confirm same portfolio output;
+8. run `git diff --check`;
+9. inspect `git status`;
+10. inspect `git diff --stat`;
+11. audit new production modules for prohibited execution/private/account/AI/optimization references.
 
 ## Completion report
-At the end report:
-- exact baseline result;
-- files created;
-- files modified;
-- historical data contract;
-- replay architecture;
-- simulated clock design;
-- anti-look-ahead mechanism;
-- entry/exit conventions;
-- transaction-cost defaults and formulas;
-- outcome-domain contracts;
-- deduplication behavior;
-- exact metric definitions;
-- cohort/segment reporting;
-- deterministic identities;
-- exact targeted batch results;
-- exact complete `python -m pytest` result;
-- warnings;
-- dependency/import/OpenAPI/lifecycle results;
-- deterministic repeated-run check;
-- intentionally deferred work;
-- remaining technical risks;
-- final `git status` and `git diff --stat`.
+At completion report:
+1. exact baseline result;
+2. each batch result;
+3. final targeted result;
+4. exact full-suite result;
+5. files created;
+6. files modified;
+7. portfolio architecture;
+8. settings/defaults;
+9. exact sizing semantics;
+10. exact risk gates;
+11. arbitration order;
+12. reservation behavior;
+13. entry/exit/cost behavior;
+14. equity and drawdown formulas;
+15. missing-data behavior;
+16. deterministic identity behavior;
+17. portfolio metrics;
+18. end-to-end determinism evidence;
+19. lifecycle/network evidence;
+20. warnings;
+21. deferred work;
+22. remaining technical risks;
+23. `git status`;
+24. `git diff --stat`.
 
-Do not commit or push until reviewed.
+Do **not** commit or push automatically.
+
+Do **not** start Phase 8.
+
+## Explicitly deferred after Phase 7
+Defer:
+- exchange/private/account integration,
+- real-money execution,
+- testnet order submission,
+- P2P automation,
+- exchange-accurate margin/liquidation/funding,
+- real quantity/lot-size sizing,
+- stop-loss/take-profit order placement,
+- dynamic exits,
+- strategy/decision parameter optimization,
+- AI/ML/RL,
+- persistent audit/database layer,
+- production portfolio execution orchestration.
+
+Phase 7 ends when a deterministic, well-tested **offline shared-capital paper portfolio report** exists and all previous phases still pass.
