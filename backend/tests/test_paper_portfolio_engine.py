@@ -171,7 +171,7 @@ async def test_ambient_decimal_context_does_not_change_report():
 
 def test_scope_and_existing_openapi_remain_unchanged():
     from src.main import app
-    assert len(app.openapi()['paths']) == 10
+    assert len(app.openapi()['paths']) == 19  # Nine additive Phase 8 read-only routes.
     assert all(set(item) == {'get'} for item in app.openapi()['paths'].values())
     root = Path(__file__).parents[1] / 'src'
     paths = list((root/'application').glob('paper_portfolio_*.py')) + [root/'domain'/'paper_portfolio.py']

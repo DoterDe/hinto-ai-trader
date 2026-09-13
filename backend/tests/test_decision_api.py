@@ -66,7 +66,7 @@ def test_openapi_declares_typed_read_only_decisions_and_no_order_fields() -> Non
         assert operation["responses"]["200"]["content"]["application/json"]["schema"] == {"$ref": f"#/components/schemas/{model}"}
     fields = schema["components"]["schemas"]["DecisionRecord"]["properties"]
     assert not {"quantity", "price", "leverage", "order_type", "stop_loss", "take_profit", "execution_mode", "api_key"} & fields.keys()
-    assert len(schema["paths"]) == 10
+    assert len(schema["paths"]) == 19  # Nine additive Phase 8 read-only routes.
 
 
 def test_offline_feature_strategy_decision_chain_uses_existing_runtime() -> None:

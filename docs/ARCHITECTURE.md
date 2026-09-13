@@ -509,6 +509,84 @@ task changes. Phase 1 RiskEngine and PaperExecutionGateway remain separate becau
 they consume executable quantity-bearing intents and have process-local execution
 state/identities. Exact formulas and validation are in `docs/PHASE_7_REPORT.md`.
 
+## Phase 8: continuous public-data paper runtime and dashboard
+
+The continuous path is public Hub -> tagged closed observer -> LiveBarBatcher ->
+LivePaperAnalysis -> existing FeatureEngine/StrategyEngine/DecisionEngine ->
+LivePaperCoordinator -> PaperPortfolioPolicy / LivePaperPortfolio -> read-only
+telemetry -> React. No execution gateway is connected to this path.
+
+The closed observer is additive to ordinary Hub subscriptions. It retains
+duplicate/revision diagnostics even when ordinary latest-cache ordering rejects
+an event, tags its actual connection generation, and tracks its own bounded queue
+loss. Future-clock events remain excluded. Existing on-demand APIs retain their
+ordinary analytical engines.
+
+An isolated analytical view prevents a newer ordinary-cache observation t+1 from
+affecting closed t. The same production analytical classes run at canonical close
+time. Real boundary/publication/receipt ages and source connection generation are
+gated before admission, including after lazy startup yields. Optional context
+remains missing and production confidence penalties apply. Freshness checks remain.
+
+Equal-close groups have a 1500 ms monotonic first-arrival deadline. Complete or
+timed-out groups finalize in observed chronological order and sort by symbol.
+Missing members stay absent; conflicting members fail closed. A permanent watermark
+prevents late rewrites after recent fingerprints are evicted. Loss/reconnects
+invalidate continuity. The settled queue/timer race rechecks loss before admitting
+a held bar.
+
+The live ledger reuses Phase 7 domain/policy/identity/arithmetic and Phase 6 cost
+math without using the finite report as continuous storage. Known marked equity
+sets fixed notional. Reservations immediately consume capacity; simultaneous
+ranking uses score/confidence/agreement/symbol/decision ID, never future outcomes.
+Exact next-open entry and fixed-horizon exit remain. Missing entry expires; missing
+holding evidence makes exposure INCOMPLETE and valuation unknown. Observed curve
+points remain immutable. Shutdown/reconnect/loss never invents a close; restart
+creates fresh in-memory state.
+
+Retention defaults are 1000 events, 1000 captured decisions, 1000 dedupe IDs,
+1000 recent closes, 2000 curve points, eight pending groups/eight sealed groups
+and 1000 queued observations. Current captures are O(configured symbols), feature
+history is 500 candles per symbol per engine by default, and active/reserved
+exposure is capacity-bounded. Lifetime totals are scalar aggregates. Phase 6/7
+finite audit lists remain distinct and intentionally grow with their finite input.
+
+One coordinator starts per enabled lifespan. States are DISABLED, STARTING,
+WARMING_UP, RUNNING, DEGRADED, STOPPING, STOPPED and ERROR. Consumers register
+before source startup. Source/coordinator/feature tasks and nested timers are
+canceled and awaited on shutdown. Tests inject clocks/sources. A disabled source
+without injection creates no analytical or paper subscription. This remains a
+single-worker, process-local workstation.
+
+Nine GET paths expose combined snapshot, status, portfolio, positions, decisions,
+events, curve and two explanation resources. Combined telemetry is a synchronous
+event-loop projection, not analytical evaluation. Shared `as_of`, separate
+`valuation_as_of`, raw publication/receipt times and current versus captured
+generations qualify the data. Models preserve nulls and finite Decimal strings.
+GETs cannot change virtual state. Exact route-set tests include all 19 OpenAPI
+paths while preserving method/schema checks.
+
+React/TypeScript/Vite has seven pages and separate API, polling, types, layout,
+components, help and formatting modules. Backend remains authoritative for
+features, scores, decisions, approvals, identities and accounting. Frontend math
+is presentation-only: formatting, sorting, quote differences, capacity display
+ratios and chart coordinates. Generated schema/types and a shared help catalog
+avoid parallel domain contracts. Finite scientific Decimal notation is supported;
+null valuation is Unknown and breaks chart lines. Simple/Advanced is a localStorage
+display preference only. Sequential polling has timeout, capped retry and cleanup.
+
+Backtest is educational, without execution/upload. Guide and basic System content
+work offline. The frontend is newly authored; the upstream public project was
+only a UX reference. See [module map](MODULE_MAP.md), [user guide](USER_GUIDE.md),
+[API/bounds](../backend/README.md) and [validation report](PHASE_8_REPORT.md).
+
+Future execution requires a separately reviewed deterministic intent/sizing builder
+-> independent pre-execution risk review -> execution port -> exchange adapter.
+Future P2P public observations would feed separate analytics/risk/quote comparison
+-> user-visible information. Neither boundary is operational. No private account,
+credential, order, transfer or P2P transaction adapter is added. Disabled roadmap
+cards cannot act. AI/ML, optimization and Phase 9 remain unstarted.
+
 ## Phase status and future work
 
 1. Domain + RiskEngine + PaperExecution + FastAPI scaffold.
@@ -518,7 +596,8 @@ state/identities. Exact formulas and validation are in `docs/PHASE_7_REPORT.md`.
 5. Deterministic DecisionEngine with immutable eligibility records and read-only API.
 6. Offline deterministic historical replay and signal-level validation reports.
 7. Offline deterministic shared-capital virtual portfolio and risk simulation.
+8. Bounded live public-data virtual runtime and explainable read-only React dashboard.
 
-Future tasks require separate scope: execution sizing, production portfolio orchestration and persistence,
-AIAdvisor interface/provider, React dashboard, testnet adapter/reconciliation,
-and additional operational reliability validation. No later phase is started here.
+Future tasks require separate scope: execution sizing, durable orchestration and
+persistence, AIAdvisor interface/provider, testnet adapter/reconciliation, P2P
+analytics and operational reliability validation. No later phase is started here.

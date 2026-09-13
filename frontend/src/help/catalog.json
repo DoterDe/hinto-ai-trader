@@ -1,0 +1,366 @@
+{
+  "terms": [
+    {
+      "key": "paper",
+      "label": "PAPER / VIRTUAL ONLY",
+      "explanation": "Public market information and simulated capital only. Phase 8 cannot place a real order or move funds."
+    },
+    {
+      "key": "market_data",
+      "label": "Market data",
+      "explanation": "Public prices and observations. They describe a market, not your exchange account."
+    },
+    {
+      "key": "features",
+      "label": "Feature Engine",
+      "explanation": "Turns observed market data into numerical measurements. Missing inputs stay unavailable."
+    },
+    {
+      "key": "ema",
+      "label": "EMA",
+      "explanation": "An exponentially weighted moving average gives recent prices more weight. EMA relationships provide trend evidence, not a prediction."
+    },
+    {
+      "key": "rsi",
+      "label": "RSI",
+      "explanation": "A bounded measure of recent price-movement strength. An extreme value does not mean the market must reverse."
+    },
+    {
+      "key": "atr",
+      "label": "ATR",
+      "explanation": "Average true range measures recent movement size, including gaps. It describes volatility, not direction."
+    },
+    {
+      "key": "vwap",
+      "label": "VWAP",
+      "explanation": "Volume-weighted average price over the configured candle window. Distance from it provides trend or mean-reversion context."
+    },
+    {
+      "key": "volatility",
+      "label": "Volatility",
+      "explanation": "Variation in recent observed returns. Larger values mean larger historical movement, not certainty about the next move."
+    },
+    {
+      "key": "spread",
+      "label": "Spread",
+      "explanation": "Best known ask minus bid. Wider spreads can imply worse immediate execution conditions; this runtime places no orders."
+    },
+    {
+      "key": "basis",
+      "label": "Mark/index basis",
+      "explanation": "Difference between the public mark price and index price. It provides market context, not account profit."
+    },
+    {
+      "key": "funding",
+      "label": "Funding context",
+      "explanation": "A public funding-rate observation and next funding time. Funding is not charged in this simulation."
+    },
+    {
+      "key": "strategies",
+      "label": "Strategy Engine",
+      "explanation": "Independent deterministic rules evaluate the same feature snapshot and expose their evidence."
+    },
+    {
+      "key": "trend_following",
+      "label": "Trend following",
+      "explanation": "Looks for corroborated trend measurements, scaled by directional efficiency and movement size."
+    },
+    {
+      "key": "momentum_continuation",
+      "label": "Momentum continuation",
+      "explanation": "Combines recent momentum and candle-volume evidence. Optional missing book context reduces evidence confidence."
+    },
+    {
+      "key": "mean_reversion",
+      "label": "Mean reversion",
+      "explanation": "Measures opposing evidence after a price stretch; strong trend or volatility can suppress that evidence."
+    },
+    {
+      "key": "score",
+      "label": "Composite score",
+      "explanation": "A weighted signed analytical score from -100 to 100. Positive and negative values describe directional evidence, not expected returns."
+    },
+    {
+      "key": "confidence",
+      "label": "Evidence confidence",
+      "explanation": "Confidence measures evidence quality, completeness and agreement. It is not probability of profit; 0.72 does not mean a 72% chance of making money."
+    },
+    {
+      "key": "agreement",
+      "label": "Agreement",
+      "explanation": "How strongly strategy contributions point in the same direction. Opposing evidence lowers agreement and confidence."
+    },
+    {
+      "key": "decisions",
+      "label": "Decision Engine",
+      "explanation": "Checks readiness, freshness, identity and explicit policy thresholds. It produces an inert analytical record."
+    },
+    {
+      "key": "eligible",
+      "label": "ELIGIBLE",
+      "explanation": "The deterministic policy permits further paper evaluation. ELIGIBLE does not guarantee a profitable trade or approve an exchange order."
+    },
+    {
+      "key": "blocked",
+      "label": "BLOCKED",
+      "explanation": "An analytical readiness, freshness, identity or policy check failed. Read the recorded reason to see which check."
+    },
+    {
+      "key": "no_action",
+      "label": "NO_ACTION",
+      "explanation": "No qualifying analytical candidate is available. Warm-up or weak/mixed evidence can produce this ordinary abstention."
+    },
+    {
+      "key": "reservation",
+      "label": "Reservation",
+      "explanation": "Virtual portfolio capacity reserved after a decision. It is not an exchange order. Entry requires the next exact finalized bar."
+    },
+    {
+      "key": "virtual_position",
+      "label": "Virtual position",
+      "explanation": "A fixed virtual notional measured from the next bar open through the configured holding horizon. No assets are purchased or borrowed."
+    },
+    {
+      "key": "marked_equity",
+      "label": "Marked virtual equity",
+      "explanation": "Realized virtual equity plus currently known unrealized net PnL. It is not an exchange balance. A missing required holding bar makes valuation Unknown."
+    },
+    {
+      "key": "realized_equity",
+      "label": "Realized virtual equity",
+      "explanation": "Initial virtual capital plus net PnL from completed virtual positions. It excludes unfinished marks."
+    },
+    {
+      "key": "pnl",
+      "label": "PnL",
+      "explanation": "Profit or loss in virtual simulation units. Gross PnL excludes assumed costs; net PnL includes them."
+    },
+    {
+      "key": "unrealized_pnl",
+      "label": "Unrealized net PnL",
+      "explanation": "Directional movement from entry to the last known close, less entry-side costs. No exit cost is charged until the fixed horizon completes."
+    },
+    {
+      "key": "exposure",
+      "label": "Exposure",
+      "explanation": "Fixed virtual notional that is open or reserved for one symbol. No exchange quantity or leverage is selected."
+    },
+    {
+      "key": "gross_exposure",
+      "label": "Gross exposure",
+      "explanation": "Open plus reserved virtual notional. LONG and SHORT add without cancelling. New reservations must fit the configured marked-equity limit."
+    },
+    {
+      "key": "drawdown",
+      "label": "Drawdown",
+      "explanation": "Distance below the previous known virtual equity peak: (peak - marked equity) / peak. At the limit, new reservations block; existing fixed horizons continue."
+    },
+    {
+      "key": "fees",
+      "label": "Simulated fees",
+      "explanation": "A fixed cost assumption, 5 basis points per side by default. It is not a claim about current Binance fees."
+    },
+    {
+      "key": "slippage",
+      "label": "Simulated slippage",
+      "explanation": "An assumed adverse price adjustment, 2 basis points per side by default. It does not model actual fills, liquidity or market impact."
+    },
+    {
+      "key": "bps",
+      "label": "Basis points",
+      "explanation": "One basis point is 0.01%. A 5 bps assumption means 0.05% per side, not 5%."
+    },
+    {
+      "key": "warmup",
+      "label": "Warm-up",
+      "explanation": "Indicators need enough consecutive finalized candles. Gaps or reconnects restart continuity; thresholds are not relaxed to show a result sooner."
+    },
+    {
+      "key": "stale",
+      "label": "Stale feed",
+      "explanation": "Required observations are missing, disconnected, from an older connection generation, or older than their freshness limit."
+    },
+    {
+      "key": "connection_generation",
+      "label": "Connection generation",
+      "explanation": "Each public reconnection starts a new observation generation. Captured decisions retain the generation admitted at their close; current feed diagnostics may describe a newer connection. Old-generation candles cannot enter new analysis."
+    },
+    {
+      "key": "missing",
+      "label": "Missing data",
+      "explanation": "An absent required candle or mark stays absent. Late data cannot rewrite finalized portfolio history. Unknown is never converted to zero."
+    },
+    {
+      "key": "backtest",
+      "label": "Backtest",
+      "explanation": "Offline evaluation of fixed rules on finalized historical public bars. Historical results do not predict future returns."
+    },
+    {
+      "key": "paper_portfolio",
+      "label": "Paper portfolio",
+      "explanation": "A shared pool of virtual capital with deterministic capacity rules. It is not an exchange-accurate account or liquidation model."
+    },
+    {
+      "key": "limits",
+      "label": "Portfolio limits",
+      "explanation": "Defaults: target 10%, gross 40%, symbol 15%, four open-plus-reserved slots, 20% drawdown. Allocation is all-or-none; confidence never scales size. Losses can raise existing exposure ratios."
+    },
+    {
+      "key": "horizon",
+      "label": "Fixed holding horizon",
+      "explanation": "A decision at close t reserves entry at open t+1. H=5 means exit at close t+5 after five complete bars. Missing required bars leave an incomplete position."
+    },
+    {
+      "key": "identity",
+      "label": "Observation and policy IDs",
+      "explanation": "Content hashes identify analytical evidence and fixed settings. They support reproducibility; they are not authenticated execution approvals."
+    },
+    {
+      "key": "closed_view",
+      "label": "Closed-bar analytical view",
+      "explanation": "Paper decisions use finalized candles only. Real publication/receipt age and generation are checked before evaluation. Newer live-cache values and optional book context cannot enter an older decision."
+    },
+    {
+      "key": "capacity",
+      "label": "Virtual capacity",
+      "explanation": "Reservations and active positions consume capacity immediately. Opposite directions do not cancel exposure or reverse existing positions."
+    },
+    {
+      "key": "peak",
+      "label": "Peak equity",
+      "explanation": "Highest previously known marked virtual equity, starting with initial capital. It is the reference for drawdown."
+    },
+    {
+      "key": "relative_volume",
+      "label": "Relative volume",
+      "explanation": "Current candle volume compared with its configured prior-window average. It is historical context, not a forecast."
+    },
+    {
+      "key": "taker_proxy",
+      "label": "Taker-volume proxy",
+      "explanation": "Candle taker-buy volume supports a limited order-flow proxy. Raw depth deltas are not a reconstructed full order book."
+    },
+    {
+      "key": "roc",
+      "label": "ROC and returns",
+      "explanation": "Rate of change and returns compare observed closes over fixed windows. Log returns are used for realized volatility."
+    },
+    {
+      "key": "regime",
+      "label": "Regime inputs",
+      "explanation": "Numerical trend efficiency, EMA separation, ATR and relative volume. These are measurements, not learned market predictions."
+    }
+  ],
+  "modules": [
+    {
+      "key": "public",
+      "name": "Public Binance data",
+      "purpose": "Observe public market prices.",
+      "inputs": "Public WebSocket messages.",
+      "outputs": "Normalized market events.",
+      "limitations": "No account access; no full order-book reconstruction.",
+      "source_path": "backend/src/infrastructure/binance/public_market_data.py",
+      "page": "Market",
+      "can_move_money": false
+    },
+    {
+      "key": "hub",
+      "name": "MarketDataHub",
+      "purpose": "Share latest observations and bounded subscriptions.",
+      "inputs": "Normalized public events and connection generations.",
+      "outputs": "Freshness, latest values and finalized-bar observations.",
+      "limitations": "Queues can lose data; losses are diagnosed, never backfilled.",
+      "source_path": "backend/src/application/market_data_hub.py",
+      "page": "Market",
+      "can_move_money": false
+    },
+    {
+      "key": "features",
+      "name": "FeatureEngine",
+      "purpose": "Measure observed market behavior.",
+      "inputs": "Consecutive finalized candles and available public context.",
+      "outputs": "FeatureSnapshot with indicators and readiness.",
+      "limitations": "Warm-up and missing inputs remain explicit.",
+      "source_path": "backend/src/application/feature_engine.py",
+      "page": "Market",
+      "can_move_money": false
+    },
+    {
+      "key": "strategies",
+      "name": "StrategyEngine",
+      "purpose": "Combine independent rule-based evidence.",
+      "inputs": "FeatureSnapshot.",
+      "outputs": "Strategy assessments, aggregate score and optional candidate.",
+      "limitations": "Evidence confidence is not profit probability.",
+      "source_path": "backend/src/application/strategy_engine.py",
+      "page": "Signals & Decisions",
+      "can_move_money": false
+    },
+    {
+      "key": "decisions",
+      "name": "DecisionEngine",
+      "purpose": "Apply analytical eligibility rules.",
+      "inputs": "StrategySnapshot and fixed decision policy.",
+      "outputs": "ELIGIBLE, BLOCKED or NO_ACTION with reasons.",
+      "limitations": "No executable intent or order approval.",
+      "source_path": "backend/src/application/decision_engine.py",
+      "page": "Signals & Decisions",
+      "can_move_money": false
+    },
+    {
+      "key": "coordinator",
+      "name": "LivePaperCoordinator",
+      "purpose": "Process exact finalized close groups.",
+      "inputs": "Bounded, generation-tagged public candles.",
+      "outputs": "Captured analysis, virtual portfolio transitions and diagnostics.",
+      "limitations": "Late bars cannot rewrite history; no private data or execution.",
+      "source_path": "backend/src/application/live_paper_coordinator.py",
+      "page": "Overview",
+      "can_move_money": false
+    },
+    {
+      "key": "policy",
+      "name": "PaperPortfolioPolicy",
+      "purpose": "Allocate limited virtual capacity deterministically.",
+      "inputs": "Eligible decision and current virtual state.",
+      "outputs": "RESERVED, REJECTED or IGNORED with a reason.",
+      "limitations": "No quantity, leverage, pyramiding, reversal or profit forecast.",
+      "source_path": "backend/src/application/paper_portfolio_policy.py",
+      "page": "Paper Portfolio",
+      "can_move_money": false
+    },
+    {
+      "key": "ledger",
+      "name": "Virtual portfolio ledgers",
+      "purpose": "Track fixed-horizon positions and assumed costs.",
+      "inputs": "Reservations and subsequent exact finalized bars.",
+      "outputs": "Virtual equity, exposure, closes and incomplete positions.",
+      "limitations": "Phase 7 ledger retains a finite report; Phase 8 ledger keeps bounded live histories.",
+      "source_path": "backend/src/application/live_paper_portfolio.py",
+      "page": "Paper Portfolio",
+      "can_move_money": false
+    },
+    {
+      "key": "telemetry",
+      "name": "Telemetry API",
+      "purpose": "Expose immutable current state for reading.",
+      "inputs": "Runtime snapshots and explanation catalog.",
+      "outputs": "Read-only JSON endpoints.",
+      "limitations": "No financial mutation route; no persistent audit storage.",
+      "source_path": "backend/src/api/live_paper.py",
+      "page": "System / Settings",
+      "can_move_money": false
+    },
+    {
+      "key": "dashboard",
+      "name": "Explainable dashboard",
+      "purpose": "Make each stage understandable.",
+      "inputs": "Read-only telemetry and public market snapshots.",
+      "outputs": "Seven pages, Simple/Advanced views and searchable help.",
+      "limitations": "Presentation preferences never change backend rules.",
+      "source_path": "frontend/src/App.tsx",
+      "page": "Guide / How It Works",
+      "can_move_money": false
+    }
+  ]
+}

@@ -1,0 +1,335 @@
+{
+  "as_of": "2020-01-01T00:00:00Z",
+  "status": {
+    "mode": "paper",
+    "engine_version": "live-paper-v1",
+    "as_of": "2020-01-01T00:00:00Z",
+    "status": "DISABLED",
+    "reasons": [],
+    "running": false,
+    "started_at": null,
+    "latest_update_at": null,
+    "subscriber_dropped_events": 0,
+    "last_boundary": null,
+    "interval": "1m",
+    "symbols": [
+      {
+        "symbol": "BTCUSDT",
+        "boundary": null,
+        "closed_candles": 0,
+        "feature_state": "unavailable",
+        "strategy_state": "unavailable",
+        "decision_outcome": null
+      }
+    ],
+    "counters": {},
+    "configuration": {
+      "identities": {
+        "runtime": "live_settings_d933629ea29f2db4d04413d36673903bbdc9e547ba06cb01968dfb9a283e6863",
+        "features": "feature_settings_ee36bf186f2a32e0a3756085aeba050f4a07da3fe65560dd3b59724dca74eefe",
+        "strategies": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+        "decisions": "decision_policy_ab238c159048de1d3aa50ee9cbcda1d337d1b6ecf3c1ca33c6452911fd07e7f6",
+        "portfolio": "portfolio_policy_09d06d6f053f75bcf89268a8a6f25848db3fcaaa8866bd6cf296f7c8df651f75",
+        "costs": "backtest_settings_bab4b71a0287976dc179f7c3b627f6e64bae2b1c400ef39d3978e5b78e0332b9"
+      },
+      "runtime": {
+        "enabled": false,
+        "batch_timeout_ms": 1500,
+        "event_history_limit": 1000,
+        "curve_history_limit": 2000,
+        "position_history_limit": 1000,
+        "pending_batch_limit": 8,
+        "queue_limit": 1000
+      },
+      "features": {
+        "ema_fast": 9,
+        "ema_slow": 21,
+        "ema_long": 50,
+        "rsi_period": 14,
+        "atr_period": 14,
+        "roc_period": 10,
+        "volatility_window": 20,
+        "relative_volume_window": 20,
+        "vwap_window": 20,
+        "rolling_return_windows": [
+          5,
+          10,
+          20
+        ],
+        "history_limit": 500
+      },
+      "strategies": {
+        "enabled_strategies": [
+          "trend_following",
+          "momentum_continuation",
+          "mean_reversion"
+        ],
+        "min_absolute_strategy_score": "25",
+        "candidate_score_threshold": "40",
+        "min_candidate_confidence": "0.55",
+        "rsi_neutral_low": "45",
+        "rsi_neutral_high": "55",
+        "rsi_extreme_low": "30",
+        "rsi_extreme_high": "70",
+        "max_acceptable_spread_bps": "15",
+        "trend_efficiency_floor": "0.25",
+        "strong_trend_efficiency": "0.55",
+        "relative_volume_baseline": "1",
+        "relative_volume_exhaustion": "3",
+        "ema_separation_dead_zone": "0.0005",
+        "ema_separation_saturation": "0.005",
+        "price_distance_dead_zone": "0.001",
+        "price_distance_saturation": "0.01",
+        "roc_dead_zone": "0.1",
+        "roc_saturation": "2",
+        "taker_bias_dead_zone": "0.1",
+        "taker_bias_saturation": "0.6",
+        "reversion_stretch_dead_zone": "1",
+        "reversion_stretch_saturation": "3",
+        "atr_soft_limit": "0.025",
+        "atr_hard_limit": "0.05",
+        "optional_context_missing_quality": "0.75",
+        "max_feature_age_seconds": "10",
+        "trend_weight": "1",
+        "momentum_weight": "1",
+        "mean_reversion_weight": "1"
+      },
+      "decisions": {
+        "max_strategy_snapshot_age_seconds": "10",
+        "min_decision_agreement": "0.50",
+        "min_contributing_strategies": 2,
+        "block_incomplete_strategy_coverage": false
+      },
+      "portfolio": {
+        "initial_virtual_equity": "100000",
+        "target_position_fraction": "0.10",
+        "max_gross_exposure_fraction": "0.40",
+        "max_symbol_exposure_fraction": "0.15",
+        "max_open_positions": 4,
+        "max_drawdown_fraction": "0.20",
+        "one_position_per_symbol": true
+      },
+      "costs": {
+        "holding_period_bars": 5,
+        "fee_bps_per_side": "5",
+        "slippage_bps_per_side": "2",
+        "chronological_segments": 4
+      },
+      "analytical_view": "finalized_candles_only"
+    },
+    "market": {
+      "as_of": "2020-01-01T00:00:00Z",
+      "stale_after_seconds": 10.0,
+      "stale": true,
+      "connections": [],
+      "symbols": {
+        "BTCUSDT": {
+          "symbol": "BTCUSDT",
+          "stale": true,
+          "last_event_at": null,
+          "last_received_at": null,
+          "streams": {
+            "trade": {
+              "event_type": "trade",
+              "kline_interval": null,
+              "stale": true,
+              "reason": "missing",
+              "event_time": null,
+              "received_at": null,
+              "event_age_seconds": null,
+              "receive_age_seconds": null,
+              "connection_id": null,
+              "connection_status": null,
+              "generation": null
+            },
+            "book_ticker": {
+              "event_type": "book_ticker",
+              "kline_interval": null,
+              "stale": true,
+              "reason": "missing",
+              "event_time": null,
+              "received_at": null,
+              "event_age_seconds": null,
+              "receive_age_seconds": null,
+              "connection_id": null,
+              "connection_status": null,
+              "generation": null
+            },
+            "mark_price": {
+              "event_type": "mark_price",
+              "kline_interval": null,
+              "stale": true,
+              "reason": "missing",
+              "event_time": null,
+              "received_at": null,
+              "event_age_seconds": null,
+              "receive_age_seconds": null,
+              "connection_id": null,
+              "connection_status": null,
+              "generation": null
+            },
+            "depth": {
+              "event_type": "depth",
+              "kline_interval": null,
+              "stale": true,
+              "reason": "missing",
+              "event_time": null,
+              "received_at": null,
+              "event_age_seconds": null,
+              "receive_age_seconds": null,
+              "connection_id": null,
+              "connection_status": null,
+              "generation": null
+            },
+            "kline:1m": {
+              "event_type": "kline",
+              "kline_interval": "1m",
+              "stale": true,
+              "reason": "missing",
+              "event_time": null,
+              "received_at": null,
+              "event_age_seconds": null,
+              "receive_age_seconds": null,
+              "connection_id": null,
+              "connection_status": null,
+              "generation": null
+            }
+          }
+        }
+      },
+      "subscriber_count": 0,
+      "dropped_events": 0,
+      "ignored_events": 0
+    }
+  },
+  "portfolio": {
+    "as_of": "2020-01-01T00:00:00Z",
+    "valuation_as_of": null,
+    "valuation_complete": true,
+    "state": {
+      "timestamp": "2020-01-01T00:00:00Z",
+      "realized_equity": "100000",
+      "unrealized_net_pnl": "0",
+      "marked_equity": "100000",
+      "peak_equity": "100000",
+      "drawdown": "0",
+      "exposures": [
+        {
+          "symbol": "BTCUSDT",
+          "open_notional": "0",
+          "reserved_notional": "0",
+          "open_count": 0,
+          "reservation_count": 0
+        }
+      ],
+      "open_notional": "0",
+      "reserved_notional": "0",
+      "gross_exposure": "0",
+      "gross_exposure_fraction": "0",
+      "open_count": 0,
+      "reservation_count": 0
+    },
+    "initial_virtual_equity": "100000",
+    "closed_pnl": {
+      "gross_pnl": "0",
+      "fee_cost": "0",
+      "slippage_cost": "0",
+      "total_cost": "0",
+      "net_pnl": "0"
+    },
+    "outstanding_entry_fee_cost": "0",
+    "outstanding_entry_slippage_cost": "0",
+    "opened_count": 0,
+    "completed_count": 0,
+    "expired_reservations": 0
+  },
+  "positions": {
+    "as_of": "2020-01-01T00:00:00Z",
+    "reservations": [],
+    "active": [],
+    "closed": [],
+    "retained_closed_count": 0,
+    "completed_count": 0
+  },
+  "market": [
+    {
+      "symbol": "BTCUSDT",
+      "as_of": "2020-01-01T00:00:00Z",
+      "streams": {
+        "trade": {
+          "event_type": "trade",
+          "kline_interval": null,
+          "stale": true,
+          "reason": "missing",
+          "event_time": null,
+          "received_at": null,
+          "event_age_seconds": null,
+          "receive_age_seconds": null,
+          "connection_id": null,
+          "connection_status": null,
+          "generation": null
+        },
+        "book_ticker": {
+          "event_type": "book_ticker",
+          "kline_interval": null,
+          "stale": true,
+          "reason": "missing",
+          "event_time": null,
+          "received_at": null,
+          "event_age_seconds": null,
+          "receive_age_seconds": null,
+          "connection_id": null,
+          "connection_status": null,
+          "generation": null
+        },
+        "mark_price": {
+          "event_type": "mark_price",
+          "kline_interval": null,
+          "stale": true,
+          "reason": "missing",
+          "event_time": null,
+          "received_at": null,
+          "event_age_seconds": null,
+          "receive_age_seconds": null,
+          "connection_id": null,
+          "connection_status": null,
+          "generation": null
+        },
+        "depth": {
+          "event_type": "depth",
+          "kline_interval": null,
+          "stale": true,
+          "reason": "missing",
+          "event_time": null,
+          "received_at": null,
+          "event_age_seconds": null,
+          "receive_age_seconds": null,
+          "connection_id": null,
+          "connection_status": null,
+          "generation": null
+        },
+        "kline:1m": {
+          "event_type": "kline",
+          "kline_interval": "1m",
+          "stale": true,
+          "reason": "missing",
+          "event_time": null,
+          "received_at": null,
+          "event_age_seconds": null,
+          "receive_age_seconds": null,
+          "connection_id": null,
+          "connection_status": null,
+          "generation": null
+        }
+      },
+      "candle": null,
+      "trade": null,
+      "book_ticker": null,
+      "mark_price": null,
+      "captured_analysis": null
+    }
+  ],
+  "decisions": [],
+  "events": [],
+  "curve": []
+}

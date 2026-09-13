@@ -2,7 +2,38 @@
 
 AI-assisted crypto market research and paper-trading workstation inspired by the open-source Hinto Trader project.
 
-> **Safety scope:** this repository is intentionally paper/testnet-first. Autonomous real-money order execution is not implemented. Public Binance market data, backtesting, paper execution, deterministic risk controls, and AI-assisted signal review are the supported scope.
+> **Current scope: PAPER / VIRTUAL ONLY.** Public Binance observations, deterministic analytics, offline validation and virtual portfolio simulation. No private account access, real/testnet orders or AI provider is connected.
+
+## Run the Phase 8 dashboard
+
+Use Python 3.11+ and Node 22.12.0 (the tested frontend runtime). From two terminals:
+
+```powershell
+cd backend
+.\.venv\Scripts\python.exe -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+```
+
+```powershell
+cd frontend
+npm.cmd ci
+npm.cmd run dev
+```
+
+Open `http://127.0.0.1:5173`. On macOS/Linux, use the activated repository virtual
+environment's `python` and `npm`. For initial Python setup see
+[backend/README.md](backend/README.md). PowerShell users can use `npm.cmd` when
+local execution policy blocks the unsigned `npm.ps1` wrapper.
+
+The default public feed and virtual runtime are enabled. For an offline server,
+set `$env:BINANCE_MARKET_DATA_ENABLED='false'` before starting the backend.
+`$env:LIVE_PAPER_ENABLED='false'` disables only the paper consumer while allowing
+public market observation. Environment files are not loaded automatically.
+Use one backend worker; restarts lose the in-memory virtual session.
+
+Learn the screens in [the user guide](docs/USER_GUIDE.md), follow the
+[module map](docs/MODULE_MAP.md), and review [Phase 8 evidence](docs/PHASE_8_REPORT.md).
+The frontend polls read-only `/paper/snapshot` through its local `/api` proxy;
+Simple/Advanced is a local display preference, never a policy change.
 
 ## Goals
 
@@ -19,7 +50,8 @@ AI-assisted crypto market research and paper-trading workstation inspired by the
 The target below includes future orchestration. The implemented observation and
 analysis boundary is `MarketDataHub -> FeatureEngine -> FeatureSnapshot ->
 StrategyEngine -> StrategySnapshot / StrategyCandidate -> DecisionEngine ->
-DecisionRecord`; it ends at analytical eligibility.
+DecisionRecord`. Phase 8 consumes captured closed-bar records in a separate virtual
+portfolio runtime; it never turns them into executable intents.
 
 ```text
 Binance public market data
@@ -29,6 +61,9 @@ MarketDataHub -> FeatureEngine -> FeatureSnapshot
         -> StrategyEngine -> StrategySnapshot / StrategyCandidate
         -> DecisionEngine -> DecisionRecord (ELIGIBLE / BLOCKED / NO_ACTION)
 
+Phase 8 closed-bar coordinator -> PaperPortfolioPolicy / bounded virtual ledger
+        -> read-only telemetry -> React dashboard
+
 Future orchestration (not connected):
 DecisionRecord -> deterministic sizing -> TradeIntent
         -> RiskEngine -> ApprovedTradeIntent -> PaperExecutionGateway
@@ -37,7 +72,7 @@ DecisionRecord -> deterministic sizing -> TradeIntent
 
 Phase 6 also provides an offline branch: historical finalized bars replay through
 the same analytical engines, then an independent evaluator measures hypothetical
-signal outcomes. AI-assisted review, production portfolio orchestration and testnet integration
+signal outcomes. AI-assisted review, execution orchestration and testnet integration
 remain future work. AI cannot bypass deterministic risk controls.
 
 ## Project status
@@ -84,6 +119,12 @@ exposure/drawdown gates. Unknown holding marks block new reservations and remain
 explicitly incomplete. This separate PaperPortfolioPolicy does not call Phase 1
 risk/execution services or create executable intents. See
 [the Phase 7 report](docs/PHASE_7_REPORT.md) for formulas, tests and limitations.
+
+Phase 8 adds bounded live public-close batching, generation/receipt admission,
+captured production analytics, a virtual ledger, nine read-only telemetry/help
+routes, and a fresh seven-page React dashboard. Late bars cannot rewrite finalized
+history; missing marks remain Unknown. No upstream frontend implementation was
+copied. See [frontend/README.md](frontend/README.md) for build and contract checks.
 
 ## Upstream attribution
 

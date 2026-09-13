@@ -1,6 +1,6 @@
 # Backend
 
-Phase 1–7 backend for Hinto AI Trader.
+Phase 1–8 backend for Hinto AI Trader. Phase 8 is public-data and virtual-only.
 
 ## Setup
 
@@ -856,3 +856,132 @@ access, private endpoint, credential, order, AI/ML, optimizer or database is add
 Funding, market impact, intrabar paths, margin/liquidation, persistence and actual
 execution orchestration remain deferred. This is no profitability guarantee.
 See [the Phase 7 report](../docs/PHASE_7_REPORT.md) for exact validation evidence.
+
+## Live public-data virtual runtime (Phase 8)
+
+Phase 8 adds a bounded continuous service and nine read-only dashboard/help routes.
+It reuses the public feed, analytical engine classes and Phase 6/7 policy/math.
+It never calls Phase 1 risk/execution services or creates executable intents.
+Run one backend worker. No backend dependency was added.
+
+```text
+Public Hub -> tagged closed observer -> close-time batcher
+  -> real-age / generation admission -> isolated closed-bar analytical view
+  -> existing FeatureEngine -> StrategyEngine -> DecisionEngine
+  -> PaperPortfolioPolicy -> bounded live virtual ledger
+  -> read-only projection -> dashboard
+```
+
+The ordinary Hub can already hold newer observations when a delayed close
+arrives. `LivePaperAnalysis` therefore owns separate instances of the unchanged
+analytical engines. Only admitted canonical closed groups are published there,
+evaluated at that boundary. Optional book/trade/mark context stays absent; the
+existing optional-context confidence factor (0.75 default) is preserved.
+
+Before canonicalization, boundary age, original publication age and receipt age
+must each be nonnegative and strictly below the minimum of Hub, strategy and
+decision freshness limits (10 seconds default). Exactly 10 seconds fails.
+Connection identity/generation must match the current CONNECTED kline route.
+Lazy analysis startup yields, so both gates are repeated afterwards. Captured
+telemetry preserves raw publication/receipt times and source generation.
+
+Equal-close groups finalize when all configured symbols arrive or a fixed
+monotonic deadline expires, then sort by symbol. Older pending groups are applied
+first. Missing members stay missing. Identical duplicates count without new
+processing; conflicting pending members are excluded. Late observations cannot
+rewrite a sealed boundary. Reconnect, subscriber loss and conflicting evidence
+invalidate continuity and outstanding virtual exposure conservatively. The
+consumer rechecks drops after settling simultaneous queue/timer completion.
+
+### Configuration and bounds
+
+`LIVE_PAPER_` variables are read at lifespan startup; `.env` is not loaded.
+Booleans require true/false. Integer limits reject booleans, fractions, nonfinite
+values and ambiguous numeric strings.
+
+| Suffix | Default | Allowed range / role |
+| --- | --- | --- |
+| `ENABLED` | `true` | Enable the paper consumer |
+| `BATCH_TIMEOUT_MS` | `1500` | 1–60000, first-arrival deadline |
+| `EVENT_HISTORY_LIMIT` | `1000` | 1–10000; each event, captured-decision and dedupe window |
+| `CURVE_HISTORY_LIMIT` | `2000` | 1–20000, retained curve points |
+| `POSITION_HISTORY_LIMIT` | `1000` | 1–10000, recent completed positions |
+| `PENDING_BATCH_LIMIT` | `8` | 1–64, pending and recent sealed-group windows |
+| `QUEUE_LIMIT` | `1000` | 1–10000, tagged closed-observation queue |
+
+Current per-symbol captures and feature history are bounded by configured scope
+and `FEATURE_HISTORY_LIMIT` (500 per symbol default). Active/pending positions
+obey the Phase 7 four-slot default. Lifetime totals are accumulated without a
+growing close list. Recent-table totals need not equal lifetime realized PnL.
+The finite offline Phase 7 report retains its full audit and is not live storage.
+
+Sizing/accounting retain the Phase 7 formulas above: target notional is known
+marked equity times 0.10, with 0.40 gross/0.15 symbol/four-slot/0.20 drawdown gates.
+Equal-time ranking is descending absolute score, confidence, agreement, then
+ascending symbol and decision ID. Confidence never multiplies size. Reservations
+count immediately. Entry is exact open(t+1), represented when that bar finalizes;
+exit is close(t+H), H=5 default. Costs remain 5 bps fees and 2 bps adverse slippage
+per side, reused from BacktestSettings, not exchange fee claims.
+
+Absent entry expires capacity; an absent holding bar retains INCOMPLETE exposure
+and null aggregate marked equity. Later bars cannot repair that path. If no bar
+arrives at all, a required missing boundary is detected after the Hub stale
+allowance plus batch timeout (11.5 seconds default). This advances explicit empty
+evidence, never prices. Reconnect/loss/shutdown expires reservations and marks
+active exposure unresolved without fabricated closes or changed historical points.
+
+### Runtime lifecycle and telemetry
+
+States are DISABLED, STARTING, WARMING_UP, RUNNING, DEGRADED, STOPPING, STOPPED and
+ERROR. Health combines current kline freshness, captured analytical readiness,
+known valuation and safe diagnostics. Normal warm-up is not ERROR. ERROR stops
+processing and exposes no exception trace.
+
+Consumers register before an enabled public or injected source starts. A disabled
+paper consumer has no coordinator task/subscription. Public data disabled without
+an injected source also disables paper and feature consumers. Import/OpenAPI
+starts no feed. Shutdown cancels/awaits source, coordinator and feature tasks;
+nested analysis, queues and timers are cleaned up. Restart starts a new virtual
+session; no persistence or resume API exists.
+
+| GET route | Response |
+| --- | --- |
+| `/paper/snapshot` | Combined coherent status, market, captured analysis, portfolio and history |
+| `/paper/status` | Health/reasons, settings/identities, symbols, counts, feed state |
+| `/paper/portfolio` | Virtual equity/exposure, valuation timestamp/completeness, PnL/cost totals |
+| `/paper/positions` | Reservations, active/incomplete positions and recent completed positions |
+| `/paper/decisions` | Captured analytical and portfolio decisions with provenance |
+| `/paper/events` | Bounded safe runtime/feed/batch/portfolio diagnostics |
+| `/paper/curve` | Chronological retained equity/exposure/drawdown points |
+| `/explain/modules` | Module roles, source paths and no-money boundaries |
+| `/explain/terms` | Shared glossary and interpretation limits |
+
+History limits accept strict ASCII integer query text 1–1000. Default is 100 for
+snapshot/positions/decisions/events, 500 for curve. Decisions/events/closes are
+newest first; curves are chronological tails. Uninitialized runtime returns safe
+503; disabled telemetry is valid and empty. Every new route is GET-only. The
+application OpenAPI contains 19 paths, including nine Phase 8 paths.
+
+The combined projection reads synchronously on the application event loop, with
+no await or analytical evaluation during capture. Status, portfolio and positions
+share `as_of`; `valuation_as_of` identifies the last applied boundary. Current
+Hub observations and historical captures have separate timestamps/generations.
+Repeated GETs cannot create records, reserve, enter, exit or advance time.
+Separate GET responses are not an atomic multi-request transaction.
+
+### Dashboard contract
+
+From `backend/`, run `python scripts/export_dashboard_contract.py` and
+`python tests/export_dashboard_examples.py`; from `frontend/`, run `npm run types`.
+The Python scripts support `--check`. Schema generation models serialization,
+including required defaults and finite scientific Decimal strings (`0E+33`),
+while rejecting NaN/Infinity. Four deterministic test fixtures come from real
+offline runtime scenarios: disabled, running, incomplete exposure and blocked
+decision. They are never loaded as product market data.
+
+See [frontend setup](../frontend/README.md), [user guide](../docs/USER_GUIDE.md),
+[module map](../docs/MODULE_MAP.md), and [Phase 8 report](../docs/PHASE_8_REPORT.md).
+The dashboard uses sequential GET polling; no additional WebSocket or financial
+mutation endpoint is introduced. Depth remains normalized deltas only. Private
+data, execution, AI, databases, optimization, browser backtest execution and
+Phase 9 are outside this implementation.
