@@ -1,811 +1,854 @@
-# Current Codex Task — Phase 8: Live Public-Data Paper Runtime & Explainable Dashboard
+# Current Codex Task — Phase 9: Durable Paper Persistence, Recovery & Soak Validation
 
 ## Working branch
 
-`phase-8-live-paper-dashboard`
+`phase-9-paper-persistence-recovery`
 
-## Completion status
+## Accepted baseline
 
-Phase 8 implementation and final validation are complete for review. Baseline:
-2059 passed, 2 warnings in 48.57s. Final backend: **2262 passed, 2 warnings in
-73.21s**. Final Phase 8 targeted: 203 passed in 25.55s; broader relevant regression:
-678 passed, 2 warnings in 55.73s. Frontend: 60 passed in 16.96s; TypeScript and
-production build passed. See [the completion report](docs/PHASE_8_REPORT.md) for
-commands, files, architecture and limitations, including unavailable browser
-visual inspection. No commit, push or Phase 9 work. The task specification below
-is retained as the acceptance record.
+Phase 8 is merged and green on `main` at:
 
-Phase 7 is merged into `main` at `d334c14ee099834fa1ec7d15d9c08bb5abb724d5` and the accepted backend baseline is **2059 tests passing**.
+`8e19f8e6238cdd8791c25b6155f2f9bb29f5ac32`
 
-## Objective
+Accepted GitHub CI baseline:
 
-Turn the research/backend system into an understandable, live-looking application without enabling real-money execution.
+- backend: **2262 passed, 2 existing warnings**;
+- frontend: **60 passed**;
+- TypeScript/build: passed;
+- dashboard schema/examples: reproducible;
+- `pip check`: clean.
 
-Phase 8 has two coordinated deliverables:
-
-1. **Live Public-Data Paper Runtime** — consume the existing public Binance market feed, evaluate the existing FeatureEngine → StrategyEngine → DecisionEngine pipeline, and maintain a bounded in-memory virtual paper portfolio using the Phase 7 portfolio policy/math.
-2. **Explainable React/TypeScript Dashboard** — a clean user interface that shows what every module is doing, what each metric means, why a signal/decision was produced, and what the current virtual portfolio state is.
-
-The dashboard may use the public `meiiie/hinto-trader` project only as a UX/feature reference. Do not copy its implementation. Build a fresh frontend around this repository's current contracts.
-
-This phase is intended to make the program usable and understandable now while keeping clear architectural seams for future separately-reviewed exchange/account/P2P modules.
-
-## Hard safety and scope boundaries
-
-Phase 8 must NOT add or use:
-
-- Binance private/account endpoints,
-- API keys, API secrets or account credentials,
-- balance/position reads from a real exchange account,
-- real order submission,
-- testnet order submission,
-- deposits, withdrawals or transfers,
-- P2P trade/transfer automation,
-- payment automation,
-- leverage/margin execution,
-- liquidation logic tied to a real account,
-- `TradeIntent` creation from the live paper runtime,
-- `ApprovedTradeIntent` creation from the live paper runtime,
-- calls to Phase 1 `RiskEngine` from the live paper runtime,
-- calls to `PaperExecutionGateway` from the live paper runtime,
-- AI/OpenAI API,
-- ML/RL,
-- automatic parameter optimization,
-- strategy tuning against returns,
-- database/Redis unless independently justified (prefer no persistence in Phase 8),
-- buttons or API routes that can perform financial transactions.
-
-The UI must visibly identify the current mode as **PAPER / VIRTUAL ONLY**.
-
-Future real trading and P2P are architectural roadmap items only. It is acceptable to document future adapter boundaries, but do not implement an operational exchange-account or P2P transaction adapter in this phase.
-
-## Baseline first
-
-Before editing:
-
-1. confirm branch is `phase-8-live-paper-dashboard`;
-2. confirm `git status`;
-3. run complete backend suite and confirm **2059 passing tests**;
-4. inspect `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/PHASE_6_REPORT.md`, `docs/PHASE_7_REPORT.md`;
-5. inspect the current public market-data lifecycle, FeatureEngine, StrategyEngine, DecisionEngine, Phase 7 policy/math/ledger/engine, and current API routes;
-6. inspect repository CI;
-7. inspect the public `meiiie/hinto-trader` frontend only for UX ideas such as dashboard/navigation/backtest/settings presentation. Do not copy source code.
-
-Do not redesign or weaken Phase 1–7 contracts.
+Before editing, confirm this branch is exactly based on that main commit and rerun the full baseline.
 
 ---
 
-# Part A — Live Public-Data Paper Runtime
+# Objective
 
-## Target data flow
+Turn the Phase 8 in-memory live paper workstation into a durable research application whose **virtual paper session can survive a backend restart without inventing market evidence, re-executing old decisions, or silently changing portfolio state**.
+
+Phase 9 has four deliverables:
+
+1. **Local durable paper persistence** — persist only paper/runtime artifacts and configuration provenance to a local SQLite database.
+2. **Strict deterministic recovery** — reconstruct the virtual paper session from the last valid durable checkpoint and continue only from new admissible public observations.
+3. **Crash/restart/soak validation** — prove repeated restarts, long streams and injected failures do not duplicate decisions, reservations, entries or closes and do not leak memory/tasks.
+4. **Explainable persistence UI** — expose storage/recovery health in the existing dashboard so a beginner can see whether the current virtual state is new, recovered, durable, degraded or incompatible.
+
+This phase remains **PAPER / VIRTUAL ONLY**.
+
+---
+
+# Hard scope and safety boundaries
+
+Phase 9 must NOT add or use:
+
+- Binance private/account endpoints;
+- API keys, API secrets, signing keys or account credentials;
+- real exchange balances or positions;
+- real order submission;
+- Binance testnet order submission;
+- deposits, withdrawals or transfers;
+- P2P transaction automation or settlement;
+- payment automation;
+- leverage/margin execution;
+- real liquidation logic;
+- `TradeIntent` creation from the live-paper runtime;
+- `ApprovedTradeIntent` creation from the live-paper runtime;
+- Phase 1 `RiskEngine` invocation from the live-paper runtime;
+- `PaperExecutionGateway` invocation from the live-paper runtime;
+- AI/OpenAI API;
+- ML/RL;
+- automatic strategy optimization;
+- return-based parameter fitting;
+- cloud databases;
+- Redis;
+- remote storage services;
+- historical REST backfill;
+- fabricated gap candles;
+- frontend financial action controls.
+
+Persistence is for **virtual paper state only**. It must never become a credential store or exchange-account store.
+
+---
+
+# Baseline and inspection first
+
+Before editing:
+
+1. confirm branch: `phase-9-paper-persistence-recovery`;
+2. confirm clean/expected working tree;
+3. confirm merge-base with `main` is `8e19f8e6238cdd8791c25b6155f2f9bb29f5ac32`;
+4. run the full backend suite and confirm 2262 baseline tests;
+5. run frontend tests/build and confirm 60 tests plus successful production build;
+6. read completely:
+   - `AGENTS.md`;
+   - `docs/ARCHITECTURE.md`;
+   - `docs/PHASE_7_REPORT.md`;
+   - `docs/PHASE_8_REPORT.md`;
+   - `docs/MODULE_MAP.md`;
+   - `docs/USER_GUIDE.md`;
+7. inspect Phase 8 `LiveBarBatcher`, `LivePaperAnalysis`, `LivePaperCoordinator`, `LivePaperPortfolio`, telemetry, API and lifespan;
+8. inspect Phase 7 paper portfolio types/math/policy;
+9. inspect current CI and frontend contract export flow.
+
+Do not redesign existing strategy, decision or portfolio formulas.
+
+---
+
+# Target architecture
 
 ```text
-Existing public Binance WebSocket market feed
+Public Binance market data
         ↓
 MarketDataHub
         ↓
-FeatureEngine
+LiveBarBatcher / closed-bar admission
         ↓
-StrategyEngine
-        ↓
-DecisionEngine
+FeatureEngine → StrategyEngine → DecisionEngine
         ↓
 LivePaperCoordinator
         ↓
-PaperPortfolioPolicy / Phase 7 paper math
+LivePaperPortfolio
         ↓
-virtual reservations / positions / closes
+DurablePaperStore (SQLite, local only)
         ↓
-LivePaperSnapshot + bounded audit events
+atomic checkpoint + append-only audit metadata
         ↓
-read-only HTTP/WebSocket telemetry
+restart
         ↓
-React dashboard
+RecoveryManager
+        ↓
+validated recovered virtual session
+        ↓
+new admissible finalized public bars only
+        ↓
+Telemetry API → React dashboard
 ```
 
-No execution gateway belongs after this path in Phase 8.
+Persistence must sit **after deterministic paper state transitions**, not before analytical admission.
 
-## Closed-bar trigger
+Do not let database reads become strategy evidence.
 
-Use finalized `kline_1m` observations as the default analytical trigger.
+---
 
-Requirements:
+# Batch 1 — Persistence contracts and SQLite store
 
-- only closed/finalized bars trigger portfolio decisions;
-- never trigger from an unfinished candle;
-- preserve existing market freshness/readiness rules;
-- no synthetic bars;
-- no REST gap fabrication;
-- a feed gap must remain observable;
-- no future observation is available to a decision;
-- use explicit event timestamps and UTC.
+Implement a dedicated persistence layer, preferably under modules such as:
 
-Do not create a second set of strategy formulas for live mode. Reuse the existing production Feature/Strategy/Decision engines.
+```text
+backend/src/application/paper_persistence_settings.py
+backend/src/application/paper_persistence_identity.py
+backend/src/application/paper_persistence_codec.py
+backend/src/infrastructure/sqlite_paper_store.py
+backend/src/domain/paper_persistence.py
+```
 
-## Same-close multi-symbol batching
+Exact names may differ if repository conventions suggest better names.
 
-Live WebSocket arrival order is nondeterministic, but portfolio arbitration must remain stable.
+## Storage technology
 
-Implement a small `LiveBarBatcher` or equivalent that groups finalized bars by their canonical close/event boundary.
+Use local SQLite through Python's standard library `sqlite3` unless a compelling repository-level reason requires otherwise.
 
-Preferred behavior:
+Do not add a heavy ORM.
 
-- key groups by the existing canonical finalized-bar event timestamp;
-- collect configured-symbol bars for that close boundary;
-- finalize a group when all expected symbols for that boundary have arrived, OR after a small configurable timeout;
-- timeout must use an injected monotonic clock/timer abstraction in tests;
-- missing symbols on timeout stay missing; never fabricate their bars;
-- sort the finalized group deterministically by symbol before evaluation/arbitration;
-- late bars for an already finalized group must be diagnosed explicitly and must not rewrite historical portfolio state;
-- duplicate identical finalized bars are ignored/countable; conflicting duplicates fail closed/are diagnosed.
+Preferred database characteristics:
+
+- local file only;
+- explicit schema version;
+- foreign keys enabled;
+- WAL mode where supported;
+- synchronous durability explicitly configured and documented;
+- transactions for all checkpoint writes;
+- parameterized SQL only;
+- bounded retention/compaction;
+- no network access.
+
+Recommended env prefix:
+
+`PAPER_PERSISTENCE_`
 
 Suggested settings:
 
 ```text
-LIVE_PAPER_ENABLED=true
-LIVE_PAPER_BATCH_TIMEOUT_MS=1500
-LIVE_PAPER_EVENT_HISTORY_LIMIT=1000
-LIVE_PAPER_CURVE_HISTORY_LIMIT=2000
-LIVE_PAPER_POSITION_HISTORY_LIMIT=1000
+PAPER_PERSISTENCE_ENABLED=true
+PAPER_PERSISTENCE_PATH=./data/paper_runtime.sqlite3
+PAPER_PERSISTENCE_CHECKPOINT_HISTORY=32
+PAPER_PERSISTENCE_EVENT_HISTORY=5000
+PAPER_PERSISTENCE_BUSY_TIMEOUT_MS=5000
+PAPER_PERSISTENCE_RESUME_POLICY=strict
 ```
 
-Validate all limits strictly.
+Validate paths/settings strictly.
 
-## Runtime portfolio state
+Tests must use temporary directories/databases.
 
-Do not blindly reuse the finite Phase 7 `PaperPortfolioEngine.run()` report object as a perpetual live service because its full audit history grows for a finite backtest.
+Never write tests into the real project database path.
 
-Reuse Phase 7 domain types, policy and pure arithmetic where practical, but add a bounded live runtime/coordinator designed for indefinite operation.
+## What may be persisted
 
-It must maintain:
+Persist only what is required to restore the virtual runtime faithfully, for example:
 
-- current virtual realized equity;
-- current known marked equity;
-- peak marked equity;
-- drawdown;
-- gross exposure;
-- reserved exposure;
-- per-symbol exposure;
-- active reservations;
-- active virtual positions;
-- recent virtual closes;
-- recent portfolio decisions/rejections;
-- recent feed/runtime warnings;
-- bounded equity/metric history for dashboard charts.
+- session ID;
+- schema version;
+- engine/runtime version;
+- durable boundary/watermark;
+- configuration identities;
+- initial virtual equity;
+- realized virtual PnL/equity state;
+- peak virtual equity;
+- active virtual reservations;
+- active/incomplete virtual positions;
+- position evidence required for deterministic close identity;
+- known marks if they were authoritative at the durable boundary;
+- recently completed virtual closes within bounded retention;
+- dedupe identities needed to prevent reprocessing;
+- bounded curve/audit state required by the UI;
+- diagnostic counters where needed;
+- checksum/integrity metadata.
 
-The same portfolio defaults remain the starting point unless explicitly configured:
+Do NOT persist:
 
-- initial virtual equity = 100000;
-- target position fraction = 0.10;
-- max gross exposure = 0.40;
-- max symbol exposure = 0.15;
-- max open positions = 4;
-- max drawdown = 0.20;
-- one position per symbol = true;
-- holding period = 5 complete bars;
-- fee assumption = 5 bps/side;
-- adverse slippage assumption = 2 bps/side.
+- API keys;
+- secrets;
+- exchange account IDs;
+- real balances;
+- real orders;
+- private payloads;
+- raw unbounded WebSocket history;
+- reconstructed order book;
+- future observations;
+- unfinished analytical state that cannot be proven authoritative.
 
-These remain simulation assumptions, not current Binance fee claims.
+## Serialization
 
-## Live paper entry/exit convention
-
-Preserve the Phase 6/7 anti-look-ahead convention conceptually:
-
-- decision from closed bar `t`;
-- reservation is made after close `t`;
-- virtual entry uses the next exact bar `t+1` open once that finalized bar later becomes available to the system;
-- exit uses the configured fixed-horizon close;
-- missing entry bar expires the reservation;
-- missing required holding bar makes exposure incomplete/unknown rather than fabricating a mark or exit.
-
-No confidence-based size multiplier.
-No Kelly sizing.
-No leverage.
-No pyramiding/reversal.
-No partial allocation.
-
-## Runtime state machine
-
-Create explicit statuses close to:
-
-```text
-DISABLED
-STARTING
-WARMING_UP
-RUNNING
-DEGRADED
-STOPPING
-STOPPED
-ERROR
-```
-
-Expose why a state is degraded, for example:
-
-- market feed stale;
-- missing required symbol bar;
-- feature pipeline warming up;
-- portfolio valuation unknown;
-- delayed/late bar;
-- runtime exception.
-
-A dashboard user should never have to infer whether the engine is healthy.
-
-## Bounded audit events
-
-Create immutable, JSON-safe telemetry/event types.
-
-Each event should include when appropriate:
-
-- event ID;
-- UTC timestamp;
-- category;
-- severity (`info`, `warning`, `error`);
-- symbol if relevant;
-- short machine reason;
-- short human-readable explanation;
-- related decision/reservation/position ID where applicable.
-
-Keep event history bounded.
-Do not log credentials because Phase 8 has none.
-
-## Lifecycle
-
-Integrate the live paper coordinator with FastAPI lifespan without breaking existing feed lifecycle.
+Create a deterministic versioned persistence codec.
 
 Requirements:
 
-- when `LIVE_PAPER_ENABLED=false`, no live-paper background task is created;
-- startup must not perform private/account calls;
-- shutdown cleanly cancels coordinator/batcher subscriptions;
-- zero orphan tasks/subscribers after shutdown;
-- one application instance must not accidentally start duplicate live-paper coordinators;
-- tests must use injected/offline market sources; no real Binance network in CI.
+- canonical JSON or equivalent stable encoding;
+- explicit schema version;
+- UTC aware timestamps only;
+- Decimal values preserved exactly as strings/validated Decimals;
+- no NaN/Infinity;
+- deterministic ordering;
+- content checksum (for example SHA-256) over canonical payload;
+- corrupted payload/checksum fails closed;
+- unknown future schema version fails closed;
+- no pickle.
+
+Do not deserialize arbitrary Python objects.
+
+## Database schema
+
+Keep schema intentionally small.
+
+A reasonable design is:
+
+```text
+paper_sessions
+paper_checkpoints
+paper_audit_events
+schema_metadata
+```
+
+or a similarly compact equivalent.
+
+Do not create dozens of mutable domain tables unless needed.
+
+A checkpoint may contain one canonical validated payload representing the authoritative paper state at one finalized boundary.
+
+## Atomicity
+
+The authoritative checkpoint write must be atomic.
+
+A crash must result in either:
+
+- the complete previous checkpoint; or
+- the complete new checkpoint;
+
+never a half-written paper state.
+
+Use a transaction and test rollback/failure injection.
+
+### Batch 1 acceptance
+
+Add focused tests for:
+
+- new empty database;
+- schema creation;
+- reopen existing database;
+- deterministic encode/decode;
+- Decimal/timestamp fidelity;
+- checksum verification;
+- corruption rejection;
+- unknown schema rejection;
+- strict settings/path validation;
+- transaction rollback;
+- bounded checkpoint retention;
+- bounded audit retention;
+- no credentials/private fields in schema/payload.
+
+Run targeted tests and report exact count.
 
 ---
 
-# Part B — Read-only dashboard API
+# Batch 2 — Paper state checkpointing
 
-Add read-only endpoints specifically for UI telemetry. Keep mutating financial actions out of the API.
+Integrate persistence with `LivePaperCoordinator` / `LivePaperPortfolio` without changing analytical formulas.
 
-Suggested routes (adapt to existing API style):
+## Commit point
 
-```text
-GET /paper/status
-GET /paper/portfolio
-GET /paper/positions
-GET /paper/decisions
-GET /paper/events
-GET /paper/curve
-GET /explain/modules
-GET /explain/terms
-```
+Persist a checkpoint only after a deterministic portfolio transition has completed successfully for a finalized boundary.
 
-Support bounded `limit` query parameters where appropriate with strict max limits.
-
-Optionally add one **read-only WebSocket telemetry stream** such as:
+Preferred sequence:
 
 ```text
-WS /ws/dashboard
+admit finalized close group
+→ analytical evaluation
+→ portfolio transition
+→ authoritative in-memory state established
+→ durable transaction/checkpoint
+→ publish durable telemetry status
 ```
 
-It may push snapshots/events to connected dashboards. It must accept no commands that alter trading state. If a WebSocket adds too much complexity, deterministic polling is acceptable for the first Phase 8 implementation, but structure the frontend service layer so streaming can be added later.
+If checkpoint persistence fails:
 
-Do not expose internal exception traces to the browser.
+- do not pretend the state is durable;
+- enter an explicit degraded/error persistence condition;
+- fail closed for further paper transitions if continuing would make recovery ambiguous;
+- never silently continue indefinitely with "saved" status false while the UI claims durability.
 
-## Explainability payloads
+Choose and document the exact fail-closed behavior.
 
-The UI needs understandable descriptions, not only raw fields.
+## Checkpoint contents
 
-Create a small static/backend explanation catalog or frontend equivalent for terms such as:
+The checkpoint must be sufficient to restore state without replaying already accepted decisions.
 
-- Market Data;
-- Feature Engine;
-- EMA;
-- RSI;
-- ATR;
-- VWAP;
-- volatility;
-- spread;
-- basis/funding context;
-- Strategy Engine;
-- trend following;
-- momentum continuation;
-- mean reversion;
-- strategy score;
-- agreement;
-- confidence;
-- Decision Engine;
-- ELIGIBLE / BLOCKED / NO_ACTION;
-- reservation;
-- virtual position;
-- marked equity;
-- realized PnL;
-- unrealized PnL;
-- gross exposure;
-- drawdown;
-- fee/slippage assumptions;
-- backtest;
-- paper portfolio.
+Persist dedupe/watermark information so a restarted process cannot duplicate:
 
-Critical wording:
+- a decision;
+- a reservation;
+- a virtual entry;
+- a completed close;
+- a finalized close boundary.
 
-- confidence is **evidence quality/agreement**, not probability of profit;
-- ELIGIBLE means the deterministic policy allowed further paper evaluation, not "guaranteed buy";
-- historical/backtest returns do not predict future profit;
-- paper fills are simulated assumptions.
+## Identity
+
+Every durable paper session needs a stable session ID.
+
+The ID must be deterministic/content-derived or securely random once at session creation and then persisted. It must not affect strategy or portfolio decisions.
+
+Checkpoint IDs should be deterministic from session + boundary + canonical payload checksum where practical.
+
+## Database writes and event loop
+
+Do not perform uncontrolled long blocking database operations on the event loop.
+
+SQLite operations are small/local, but structure the store so blocking work is bounded and explicit. If using a thread boundary, lifecycle and ordering must remain deterministic and tested.
+
+Do not introduce concurrent writers.
+
+One runtime process = one authoritative writer.
+
+### Batch 2 acceptance
+
+Test:
+
+- checkpoint after valid boundary;
+- no checkpoint for rejected/unfinished observations;
+- checkpoint exactly once per authoritative transition;
+- identical duplicate input creates no extra state transition;
+- conflicting/late input cannot rewrite durable history;
+- database failure marks persistence unhealthy/fails closed;
+- no half-updated checkpoint after injected exception;
+- bounded histories remain bounded in RAM and DB.
+
+Then run Phase 8 coordinator/lifecycle/portfolio regressions.
 
 ---
 
-# Part C — Frontend
+# Batch 3 — Strict restart recovery
 
-## Technology
+Create a recovery layer such as `PaperRecoveryManager` or equivalent.
 
-Create a new `frontend/` application using a current stable, version-pinned setup after verifying package compatibility.
+## Recovery startup flow
 
-Preferred:
-
-- React;
-- TypeScript;
-- Vite;
-- simple maintainable CSS/design tokens;
-- lightweight charting only if justified;
-- Vitest + Testing Library for core component/service tests;
-- no secret values in frontend environment variables.
-
-This phase is web-first. Keep it easy to wrap with Tauri later, but do not require Rust/Tauri for Phase 8 CI unless there is a compelling reason.
-
-Do not copy the original Hinto frontend code. Recreate the useful UX concepts in a cleaner structure.
-
-## Visual direction
-
-Build a dark professional trading/research dashboard, readable rather than flashy.
-
-Use:
-
-- left navigation/sidebar;
-- top status bar;
-- clear PAPER / VIRTUAL badge always visible;
-- responsive desktop-first layout;
-- cards/tables/charts with consistent spacing;
-- accessible contrast;
-- keyboard/focus states;
-- empty/loading/error/degraded states;
-- no deceptive "profit guaranteed" styling.
-
-Avoid excessive animation.
-
-## Navigation
-
-Required sections:
-
-### 1. Overview
-
-Show at a glance:
-
-- runtime status;
-- public feed health;
-- selected symbol/current price;
-- Feature/Strategy/Decision readiness;
-- virtual marked equity;
-- realized equity;
-- drawdown;
-- gross exposure;
-- open positions;
-- active reservations;
-- latest portfolio decision;
-- recent warnings/events;
-- equity curve.
-
-Every advanced metric gets an info icon / tooltip.
-
-### 2. Market
-
-For each configured symbol show:
-
-- latest price / close;
-- market freshness;
-- bid/ask/spread if available;
-- mark/index context if available;
-- feature readiness;
-- key indicators already produced by Phase 3;
-- timestamp / stale marker.
-
-A symbol details panel should explain indicator values in plain language.
-
-### 3. Signals & Decisions
-
-Show the full explainable chain:
+Preferred flow:
 
 ```text
-Features → strategies → aggregate → Decision Engine → portfolio policy
+open store
+→ validate schema
+→ load latest session/checkpoint
+→ verify checksum
+→ verify engine/schema compatibility
+→ verify configuration identities
+→ restore virtual state
+→ restore watermark/dedupe state
+→ start public feed consumer
+→ accept only observations newer than durable boundary
 ```
 
-For each recent observation show:
+The feed must not race ahead before recovery is complete.
 
-- symbol/time;
-- trend/momentum/mean-reversion assessments;
-- composite score;
-- confidence;
-- agreement;
-- DecisionOutcome;
-- DecisionEngine reason;
-- portfolio action (RESERVED/REJECTED/IGNORED);
-- portfolio reason;
-- a human-readable "Why?" explanation.
+## Strict configuration compatibility
 
-Do not present confidence as a win probability.
+Default `resume_policy=strict`.
 
-### 4. Paper Portfolio
+A persisted session may resume only when required identities are compatible, including at least:
 
-Show:
+- live runtime version;
+- feature settings identity;
+- strategy settings identity;
+- decision policy identity;
+- paper portfolio policy identity;
+- cost/backtest settings identity;
+- symbol universe;
+- interval.
 
-- virtual initial equity;
-- realized/marked equity;
-- realized/unrealized PnL;
-- costs;
-- peak equity;
-- drawdown;
-- gross exposure and limits;
-- per-symbol exposure;
-- reservations;
-- open virtual positions;
-- recent closed positions;
-- entry/exit timestamps and raw prices;
-- reason/status for incomplete positions;
-- equity/drawdown/exposure charts.
+If incompatible:
 
-Clearly label all amounts as virtual simulation units.
+- do not reinterpret old positions under new rules;
+- do not silently create a mixed session;
+- expose `RECOVERY_INCOMPATIBLE` / equivalent explicit status/reason;
+- require starting a new virtual session through an explicit local maintenance action or configuration, not an automatic guess.
 
-### 5. Backtest & Validation
+Do not mutate persisted history to make it compatible.
 
-Phase 8 does not need a full browser file uploader/execution workflow unless it is small and safe.
+## Offline gap semantics
 
-At minimum provide an educational/report view describing Phase 6/7 validation capabilities and show example/schema/known report metrics if available from read-only backend data.
+There is no historical downloader in Phase 9.
 
-If adding a local backtest form, it must operate only on local/offline historical public bars and fixed simulation settings. No optimizer.
+If the backend was offline and required bars were missed:
 
-### 6. System / Settings
+- do not fabricate them;
+- do not fill them from the newest price;
+- when continuity cannot be proven, reservations expire or positions become `INCOMPLETE` according to existing Phase 8/7 semantics;
+- marked equity may remain unknown;
+- dashboard must explain why.
 
-Read-only or locally editable UI preferences only.
+## Duplicate-after-restart semantics
 
-Show:
+If the first public event after restart repeats the last durable finalized candle:
 
-- runtime mode;
-- configured public symbols;
-- relevant Feature/Strategy/Decision/Paper settings;
-- portfolio limits;
-- fee/slippage assumptions;
-- backend/API connection status;
-- version/build information;
-- warnings/limitations.
+- identical duplicate: diagnose/ignore;
+- conflicting duplicate: fail closed/diagnose;
+- it must not generate another decision/reservation/entry/close.
 
-Do not add controls that enable real trading, private API credentials, withdrawals, transfers or P2P transactions.
+## Recovery status model
 
-If future modules are shown, display them as disabled roadmap cards:
-
-- `Exchange Account Adapter — future phase`
-- `Real Execution — future phase`
-- `P2P Analytics — future phase`
-
-No credential form.
-No "Enable Live Trading" button.
-
-### 7. Guide / How It Works
-
-This section is mandatory because the user wants to understand the program.
-
-Create a simple visual explanation of the architecture:
+Extend telemetry with explicit persistence/recovery state close to:
 
 ```text
-Binance public data
-→ MarketDataHub
-→ FeatureEngine
-→ StrategyEngine
-→ DecisionEngine
-→ PaperPortfolioPolicy
-→ Virtual portfolio
-→ Dashboard
+DISABLED
+NEW_SESSION
+RECOVERING
+RECOVERED
+DURABLE
+DEGRADED
+INCOMPATIBLE
+CORRUPT
+ERROR
 ```
 
-For every block explain:
+Do not replace existing runtime status; persistence/recovery health is a separate dimension.
 
-- what goes in;
-- what it calculates;
-- what comes out;
-- whether it can move money (all Phase 8 blocks: no);
-- links to relevant dashboard section.
+### Batch 3 acceptance
 
-Add a glossary and examples.
+Test full process-equivalent restart scenarios:
 
-## Beginner / Advanced presentation
-
-Implement a simple UI preference:
-
-- **Simple view**: plain-language descriptions and only the most important metrics;
-- **Advanced view**: full technical fields/IDs/strategy evidence.
-
-This preference is local UI state only; it must not change backend strategy/risk behavior.
-
-## Help / tooltips
-
-Every technical label introduced to the main UI should have one of:
-
-- tooltip;
-- inline help text;
-- link to glossary.
-
-The help text should explain not just definition but why the metric matters.
-
-Example style:
-
-```text
-Drawdown
-How far the virtual portfolio is below its previous peak.
-A 10% drawdown means the marked virtual equity is 10% below its highest previously observed value.
-This is a simulation metric, not a prediction.
-```
+- clean stop → restart → exact state equality;
+- abrupt stop after durable checkpoint → restart;
+- crash before checkpoint commit → previous checkpoint restored;
+- crash after checkpoint commit → new checkpoint restored;
+- repeated restart cycles;
+- duplicate last candle after restart;
+- missed boundary during downtime;
+- active position recovery;
+- reservation recovery;
+- incomplete position recovery;
+- unknown valuation recovery;
+- incompatible settings;
+- corrupted latest checkpoint;
+- older valid checkpoint handling policy clearly tested;
+- zero double-counted PnL;
+- zero duplicated close IDs.
 
 ---
 
-# Part D — Frontend/backend contracts
+# Batch 4 — Persistence telemetry and dashboard UX
 
-Create typed frontend API models matching backend JSON.
+Extend the existing read-only dashboard contract.
 
-Prefer a dedicated service layer:
+## Backend telemetry
 
-```text
-frontend/src/api/
-frontend/src/types/
-frontend/src/pages/
-frontend/src/components/
-frontend/src/features/
-frontend/src/help/
-```
+Expose safe persistence metadata, preferably inside `/paper/snapshot` and optionally one dedicated GET endpoint.
 
-Keep components reasonably small; do not build one 40k-line `App.tsx`.
+Useful fields:
 
-Centralize:
+- persistence enabled;
+- database health;
+- session ID;
+- session created_at;
+- recovered flag;
+- recovery status/reason;
+- schema version;
+- latest durable boundary;
+- latest checkpoint time;
+- checkpoint ID;
+- retained checkpoint count;
+- retained durable audit event count;
+- persistence lag (`in_memory_boundary` vs `durable_boundary`);
+- configuration compatibility status;
+- storage path only if sanitized/relative and safe; do not leak arbitrary host details unnecessarily.
 
-- API base URL;
-- polling/streaming behavior;
-- date formatting;
-- Decimal/string-number display;
-- runtime error mapping;
-- glossary/help content.
+All endpoints remain read-only.
 
-The frontend must gracefully handle backend unavailable, stale market data and unknown portfolio valuation.
+No reset/delete-session HTTP endpoint in Phase 9.
 
-Never silently convert `null` valuation into zero.
+## Dashboard
 
----
+Update Overview/System/Guide as needed.
 
-# Part E — Future-ready architecture without implementing live money
+The user should be able to understand:
 
-Document a future clean architecture only:
+- "New virtual session";
+- "Recovered virtual session";
+- "Last durable checkpoint";
+- "Current state is durable";
+- "Persistence degraded";
+- "Recovery incompatible";
+- "Virtual state cannot be trusted/recovered";
+- why an old position is incomplete after downtime.
 
-```text
-DecisionRecord
-→ future deterministic intent/sizing builder
-→ future independent pre-execution risk review
-→ future execution port
-→ future exchange adapter
-```
+Add help terms for:
 
-For P2P, document a completely separate future boundary:
+- Persistence;
+- Checkpoint;
+- Recovery;
+- Durable boundary;
+- Session ID;
+- Crash consistency;
+- Configuration compatibility.
 
-```text
-future public P2P market observations
-→ analytics/risk/quote comparison
-→ user-visible information
-```
+Simple mode should show plain language.
 
-Do not implement automated counterpart selection, transfers, deposits, withdrawals or transaction execution.
+Advanced mode may show IDs/checksums/schema/config identities.
 
-The current dashboard should keep paper/live-money concepts visually separate so a future real adapter cannot accidentally reuse a paper label or UI action.
+Never show recovery as an exchange/account reconnect.
 
----
+Always retain `PAPER / VIRTUAL ONLY`.
 
-# Development batches
+### Batch 4 acceptance
 
-## Batch 1 — Runtime contracts and pure batching
+Frontend tests must cover:
 
-Implement:
+- new session;
+- recovered session;
+- durable checkpoint;
+- persistence disabled;
+- persistence degraded;
+- incompatible recovery;
+- unknown valuation after downtime;
+- Simple/Advanced differences;
+- no financial controls.
 
-- live paper settings;
-- runtime domain/status/event contracts;
-- deterministic finalized-bar batching;
-- duplicate/late/missing behavior;
-- bounded buffers;
-- tests.
-
-Run targeted tests.
-
-## Batch 2 — Live paper coordinator
-
-Implement:
-
-- coordinator around existing public market/analytical engines;
-- reuse Phase 7 policy/math;
-- reservation/position lifecycle for indefinite runtime;
-- bounded telemetry/audit;
-- explicit degraded/error states;
-- clean startup/shutdown;
-- tests including injected clocks and sources.
-
-Run targeted tests + relevant Phase 7 regressions.
-
-## Batch 3 — Read-only dashboard API
-
-Implement:
-
-- `/paper/*` telemetry endpoints;
-- explanation/glossary data;
-- strict response models;
-- limits/pagination where needed;
-- optional read-only WebSocket if clean;
-- offline API/lifecycle tests.
-
-Confirm no financial mutation routes are introduced.
-
-## Batch 4 — Frontend foundation and explainability
-
-Create fresh React/TypeScript/Vite frontend with:
-
-- app shell/sidebar/status bar;
-- API client;
-- reusable cards/tables/status badges/tooltips/help drawer;
-- Simple/Advanced view preference;
-- Overview + Guide + System pages;
-- frontend tests/build.
-
-## Batch 5 — Trading/research views
-
-Implement:
-
-- Market page;
-- Signals & Decisions page;
-- Paper Portfolio page;
-- Backtest/Validation page;
-- charts where useful;
-- loading/stale/degraded/unknown states;
-- responsive/accessibility pass.
-
-## Batch 6 — Integration, CI and documentation
-
-- connect frontend to actual Phase 8 API;
-- verify runtime with injected public events;
-- verify frontend against representative backend payloads;
-- update CI to run backend suite and frontend tests/build;
-- update README and architecture;
-- create `docs/PHASE_8_REPORT.md`;
-- create `docs/USER_GUIDE.md` with screenshots optional but not required;
-- create `docs/MODULE_MAP.md` explaining every engine/module in plain language.
+Regenerate backend→frontend contract deterministically.
 
 ---
 
-# Required tests
+# Batch 5 — Soak, restart and boundedness validation
 
-Backend tests must include at minimum:
+Create deterministic offline soak/restart tooling/tests.
 
-- baseline Phase 1–7 regression;
-- no unfinished candle triggers a decision;
-- same-close symbol permutations produce identical arbitration;
-- batch timeout uses injected clock and never fabricates missing bars;
-- late bar does not rewrite finalized state;
-- duplicate finalized event handling;
-- conflicting duplicate handling;
-- reservation next-bar entry;
-- fixed-horizon close;
-- missing-entry expiry;
-- missing-horizon unknown valuation;
-- drawdown/exposure/symbol/position limits;
-- runtime disabled creates no tasks;
-- enabled runtime starts exactly once;
-- graceful shutdown leaves zero tasks/subscribers;
-- bounded event/curve/close histories;
-- stale/degraded states;
-- no private/account network calls;
-- no TradeIntent/ApprovedTradeIntent creation;
-- no RiskEngine/PaperExecutionGateway invocation;
-- API response schema tests;
-- API limit validation;
-- null/unknown valuation remains null;
-- deterministic IDs for equivalent injected input where relevant.
+Do not use real Binance in CI.
 
-Frontend tests must cover at minimum:
+## Long-stream validation
 
-- app renders with backend unavailable;
-- PAPER/VIRTUAL badge is visible;
-- overview renders representative state;
-- null marked equity shows `Unknown`, not zero;
-- stale/degraded state is obvious;
-- confidence explanation says it is not profit probability;
-- portfolio limit explanations;
-- Simple/Advanced toggle changes presentation only;
-- Signals & Decisions reason display;
-- Guide/module explanations;
-- core tables/cards with empty data;
-- API parser/adapter behavior;
-- frontend production build succeeds.
+Run a sufficiently large injected public stream to make retention bugs visible.
+
+Prefer at least tens of thousands of finalized bars in a dedicated non-slow test/tool if runtime permits.
+
+Validate:
+
+- RAM histories stay within configured bounds;
+- DB checkpoint count stays within retention limit;
+- durable audit count stays within retention limit;
+- SQLite file growth stabilizes within expected compaction behavior rather than growing linearly forever from obsolete checkpoints;
+- no duplicated decisions/reservations/entries/closes;
+- no subscriber/task growth;
+- deterministic final virtual state for repeated identical scenario.
+
+If physical SQLite file size cannot shrink automatically after deletes, document WAL/VACUUM/checkpoint behavior and validate logical boundedness plus a maintenance strategy. Do not falsely claim byte-level boundedness when SQLite free pages remain allocated.
+
+## Restart soak
+
+Create repeated restart cycles, e.g.:
+
+```text
+stream segment
+→ checkpoint
+→ shutdown
+→ reopen
+→ recover
+→ next segment
+```
+
+Repeat many times.
+
+Final state must equal an equivalent uninterrupted reference run wherever no bars were intentionally missed.
+
+## Failure injection
+
+Cover at least:
+
+- commit failure;
+- disk write exception simulation;
+- corrupted checkpoint;
+- locked/busy database behavior within configured timeout;
+- process restart between portfolio transition and durable publication where technically injectable.
+
+Do not depend on actual disk exhaustion.
 
 ---
 
-# CI and final validation
+# Batch 6 — CI, documentation and final acceptance
 
-Keep existing backend CI green and extend CI carefully for the new frontend.
+Update CI so persistence/recovery tests run offline on Linux.
 
-At completion run and report exact results for:
+Do not require external services.
+
+Update:
+
+- `README.md`;
+- `backend/README.md`;
+- `frontend/README.md` if UI changed;
+- `docs/ARCHITECTURE.md`;
+- `docs/MODULE_MAP.md`;
+- `docs/USER_GUIDE.md`;
+- create `docs/PHASE_9_REPORT.md`;
+- update this `CODEX_TASK.md` with completion status.
+
+## Module map additions
+
+Explain for a beginner:
+
+- DurablePaperStore;
+- checkpoint codec;
+- RecoveryManager;
+- persistence telemetry;
+- session lifecycle.
+
+For each explain:
+
+- input;
+- responsibility;
+- output;
+- failure behavior;
+- what it cannot do.
+
+## User guide
+
+Explain:
+
+- what is actually saved;
+- what is not saved;
+- how restart recovery works;
+- why missing bars while offline cannot be reconstructed;
+- why an incompatible config does not resume old positions;
+- how to recognize a recovered session;
+- what "durable" means;
+- that all balances/PnL remain virtual.
+
+---
+
+# Explicit maintenance boundary
+
+Phase 9 may need a way to intentionally start a fresh virtual session when persisted state is incompatible/corrupt.
+
+Prefer an explicit local CLI/script, for example:
 
 ```text
-backend: python -m pytest
-backend: python -m pip check
-frontend: npm ci
-frontend: npm test -- --run   (or exact chosen equivalent)
-frontend: npm run build
+python scripts/paper_session.py status
+python scripts/paper_session.py archive-and-new
 ```
 
-Also validate:
+Exact commands are optional and should follow repository style.
 
-- backend import/OpenAPI;
-- offline lifespan with live paper disabled;
-- offline lifespan with injected public source and live paper enabled;
-- zero remaining coordinator/subscriber tasks after shutdown;
-- repeated deterministic injected run;
-- same-close symbol permutation equivalence;
-- bounded-history behavior over a long synthetic stream;
+If implemented:
+
+- local filesystem only;
+- clear confirmation flag for destructive/archive action;
+- never touches exchange data;
+- never deletes silently;
+- preserve/rename/archive old database or session where practical;
+- tests use temporary paths.
+
+Do NOT add a browser button or HTTP financial mutation endpoint for this in Phase 9.
+
+---
+
+# Critical invariants
+
+Phase 9 is not complete unless tests prove these:
+
+1. A durable restart never duplicates a previously committed paper decision.
+2. A durable restart never duplicates a reservation, virtual entry or close.
+3. Realized PnL after restart is byte/value equivalent to uninterrupted execution for the same complete observation sequence.
+4. Recovery never reads future market evidence.
+5. A missed observation during downtime remains missing.
+6. No cached current price repairs a historical missing bar.
+7. A corrupt/incompatible checkpoint fails closed.
+8. Checkpoint writes are atomic.
+9. Persistence cannot contain credentials/private-account fields.
+10. GET telemetry cannot mutate persistence or paper state.
+11. Existing Phase 8 anti-lookahead and generation/freshness gates remain intact.
+12. Runtime and database histories are logically bounded.
+13. Shutdown leaves zero Phase 9 worker tasks/DB writer tasks/subscribers/timers.
+
+---
+
+# Testing discipline
+
+After each batch:
+
+1. run focused Phase 9 tests;
+2. run the affected Phase 8 tests;
+3. report exact test counts;
+4. fix root causes, not assertions;
+5. do not weaken prior tests.
+
+Before final completion run:
+
+Backend:
+
+```bash
+python -m pytest
+python -m pip check
+```
+
+Frontend:
+
+```bash
+npm ci
+npm run types
+npm test
+npm run build
+```
+
+Also run:
+
+- persistence schema/codec reproducibility;
+- clean restart equivalence;
+- crash-before/after-commit checks;
+- repeated restart soak;
+- long-stream boundedness;
+- SQLite logical retention check;
+- OpenAPI audit;
+- GET-only Phase 8/9 telemetry audit;
+- disabled-persistence lifecycle;
+- enabled-persistence lifecycle;
+- corrupt/incompatible recovery paths;
+- zero orphan tasks/subscribers;
+- backend→frontend contract reproducibility;
+- prohibited-integration source audit;
 - `git diff --check`;
 - `git status`;
-- `git diff --stat`;
-- source audit for private Binance endpoints, credentials, transaction actions and prohibited integrations.
-
-No CI test may require access to Binance or any external network.
+- `git diff --stat`.
 
 ---
 
-# Documentation requirements
+# Prohibited-integration source audit
 
-Update/create:
+Final audit must confirm Phase 9 adds no functional use of:
 
-- `README.md` — quick start for backend + dashboard;
-- `backend/README.md` — live paper runtime/API;
-- `frontend/README.md` — frontend commands and architecture;
-- `docs/ARCHITECTURE.md` — Phase 8 path and future adapter boundaries;
-- `docs/USER_GUIDE.md` — plain-language guide to every screen and metric;
-- `docs/MODULE_MAP.md` — what each backend component does;
-- `docs/PHASE_8_REPORT.md` — exact implementation/testing evidence.
+- private Binance/account endpoints;
+- API credentials/secrets;
+- real balances/positions;
+- order submission;
+- testnet submission;
+- deposits/withdrawals/transfers;
+- P2P automation;
+- leverage/margin execution;
+- `TradeIntent` / `ApprovedTradeIntent` creation from Phase 8/9 runtime;
+- `RiskEngine` execution path;
+- `PaperExecutionGateway` execution path;
+- AI/OpenAI APIs;
+- ML/RL;
+- automatic optimization;
+- remote databases/cloud persistence.
 
-The user guide should be understandable to someone learning the project. Avoid assuming the reader already knows trading-engine vocabulary.
+Documentation may mention future architecture only.
+
+---
+
+# Known intentional limitations after Phase 9
+
+Unless deliberately addressed without expanding scope, Phase 9 may still have:
+
+- no real exchange account connection;
+- no real/testnet order execution;
+- no P2P execution;
+- no historical gap downloader;
+- no distributed/multi-process writer support;
+- no cross-machine replication;
+- no cloud backup;
+- no exchange-accurate fills/funding/liquidation;
+- no strategy optimization;
+- no guarantee of profitability;
+- browser visual QA may remain unavailable in Codex environment.
+
+Do not hide these limitations.
 
 ---
 
 # Completion report
 
-At completion report:
+At completion provide exact evidence for:
 
-1. exact baseline test result;
-2. every batch's targeted test result;
-3. final backend test count;
-4. frontend test count;
-5. frontend production-build result;
-6. files created/modified;
-7. live runtime architecture;
-8. batch/grouping rules;
-9. reservation/entry/exit semantics;
-10. portfolio accounting behavior;
-11. bounded-memory limits;
-12. API routes added;
-13. frontend pages/components;
-14. Simple/Advanced behavior;
-15. glossary/help coverage;
-16. lifecycle behavior;
-17. CI changes;
-18. exact ancillary checks;
-19. warnings/limitations;
-20. future real-execution boundary;
-21. future P2P analytics boundary;
-22. explicit confirmation that no private/account/order/transfer/P2P execution was added;
-23. `git status` and `git diff --stat`.
+1. branch and baseline;
+2. files created/modified;
+3. persistence settings;
+4. SQLite schema/version;
+5. transaction/durability mode;
+6. checkpoint payload/version/checksum;
+7. checkpoint commit point;
+8. retention/compaction behavior;
+9. session identity;
+10. recovery compatibility checks;
+11. duplicate-after-restart behavior;
+12. offline-gap behavior;
+13. active/reservation/incomplete recovery;
+14. corruption behavior;
+15. failure-injection results;
+16. restart equivalence results;
+17. long-stream/soak results;
+18. DB logical boundedness;
+19. lifecycle cleanup;
+20. telemetry/API changes;
+21. frontend changes/help terms;
+22. backend→frontend contract checks;
+23. OpenAPI/read-only audit;
+24. prohibited-integration audit;
+25. exact targeted test counts;
+26. exact complete backend result;
+27. exact frontend result;
+28. build result;
+29. `pip check`;
+30. warnings;
+31. known limitations;
+32. `git status`;
+33. `git diff --stat`.
 
-Do not commit or push automatically.
-Do not start Phase 9.
+End with exactly one of:
+
+`PHASE 9 READY FOR REVIEW`
+
+or
+
+`PHASE 9 NOT READY`
+
+with exact blockers.
+
+Do NOT commit.
+Do NOT push.
+Do NOT merge.
+Do NOT start Phase 10.
