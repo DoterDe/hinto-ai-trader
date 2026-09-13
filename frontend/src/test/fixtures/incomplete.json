@@ -1,0 +1,4825 @@
+{
+  "as_of": "2020-01-01T01:07:00Z",
+  "status": {
+    "mode": "paper",
+    "engine_version": "live-paper-v1",
+    "as_of": "2020-01-01T01:07:00Z",
+    "status": "DEGRADED",
+    "reasons": [
+      "portfolio_valuation_unknown"
+    ],
+    "running": true,
+    "started_at": "2020-01-01T00:00:00Z",
+    "latest_update_at": "2020-01-01T01:07:00Z",
+    "subscriber_dropped_events": 0,
+    "last_boundary": "2020-01-01T01:07:00Z",
+    "interval": "1m",
+    "symbols": [
+      {
+        "symbol": "BTCUSDT",
+        "boundary": "2020-01-01T01:07:00Z",
+        "closed_candles": 67,
+        "feature_state": "partial",
+        "strategy_state": "ready",
+        "decision_outcome": "ELIGIBLE"
+      }
+    ],
+    "counters": {
+      "admitted_bars": 67,
+      "capacity_reserved": 1,
+      "decision_not_eligible": 65,
+      "finalized_batches": 67,
+      "runtime_started": 1,
+      "symbol_position_active": 1
+    },
+    "configuration": {
+      "identities": {
+        "runtime": "live_settings_dfd91690ca93665b06dcb53f0ec8ea2849dd8b1e75cc163b4a93f0aa21b44cf1",
+        "features": "feature_settings_ee36bf186f2a32e0a3756085aeba050f4a07da3fe65560dd3b59724dca74eefe",
+        "strategies": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+        "decisions": "decision_policy_ab238c159048de1d3aa50ee9cbcda1d337d1b6ecf3c1ca33c6452911fd07e7f6",
+        "portfolio": "portfolio_policy_09d06d6f053f75bcf89268a8a6f25848db3fcaaa8866bd6cf296f7c8df651f75",
+        "costs": "backtest_settings_bab4b71a0287976dc179f7c3b627f6e64bae2b1c400ef39d3978e5b78e0332b9"
+      },
+      "runtime": {
+        "enabled": true,
+        "batch_timeout_ms": 1500,
+        "event_history_limit": 1000,
+        "curve_history_limit": 2000,
+        "position_history_limit": 1000,
+        "pending_batch_limit": 8,
+        "queue_limit": 1000
+      },
+      "features": {
+        "ema_fast": 9,
+        "ema_slow": 21,
+        "ema_long": 50,
+        "rsi_period": 14,
+        "atr_period": 14,
+        "roc_period": 10,
+        "volatility_window": 20,
+        "relative_volume_window": 20,
+        "vwap_window": 20,
+        "rolling_return_windows": [
+          5,
+          10,
+          20
+        ],
+        "history_limit": 500
+      },
+      "strategies": {
+        "enabled_strategies": [
+          "trend_following",
+          "momentum_continuation",
+          "mean_reversion"
+        ],
+        "min_absolute_strategy_score": "25",
+        "candidate_score_threshold": "40",
+        "min_candidate_confidence": "0.55",
+        "rsi_neutral_low": "45",
+        "rsi_neutral_high": "55",
+        "rsi_extreme_low": "30",
+        "rsi_extreme_high": "70",
+        "max_acceptable_spread_bps": "15",
+        "trend_efficiency_floor": "0.25",
+        "strong_trend_efficiency": "0.55",
+        "relative_volume_baseline": "1",
+        "relative_volume_exhaustion": "3",
+        "ema_separation_dead_zone": "0.0005",
+        "ema_separation_saturation": "0.005",
+        "price_distance_dead_zone": "0.001",
+        "price_distance_saturation": "0.01",
+        "roc_dead_zone": "0.1",
+        "roc_saturation": "2",
+        "taker_bias_dead_zone": "0.1",
+        "taker_bias_saturation": "0.6",
+        "reversion_stretch_dead_zone": "1",
+        "reversion_stretch_saturation": "3",
+        "atr_soft_limit": "0.025",
+        "atr_hard_limit": "0.05",
+        "optional_context_missing_quality": "0.75",
+        "max_feature_age_seconds": "10",
+        "trend_weight": "1",
+        "momentum_weight": "1",
+        "mean_reversion_weight": "1"
+      },
+      "decisions": {
+        "max_strategy_snapshot_age_seconds": "10",
+        "min_decision_agreement": "0.50",
+        "min_contributing_strategies": 2,
+        "block_incomplete_strategy_coverage": false
+      },
+      "portfolio": {
+        "initial_virtual_equity": "100000",
+        "target_position_fraction": "0.10",
+        "max_gross_exposure_fraction": "0.40",
+        "max_symbol_exposure_fraction": "0.15",
+        "max_open_positions": 4,
+        "max_drawdown_fraction": "0.20",
+        "one_position_per_symbol": true
+      },
+      "costs": {
+        "holding_period_bars": 5,
+        "fee_bps_per_side": "5",
+        "slippage_bps_per_side": "2",
+        "chronological_segments": 4
+      },
+      "analytical_view": "finalized_candles_only"
+    },
+    "market": {
+      "as_of": "2020-01-01T01:07:00Z",
+      "stale_after_seconds": 10.0,
+      "stale": true,
+      "connections": [
+        {
+          "connection_id": "injected_public",
+          "event_types": [
+            "kline"
+          ],
+          "status": "connected",
+          "changed_at": "2020-01-01T00:00:00Z",
+          "generation": 1,
+          "last_message_at": null,
+          "reconnect_attempt": 0,
+          "malformed_messages": 0,
+          "reason": null
+        }
+      ],
+      "symbols": {
+        "BTCUSDT": {
+          "symbol": "BTCUSDT",
+          "stale": true,
+          "last_event_at": "2020-01-01T01:07:00Z",
+          "last_received_at": "2020-01-01T01:07:00Z",
+          "streams": {
+            "trade": {
+              "event_type": "trade",
+              "kline_interval": null,
+              "stale": true,
+              "reason": "missing",
+              "event_time": null,
+              "received_at": null,
+              "event_age_seconds": null,
+              "receive_age_seconds": null,
+              "connection_id": null,
+              "connection_status": null,
+              "generation": null
+            },
+            "book_ticker": {
+              "event_type": "book_ticker",
+              "kline_interval": null,
+              "stale": true,
+              "reason": "missing",
+              "event_time": null,
+              "received_at": null,
+              "event_age_seconds": null,
+              "receive_age_seconds": null,
+              "connection_id": null,
+              "connection_status": null,
+              "generation": null
+            },
+            "mark_price": {
+              "event_type": "mark_price",
+              "kline_interval": null,
+              "stale": true,
+              "reason": "missing",
+              "event_time": null,
+              "received_at": null,
+              "event_age_seconds": null,
+              "receive_age_seconds": null,
+              "connection_id": null,
+              "connection_status": null,
+              "generation": null
+            },
+            "depth": {
+              "event_type": "depth",
+              "kline_interval": null,
+              "stale": true,
+              "reason": "missing",
+              "event_time": null,
+              "received_at": null,
+              "event_age_seconds": null,
+              "receive_age_seconds": null,
+              "connection_id": null,
+              "connection_status": null,
+              "generation": null
+            },
+            "kline:1m": {
+              "event_type": "kline",
+              "kline_interval": "1m",
+              "stale": false,
+              "reason": null,
+              "event_time": "2020-01-01T01:07:00Z",
+              "received_at": "2020-01-01T01:07:00Z",
+              "event_age_seconds": 0.0,
+              "receive_age_seconds": 0.0,
+              "connection_id": "injected_public",
+              "connection_status": "connected",
+              "generation": 1
+            }
+          }
+        }
+      },
+      "subscriber_count": 1,
+      "dropped_events": 0,
+      "ignored_events": 0
+    }
+  },
+  "portfolio": {
+    "as_of": "2020-01-01T01:07:00Z",
+    "valuation_as_of": "2020-01-01T01:07:00Z",
+    "valuation_complete": false,
+    "state": {
+      "timestamp": "2020-01-01T01:07:00Z",
+      "realized_equity": "100000",
+      "unrealized_net_pnl": null,
+      "marked_equity": null,
+      "peak_equity": "100202.7892097902097902097902097902",
+      "drawdown": null,
+      "exposures": [
+        {
+          "symbol": "BTCUSDT",
+          "open_notional": "10000.00",
+          "reserved_notional": "0",
+          "open_count": 1,
+          "reservation_count": 0
+        }
+      ],
+      "open_notional": "10000.00",
+      "reserved_notional": "0",
+      "gross_exposure": "10000.00",
+      "gross_exposure_fraction": null,
+      "open_count": 1,
+      "reservation_count": 0
+    },
+    "initial_virtual_equity": "100000",
+    "closed_pnl": {
+      "gross_pnl": "0",
+      "fee_cost": "0",
+      "slippage_cost": "0",
+      "total_cost": "0",
+      "net_pnl": "0"
+    },
+    "outstanding_entry_fee_cost": "5.0010000000",
+    "outstanding_entry_slippage_cost": "2.000000",
+    "opened_count": 1,
+    "completed_count": 0,
+    "expired_reservations": 0
+  },
+  "positions": {
+    "as_of": "2020-01-01T01:07:00Z",
+    "reservations": [],
+    "active": [
+      {
+        "position": {
+          "position_id": "paper_position_6bbed57c13f01a5c9b2a71d84ba997c22acf4a6cf0095e4aa847e6cd6277eb9d",
+          "reservation": {
+            "reservation_id": "paper_reservation_3dcb4c53d4b8d729ea04523934477968e46a68952ae2844e5b01dfb685b85d31",
+            "decision_id": "decision_cf987514afbf2166a3aeb14272e7cd6040770b3c222d57f1fe29f81a85913bf4",
+            "symbol": "BTCUSDT",
+            "direction": "LONG",
+            "virtual_notional": "10000.00",
+            "decision_time": "2020-01-01T01:06:00Z",
+            "expected_entry_time": "2020-01-01T01:06:00Z",
+            "policy_id": "portfolio_policy_09d06d6f053f75bcf89268a8a6f25848db3fcaaa8866bd6cf296f7c8df651f75"
+          },
+          "interval": "1m",
+          "entry_time": "2020-01-01T01:06:00Z",
+          "entry_price_raw": "114.4",
+          "holding_period_bars": 5,
+          "bars_held": 1,
+          "expected_next_open": "2020-01-01T01:07:00Z",
+          "backtest_settings_id": "backtest_settings_bab4b71a0287976dc179f7c3b627f6e64bae2b1c400ef39d3978e5b78e0332b9",
+          "status": "INCOMPLETE",
+          "reason": "missing_horizon_bar",
+          "last_mark_time": "2020-01-01T01:07:00Z",
+          "last_mark_price": "116.8"
+        },
+        "unrealized_net_pnl": null
+      }
+    ],
+    "closed": [],
+    "retained_closed_count": 0,
+    "completed_count": 0
+  },
+  "market": [
+    {
+      "symbol": "BTCUSDT",
+      "as_of": "2020-01-01T01:07:00Z",
+      "streams": {
+        "trade": {
+          "event_type": "trade",
+          "kline_interval": null,
+          "stale": true,
+          "reason": "missing",
+          "event_time": null,
+          "received_at": null,
+          "event_age_seconds": null,
+          "receive_age_seconds": null,
+          "connection_id": null,
+          "connection_status": null,
+          "generation": null
+        },
+        "book_ticker": {
+          "event_type": "book_ticker",
+          "kline_interval": null,
+          "stale": true,
+          "reason": "missing",
+          "event_time": null,
+          "received_at": null,
+          "event_age_seconds": null,
+          "receive_age_seconds": null,
+          "connection_id": null,
+          "connection_status": null,
+          "generation": null
+        },
+        "mark_price": {
+          "event_type": "mark_price",
+          "kline_interval": null,
+          "stale": true,
+          "reason": "missing",
+          "event_time": null,
+          "received_at": null,
+          "event_age_seconds": null,
+          "receive_age_seconds": null,
+          "connection_id": null,
+          "connection_status": null,
+          "generation": null
+        },
+        "depth": {
+          "event_type": "depth",
+          "kline_interval": null,
+          "stale": true,
+          "reason": "missing",
+          "event_time": null,
+          "received_at": null,
+          "event_age_seconds": null,
+          "receive_age_seconds": null,
+          "connection_id": null,
+          "connection_status": null,
+          "generation": null
+        },
+        "kline:1m": {
+          "event_type": "kline",
+          "kline_interval": "1m",
+          "stale": false,
+          "reason": null,
+          "event_time": "2020-01-01T01:07:00Z",
+          "received_at": "2020-01-01T01:07:00Z",
+          "event_age_seconds": 0.0,
+          "receive_age_seconds": 0.0,
+          "connection_id": "injected_public",
+          "connection_status": "connected",
+          "generation": 1
+        }
+      },
+      "candle": {
+        "symbol": "BTCUSDT",
+        "event_time": "2020-01-01T01:07:00Z",
+        "received_at": "2020-01-01T01:07:00Z",
+        "event_type": "kline",
+        "interval": "1m",
+        "open_time": "2020-01-01T01:06:00Z",
+        "close_time": "2020-01-01T01:07:00Z",
+        "open": "114.4",
+        "high": "116.9",
+        "low": "114.3",
+        "close": "116.8",
+        "volume": "10",
+        "quote_volume": "1168.0",
+        "trade_count": 67,
+        "is_closed": true,
+        "taker_buy_volume": "8",
+        "taker_buy_quote_volume": "934.4"
+      },
+      "trade": null,
+      "book_ticker": null,
+      "mark_price": null,
+      "captured_analysis": {
+        "boundary": "2020-01-01T01:07:00Z",
+        "published_at": "2020-01-01T01:07:00Z",
+        "received_at": "2020-01-01T01:07:00Z",
+        "connection_id": "injected_public",
+        "connection_generation": 1,
+        "features": {
+          "symbol": "BTCUSDT",
+          "generated_at": "2020-01-01T01:07:00Z",
+          "interval": "1m",
+          "state": "partial",
+          "reasons": [
+            "trade:trade:missing",
+            "microstructure:book_ticker:missing",
+            "mark_funding:mark_price:missing"
+          ],
+          "sources": [
+            {
+              "stream": "trade",
+              "event_time": null,
+              "received_at": null,
+              "stale": true,
+              "reason": "missing",
+              "connection_id": null,
+              "generation": null
+            },
+            {
+              "stream": "kline:1m",
+              "event_time": "2020-01-01T01:07:00Z",
+              "received_at": "2020-01-01T01:07:00Z",
+              "stale": false,
+              "reason": null,
+              "connection_id": "live_closed_bars",
+              "generation": 1
+            },
+            {
+              "stream": "book_ticker",
+              "event_time": null,
+              "received_at": null,
+              "stale": true,
+              "reason": "missing",
+              "connection_id": null,
+              "generation": null
+            },
+            {
+              "stream": "mark_price",
+              "event_time": null,
+              "received_at": null,
+              "stale": true,
+              "reason": "missing",
+              "connection_id": null,
+              "generation": null
+            }
+          ],
+          "closed_candle_time": "2020-01-01T01:07:00Z",
+          "closed_candles": 67,
+          "history_resets": 1,
+          "last_history_reset": "connection_changed",
+          "trade": {
+            "state": "unavailable",
+            "reasons": [
+              "trade:missing"
+            ],
+            "required_samples": 1,
+            "available_samples": 0,
+            "values": null
+          },
+          "returns": {
+            "state": "ready",
+            "reasons": [],
+            "required_samples": 21,
+            "available_samples": 67,
+            "values": {
+              "close": "116.8",
+              "simple_return": "0.02097902097902097902097902097902098",
+              "log_return": 0.02076199144842916,
+              "rolling_returns": [
+                {
+                  "window": 5,
+                  "value": "0.1145038167938931297709923664122137"
+                },
+                {
+                  "window": 10,
+                  "value": "0.140625"
+                },
+                {
+                  "window": 20,
+                  "value": "0.140625"
+                }
+              ]
+            }
+          },
+          "trend": {
+            "state": "ready",
+            "reasons": [],
+            "required_samples": 50,
+            "available_samples": 67,
+            "values": {
+              "ema_fast": "109.4369621333333333333333333333333",
+              "ema_slow": "105.7022612583720555729422485915771",
+              "ema_long": "103.3393507296945864348813088013624",
+              "fast_slow_spread": "3.7347008749612777603910847417562",
+              "slow_long_spread": "2.3629105286774691380609397902147",
+              "distance_from_fast": "0.06728108788049009391605724104310452",
+              "distance_from_slow": "0.1049905518530140025013934449219239",
+              "distance_from_long": "0.1302567625522877692203457125051270"
+            }
+          },
+          "momentum": {
+            "state": "ready",
+            "reasons": [],
+            "required_samples": 15,
+            "available_samples": 67,
+            "values": {
+              "rsi": "69.09536522917589629794603038928962",
+              "roc_percent": "14.062500",
+              "close_change": "2.4"
+            }
+          },
+          "volatility": {
+            "state": "ready",
+            "reasons": [],
+            "required_samples": 21,
+            "available_samples": 67,
+            "values": {
+              "true_range": "2.6",
+              "atr": "2.6",
+              "normalized_atr": "0.02226027397260273972602739726027397",
+              "atr_percent": "2.226027397260273972602739726027397",
+              "realized_volatility": 0.0228247928171884
+            }
+          },
+          "volume": {
+            "state": "ready",
+            "reasons": [],
+            "required_samples": 21,
+            "available_samples": 67,
+            "values": {
+              "rolling_vwap": "104.08",
+              "relative_volume": "1",
+              "taker_buy_ratio": "0.8",
+              "taker_base_volume_delta_proxy": "6"
+            }
+          },
+          "microstructure": {
+            "state": "unavailable",
+            "reasons": [
+              "book_ticker:missing"
+            ],
+            "required_samples": 1,
+            "available_samples": 0,
+            "values": null
+          },
+          "mark_funding": {
+            "state": "unavailable",
+            "reasons": [
+              "mark_price:missing"
+            ],
+            "required_samples": 1,
+            "available_samples": 0,
+            "values": null
+          },
+          "regime": {
+            "state": "ready",
+            "reasons": [],
+            "required_samples": 21,
+            "available_samples": 67,
+            "values": {
+              "normalized_atr": "0.02226027397260273972602739726027397",
+              "normalized_ema_separation": "0.03533227038381332669190724639687869",
+              "directional_efficiency": "0.6",
+              "relative_volume": "1"
+            }
+          }
+        },
+        "strategy": {
+          "symbol": "BTCUSDT",
+          "generated_at": "2020-01-01T01:07:00Z",
+          "source_feature_timestamp": "2020-01-01T01:07:00Z",
+          "snapshot_id": "features_a0f0adc8ac16d644d5af3ea432f33653ec623ab01850a157313dce30dd11436f",
+          "observation_id": "observation_55bedbc4348f59451d65d2feda93795c5bf2e8173d83686b880bd6f08893ec0e",
+          "settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+          "engine_version": "strategy-engine-v1",
+          "assessments": [
+            {
+              "strategy_id": "trend_following",
+              "symbol": "BTCUSDT",
+              "generated_at": "2020-01-01T01:07:00Z",
+              "source_feature_timestamp": "2020-01-01T01:07:00Z",
+              "snapshot_id": "features_a0f0adc8ac16d644d5af3ea432f33653ec623ab01850a157313dce30dd11436f",
+              "direction": "LONG",
+              "score": "100",
+              "confidence": "1",
+              "readiness": "ready",
+              "reasons": [],
+              "required_feature_groups": [
+                "trend",
+                "momentum",
+                "regime",
+                "volatility"
+              ],
+              "optional_feature_groups": [],
+              "evidence": [
+                {
+                  "name": "fast_slow_separation",
+                  "value": "0.03533227038381332669190724639687869",
+                  "reference": "0.005",
+                  "normalized": "1",
+                  "weight": "30",
+                  "multiplier": "1",
+                  "contribution": "30",
+                  "code": "directional_contribution"
+                },
+                {
+                  "name": "slow_long_separation",
+                  "value": "0.02286554455773725167029311576043115",
+                  "reference": "0.005",
+                  "normalized": "1",
+                  "weight": "30",
+                  "multiplier": "1",
+                  "contribution": "30",
+                  "code": "directional_contribution"
+                },
+                {
+                  "name": "slow_ema_distance",
+                  "value": "0.1049905518530140025013934449219239",
+                  "reference": "0.01",
+                  "normalized": "1",
+                  "weight": "20",
+                  "multiplier": "1",
+                  "contribution": "20",
+                  "code": "directional_contribution"
+                },
+                {
+                  "name": "roc_percent",
+                  "value": "14.062500",
+                  "reference": "2",
+                  "normalized": "1",
+                  "weight": "20",
+                  "multiplier": "1",
+                  "contribution": "20",
+                  "code": "directional_contribution"
+                },
+                {
+                  "name": "trend_efficiency",
+                  "value": "0.6",
+                  "reference": "0.55",
+                  "normalized": "1",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "score_quality"
+                },
+                {
+                  "name": "corroborating_components",
+                  "value": "4",
+                  "reference": "2",
+                  "normalized": "1",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "score_quality"
+                },
+                {
+                  "name": "normalized_atr_quality",
+                  "value": "0.02226027397260273972602739726027397",
+                  "reference": "0.05",
+                  "normalized": "1",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "score_quality"
+                },
+                {
+                  "name": "score_strength",
+                  "value": "1",
+                  "reference": null,
+                  "normalized": "1",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "confidence_factor"
+                },
+                {
+                  "name": "directional_agreement",
+                  "value": "1",
+                  "reference": null,
+                  "normalized": "1",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "confidence_factor"
+                }
+              ]
+            },
+            {
+              "strategy_id": "momentum_continuation",
+              "symbol": "BTCUSDT",
+              "generated_at": "2020-01-01T01:07:00Z",
+              "source_feature_timestamp": "2020-01-01T01:07:00Z",
+              "snapshot_id": "features_a0f0adc8ac16d644d5af3ea432f33653ec623ab01850a157313dce30dd11436f",
+              "direction": "LONG",
+              "score": "98.49227538195982716324338398214937",
+              "confidence": "0.7386920653646987037243253798661203",
+              "readiness": "ready",
+              "reasons": [
+                "microstructure:optional_source_missing"
+              ],
+              "required_feature_groups": [
+                "momentum",
+                "volume"
+              ],
+              "optional_feature_groups": [
+                "microstructure"
+              ],
+              "evidence": [
+                {
+                  "name": "roc_percent",
+                  "value": "14.062500",
+                  "reference": "2",
+                  "normalized": "1",
+                  "weight": "40",
+                  "multiplier": "1",
+                  "contribution": "40",
+                  "code": "directional_contribution"
+                },
+                {
+                  "name": "rsi_continuation",
+                  "value": "69.09536522917589629794603038928962",
+                  "reference": "55",
+                  "normalized": "0.9396910152783930865297353592859747",
+                  "weight": "25",
+                  "multiplier": "1",
+                  "contribution": "23.49227538195982716324338398214937",
+                  "code": "directional_contribution"
+                },
+                {
+                  "name": "close_change_over_vwap",
+                  "value": "0.02305918524212144504227517294388932",
+                  "reference": "0.01",
+                  "normalized": "1",
+                  "weight": "20",
+                  "multiplier": "1",
+                  "contribution": "20",
+                  "code": "directional_contribution"
+                },
+                {
+                  "name": "taker_buy_bias",
+                  "value": "0.6",
+                  "reference": "0.6",
+                  "normalized": "1",
+                  "weight": "15",
+                  "multiplier": "1",
+                  "contribution": "15",
+                  "code": "directional_contribution"
+                },
+                {
+                  "name": "relative_volume_quality",
+                  "value": "1",
+                  "reference": "1",
+                  "normalized": "1",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "score_quality"
+                },
+                {
+                  "name": "rsi_exhaustion_quality",
+                  "value": "69.09536522917589629794603038928962",
+                  "reference": "70",
+                  "normalized": "1",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "score_quality"
+                },
+                {
+                  "name": "taker_base_volume_delta_proxy",
+                  "value": "6",
+                  "reference": null,
+                  "normalized": null,
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "candle_proxy_only"
+                },
+                {
+                  "name": "optional_spread_quality",
+                  "value": null,
+                  "reference": null,
+                  "normalized": "0.75",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "optional_missing"
+                },
+                {
+                  "name": "score_strength",
+                  "value": "0.9849227538195982716324338398214937",
+                  "reference": null,
+                  "normalized": "0.9849227538195982716324338398214937",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "confidence_factor"
+                },
+                {
+                  "name": "directional_agreement",
+                  "value": "1",
+                  "reference": null,
+                  "normalized": "1",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "confidence_factor"
+                }
+              ]
+            },
+            {
+              "strategy_id": "mean_reversion",
+              "symbol": "BTCUSDT",
+              "generated_at": "2020-01-01T01:07:00Z",
+              "source_feature_timestamp": "2020-01-01T01:07:00Z",
+              "snapshot_id": "features_a0f0adc8ac16d644d5af3ea432f33653ec623ab01850a157313dce30dd11436f",
+              "direction": "NEUTRAL",
+              "score": "0E-32",
+              "confidence": "0E-34",
+              "readiness": "ready",
+              "reasons": [
+                "microstructure:optional_source_missing",
+                "below_strategy_dead_zone"
+              ],
+              "required_feature_groups": [
+                "trend",
+                "momentum",
+                "volatility",
+                "regime"
+              ],
+              "optional_feature_groups": [
+                "microstructure"
+              ],
+              "evidence": [
+                {
+                  "name": "slow_ema_stretch_atr",
+                  "value": "4.716498637089244420062597833415659",
+                  "reference": "3",
+                  "normalized": "-1",
+                  "weight": "60",
+                  "multiplier": "0",
+                  "contribution": "-0",
+                  "code": "directional_contribution"
+                },
+                {
+                  "name": "rsi_reversion",
+                  "value": "69.09536522917589629794603038928962",
+                  "reference": "55",
+                  "normalized": "-0.9396910152783930865297353592859747",
+                  "weight": "40",
+                  "multiplier": "0",
+                  "contribution": "-0E-32",
+                  "code": "directional_contribution"
+                },
+                {
+                  "name": "weak_trend_quality",
+                  "value": "0.6",
+                  "reference": "0.55",
+                  "normalized": "0",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "score_quality"
+                },
+                {
+                  "name": "quiet_volume_quality",
+                  "value": "1",
+                  "reference": "3",
+                  "normalized": "1",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "score_quality"
+                },
+                {
+                  "name": "fast_distance_confirmation",
+                  "value": "0.06728108788049009391605724104310452",
+                  "reference": "0",
+                  "normalized": "1",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "score_quality"
+                },
+                {
+                  "name": "normalized_atr_quality",
+                  "value": "0.02226027397260273972602739726027397",
+                  "reference": "0.05",
+                  "normalized": "1",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "score_quality"
+                },
+                {
+                  "name": "optional_spread_quality",
+                  "value": null,
+                  "reference": null,
+                  "normalized": "0.75",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "optional_missing"
+                },
+                {
+                  "name": "score_strength",
+                  "value": "0E-32",
+                  "reference": null,
+                  "normalized": "0E-32",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "confidence_factor"
+                },
+                {
+                  "name": "directional_agreement",
+                  "value": "0",
+                  "reference": null,
+                  "normalized": "0",
+                  "weight": "0",
+                  "multiplier": "1",
+                  "contribution": "0",
+                  "code": "confidence_factor"
+                }
+              ]
+            }
+          ],
+          "readiness": "ready",
+          "direction": "LONG",
+          "composite_score": "66.16409179398660905441446132738313",
+          "confidence": "0.5795640217882329012414417932887067",
+          "agreement": "1",
+          "reasons": [
+            "candidate_thresholds_met"
+          ],
+          "candidate": {
+            "candidate_id": "candidate_28fa7315975deb6ac5e665adcfde691faf7ca45f806e6a74c87de89d0df5f3d9",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:07:00Z",
+            "snapshot_id": "features_a0f0adc8ac16d644d5af3ea432f33653ec623ab01850a157313dce30dd11436f",
+            "observation_id": "observation_55bedbc4348f59451d65d2feda93795c5bf2e8173d83686b880bd6f08893ec0e",
+            "direction": "LONG",
+            "composite_score": "66.16409179398660905441446132738313",
+            "confidence": "0.5795640217882329012414417932887067",
+            "contributing_strategies": [
+              "trend_following",
+              "momentum_continuation"
+            ],
+            "reasons": [
+              "candidate_thresholds_met"
+            ]
+          }
+        },
+        "portfolio": {
+          "portfolio_decision_id": "portfolio_decision_48803dae862ac92d005feeae6b1f340a74d64edd625dad7ed984bb017188e3c4",
+          "upstream": {
+            "decision_id": "decision_18d8fa765558efae76d204ae8b01196592e148ae859bb1c1af37da7b3da2fdd2",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:07:00Z",
+            "source_strategy_timestamp": "2020-01-01T01:07:00Z",
+            "source_feature_timestamp": "2020-01-01T01:07:00Z",
+            "strategy_snapshot_id": "features_a0f0adc8ac16d644d5af3ea432f33653ec623ab01850a157313dce30dd11436f",
+            "observation_id": "observation_55bedbc4348f59451d65d2feda93795c5bf2e8173d83686b880bd6f08893ec0e",
+            "strategy_settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+            "strategy_engine_version": "strategy-engine-v1",
+            "candidate_id": "candidate_28fa7315975deb6ac5e665adcfde691faf7ca45f806e6a74c87de89d0df5f3d9",
+            "direction": "LONG",
+            "outcome": "ELIGIBLE",
+            "readiness": "ready",
+            "composite_score": "66.16409179398660905441446132738313",
+            "confidence": "0.5795640217882329012414417932887067",
+            "agreement": "1",
+            "contributing_strategies": [
+              "trend_following",
+              "momentum_continuation"
+            ],
+            "incomplete_strategy_coverage": false,
+            "reasons": [
+              {
+                "code": "eligibility_checks_passed",
+                "observed": null,
+                "threshold": null
+              }
+            ],
+            "policy_id": "decision_policy_ab238c159048de1d3aa50ee9cbcda1d337d1b6ecf3c1ca33c6452911fd07e7f6",
+            "engine_version": "decision-engine-v1"
+          },
+          "policy_id": "portfolio_policy_09d06d6f053f75bcf89268a8a6f25848db3fcaaa8866bd6cf296f7c8df651f75",
+          "state_id": "portfolio_state_0d28dd211fb8e5e4792a35ddb657af139570c0b724600dbd5180c4fe5aef78f2",
+          "evaluated_at": "2020-01-01T01:07:00Z",
+          "action": "REJECTED",
+          "reason": "symbol_position_active",
+          "desired_notional": "10020.27892097902097902097902097902",
+          "reservation_id": null
+        }
+      }
+    }
+  ],
+  "decisions": [
+    {
+      "boundary": "2020-01-01T01:07:00Z",
+      "published_at": "2020-01-01T01:07:00Z",
+      "received_at": "2020-01-01T01:07:00Z",
+      "connection_id": "injected_public",
+      "connection_generation": 1,
+      "features": {
+        "symbol": "BTCUSDT",
+        "generated_at": "2020-01-01T01:07:00Z",
+        "interval": "1m",
+        "state": "partial",
+        "reasons": [
+          "trade:trade:missing",
+          "microstructure:book_ticker:missing",
+          "mark_funding:mark_price:missing"
+        ],
+        "sources": [
+          {
+            "stream": "trade",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          },
+          {
+            "stream": "kline:1m",
+            "event_time": "2020-01-01T01:07:00Z",
+            "received_at": "2020-01-01T01:07:00Z",
+            "stale": false,
+            "reason": null,
+            "connection_id": "live_closed_bars",
+            "generation": 1
+          },
+          {
+            "stream": "book_ticker",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          },
+          {
+            "stream": "mark_price",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          }
+        ],
+        "closed_candle_time": "2020-01-01T01:07:00Z",
+        "closed_candles": 67,
+        "history_resets": 1,
+        "last_history_reset": "connection_changed",
+        "trade": {
+          "state": "unavailable",
+          "reasons": [
+            "trade:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "returns": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 67,
+          "values": {
+            "close": "116.8",
+            "simple_return": "0.02097902097902097902097902097902098",
+            "log_return": 0.02076199144842916,
+            "rolling_returns": [
+              {
+                "window": 5,
+                "value": "0.1145038167938931297709923664122137"
+              },
+              {
+                "window": 10,
+                "value": "0.140625"
+              },
+              {
+                "window": 20,
+                "value": "0.140625"
+              }
+            ]
+          }
+        },
+        "trend": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 50,
+          "available_samples": 67,
+          "values": {
+            "ema_fast": "109.4369621333333333333333333333333",
+            "ema_slow": "105.7022612583720555729422485915771",
+            "ema_long": "103.3393507296945864348813088013624",
+            "fast_slow_spread": "3.7347008749612777603910847417562",
+            "slow_long_spread": "2.3629105286774691380609397902147",
+            "distance_from_fast": "0.06728108788049009391605724104310452",
+            "distance_from_slow": "0.1049905518530140025013934449219239",
+            "distance_from_long": "0.1302567625522877692203457125051270"
+          }
+        },
+        "momentum": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 15,
+          "available_samples": 67,
+          "values": {
+            "rsi": "69.09536522917589629794603038928962",
+            "roc_percent": "14.062500",
+            "close_change": "2.4"
+          }
+        },
+        "volatility": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 67,
+          "values": {
+            "true_range": "2.6",
+            "atr": "2.6",
+            "normalized_atr": "0.02226027397260273972602739726027397",
+            "atr_percent": "2.226027397260273972602739726027397",
+            "realized_volatility": 0.0228247928171884
+          }
+        },
+        "volume": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 67,
+          "values": {
+            "rolling_vwap": "104.08",
+            "relative_volume": "1",
+            "taker_buy_ratio": "0.8",
+            "taker_base_volume_delta_proxy": "6"
+          }
+        },
+        "microstructure": {
+          "state": "unavailable",
+          "reasons": [
+            "book_ticker:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "mark_funding": {
+          "state": "unavailable",
+          "reasons": [
+            "mark_price:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "regime": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 67,
+          "values": {
+            "normalized_atr": "0.02226027397260273972602739726027397",
+            "normalized_ema_separation": "0.03533227038381332669190724639687869",
+            "directional_efficiency": "0.6",
+            "relative_volume": "1"
+          }
+        }
+      },
+      "strategy": {
+        "symbol": "BTCUSDT",
+        "generated_at": "2020-01-01T01:07:00Z",
+        "source_feature_timestamp": "2020-01-01T01:07:00Z",
+        "snapshot_id": "features_a0f0adc8ac16d644d5af3ea432f33653ec623ab01850a157313dce30dd11436f",
+        "observation_id": "observation_55bedbc4348f59451d65d2feda93795c5bf2e8173d83686b880bd6f08893ec0e",
+        "settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+        "engine_version": "strategy-engine-v1",
+        "assessments": [
+          {
+            "strategy_id": "trend_following",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:07:00Z",
+            "source_feature_timestamp": "2020-01-01T01:07:00Z",
+            "snapshot_id": "features_a0f0adc8ac16d644d5af3ea432f33653ec623ab01850a157313dce30dd11436f",
+            "direction": "LONG",
+            "score": "100",
+            "confidence": "1",
+            "readiness": "ready",
+            "reasons": [],
+            "required_feature_groups": [
+              "trend",
+              "momentum",
+              "regime",
+              "volatility"
+            ],
+            "optional_feature_groups": [],
+            "evidence": [
+              {
+                "name": "fast_slow_separation",
+                "value": "0.03533227038381332669190724639687869",
+                "reference": "0.005",
+                "normalized": "1",
+                "weight": "30",
+                "multiplier": "1",
+                "contribution": "30",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "slow_long_separation",
+                "value": "0.02286554455773725167029311576043115",
+                "reference": "0.005",
+                "normalized": "1",
+                "weight": "30",
+                "multiplier": "1",
+                "contribution": "30",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "slow_ema_distance",
+                "value": "0.1049905518530140025013934449219239",
+                "reference": "0.01",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "1",
+                "contribution": "20",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "roc_percent",
+                "value": "14.062500",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "1",
+                "contribution": "20",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "trend_efficiency",
+                "value": "0.6",
+                "reference": "0.55",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "corroborating_components",
+                "value": "4",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "normalized_atr_quality",
+                "value": "0.02226027397260273972602739726027397",
+                "reference": "0.05",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "score_strength",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          },
+          {
+            "strategy_id": "momentum_continuation",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:07:00Z",
+            "source_feature_timestamp": "2020-01-01T01:07:00Z",
+            "snapshot_id": "features_a0f0adc8ac16d644d5af3ea432f33653ec623ab01850a157313dce30dd11436f",
+            "direction": "LONG",
+            "score": "98.49227538195982716324338398214937",
+            "confidence": "0.7386920653646987037243253798661203",
+            "readiness": "ready",
+            "reasons": [
+              "microstructure:optional_source_missing"
+            ],
+            "required_feature_groups": [
+              "momentum",
+              "volume"
+            ],
+            "optional_feature_groups": [
+              "microstructure"
+            ],
+            "evidence": [
+              {
+                "name": "roc_percent",
+                "value": "14.062500",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "40",
+                "multiplier": "1",
+                "contribution": "40",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "rsi_continuation",
+                "value": "69.09536522917589629794603038928962",
+                "reference": "55",
+                "normalized": "0.9396910152783930865297353592859747",
+                "weight": "25",
+                "multiplier": "1",
+                "contribution": "23.49227538195982716324338398214937",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "close_change_over_vwap",
+                "value": "0.02305918524212144504227517294388932",
+                "reference": "0.01",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "1",
+                "contribution": "20",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "taker_buy_bias",
+                "value": "0.6",
+                "reference": "0.6",
+                "normalized": "1",
+                "weight": "15",
+                "multiplier": "1",
+                "contribution": "15",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "relative_volume_quality",
+                "value": "1",
+                "reference": "1",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "rsi_exhaustion_quality",
+                "value": "69.09536522917589629794603038928962",
+                "reference": "70",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "taker_base_volume_delta_proxy",
+                "value": "6",
+                "reference": null,
+                "normalized": null,
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "candle_proxy_only"
+              },
+              {
+                "name": "optional_spread_quality",
+                "value": null,
+                "reference": null,
+                "normalized": "0.75",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "optional_missing"
+              },
+              {
+                "name": "score_strength",
+                "value": "0.9849227538195982716324338398214937",
+                "reference": null,
+                "normalized": "0.9849227538195982716324338398214937",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          },
+          {
+            "strategy_id": "mean_reversion",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:07:00Z",
+            "source_feature_timestamp": "2020-01-01T01:07:00Z",
+            "snapshot_id": "features_a0f0adc8ac16d644d5af3ea432f33653ec623ab01850a157313dce30dd11436f",
+            "direction": "NEUTRAL",
+            "score": "0E-32",
+            "confidence": "0E-34",
+            "readiness": "ready",
+            "reasons": [
+              "microstructure:optional_source_missing",
+              "below_strategy_dead_zone"
+            ],
+            "required_feature_groups": [
+              "trend",
+              "momentum",
+              "volatility",
+              "regime"
+            ],
+            "optional_feature_groups": [
+              "microstructure"
+            ],
+            "evidence": [
+              {
+                "name": "slow_ema_stretch_atr",
+                "value": "4.716498637089244420062597833415659",
+                "reference": "3",
+                "normalized": "-1",
+                "weight": "60",
+                "multiplier": "0",
+                "contribution": "-0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "rsi_reversion",
+                "value": "69.09536522917589629794603038928962",
+                "reference": "55",
+                "normalized": "-0.9396910152783930865297353592859747",
+                "weight": "40",
+                "multiplier": "0",
+                "contribution": "-0E-32",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "weak_trend_quality",
+                "value": "0.6",
+                "reference": "0.55",
+                "normalized": "0",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "quiet_volume_quality",
+                "value": "1",
+                "reference": "3",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "fast_distance_confirmation",
+                "value": "0.06728108788049009391605724104310452",
+                "reference": "0",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "normalized_atr_quality",
+                "value": "0.02226027397260273972602739726027397",
+                "reference": "0.05",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "optional_spread_quality",
+                "value": null,
+                "reference": null,
+                "normalized": "0.75",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "optional_missing"
+              },
+              {
+                "name": "score_strength",
+                "value": "0E-32",
+                "reference": null,
+                "normalized": "0E-32",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "0",
+                "reference": null,
+                "normalized": "0",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          }
+        ],
+        "readiness": "ready",
+        "direction": "LONG",
+        "composite_score": "66.16409179398660905441446132738313",
+        "confidence": "0.5795640217882329012414417932887067",
+        "agreement": "1",
+        "reasons": [
+          "candidate_thresholds_met"
+        ],
+        "candidate": {
+          "candidate_id": "candidate_28fa7315975deb6ac5e665adcfde691faf7ca45f806e6a74c87de89d0df5f3d9",
+          "symbol": "BTCUSDT",
+          "generated_at": "2020-01-01T01:07:00Z",
+          "snapshot_id": "features_a0f0adc8ac16d644d5af3ea432f33653ec623ab01850a157313dce30dd11436f",
+          "observation_id": "observation_55bedbc4348f59451d65d2feda93795c5bf2e8173d83686b880bd6f08893ec0e",
+          "direction": "LONG",
+          "composite_score": "66.16409179398660905441446132738313",
+          "confidence": "0.5795640217882329012414417932887067",
+          "contributing_strategies": [
+            "trend_following",
+            "momentum_continuation"
+          ],
+          "reasons": [
+            "candidate_thresholds_met"
+          ]
+        }
+      },
+      "portfolio": {
+        "portfolio_decision_id": "portfolio_decision_48803dae862ac92d005feeae6b1f340a74d64edd625dad7ed984bb017188e3c4",
+        "upstream": {
+          "decision_id": "decision_18d8fa765558efae76d204ae8b01196592e148ae859bb1c1af37da7b3da2fdd2",
+          "symbol": "BTCUSDT",
+          "generated_at": "2020-01-01T01:07:00Z",
+          "source_strategy_timestamp": "2020-01-01T01:07:00Z",
+          "source_feature_timestamp": "2020-01-01T01:07:00Z",
+          "strategy_snapshot_id": "features_a0f0adc8ac16d644d5af3ea432f33653ec623ab01850a157313dce30dd11436f",
+          "observation_id": "observation_55bedbc4348f59451d65d2feda93795c5bf2e8173d83686b880bd6f08893ec0e",
+          "strategy_settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+          "strategy_engine_version": "strategy-engine-v1",
+          "candidate_id": "candidate_28fa7315975deb6ac5e665adcfde691faf7ca45f806e6a74c87de89d0df5f3d9",
+          "direction": "LONG",
+          "outcome": "ELIGIBLE",
+          "readiness": "ready",
+          "composite_score": "66.16409179398660905441446132738313",
+          "confidence": "0.5795640217882329012414417932887067",
+          "agreement": "1",
+          "contributing_strategies": [
+            "trend_following",
+            "momentum_continuation"
+          ],
+          "incomplete_strategy_coverage": false,
+          "reasons": [
+            {
+              "code": "eligibility_checks_passed",
+              "observed": null,
+              "threshold": null
+            }
+          ],
+          "policy_id": "decision_policy_ab238c159048de1d3aa50ee9cbcda1d337d1b6ecf3c1ca33c6452911fd07e7f6",
+          "engine_version": "decision-engine-v1"
+        },
+        "policy_id": "portfolio_policy_09d06d6f053f75bcf89268a8a6f25848db3fcaaa8866bd6cf296f7c8df651f75",
+        "state_id": "portfolio_state_0d28dd211fb8e5e4792a35ddb657af139570c0b724600dbd5180c4fe5aef78f2",
+        "evaluated_at": "2020-01-01T01:07:00Z",
+        "action": "REJECTED",
+        "reason": "symbol_position_active",
+        "desired_notional": "10020.27892097902097902097902097902",
+        "reservation_id": null
+      }
+    },
+    {
+      "boundary": "2020-01-01T01:06:00Z",
+      "published_at": "2020-01-01T01:06:00Z",
+      "received_at": "2020-01-01T01:06:00Z",
+      "connection_id": "injected_public",
+      "connection_generation": 1,
+      "features": {
+        "symbol": "BTCUSDT",
+        "generated_at": "2020-01-01T01:06:00Z",
+        "interval": "1m",
+        "state": "partial",
+        "reasons": [
+          "trade:trade:missing",
+          "microstructure:book_ticker:missing",
+          "mark_funding:mark_price:missing"
+        ],
+        "sources": [
+          {
+            "stream": "trade",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          },
+          {
+            "stream": "kline:1m",
+            "event_time": "2020-01-01T01:06:00Z",
+            "received_at": "2020-01-01T01:06:00Z",
+            "stale": false,
+            "reason": null,
+            "connection_id": "live_closed_bars",
+            "generation": 1
+          },
+          {
+            "stream": "book_ticker",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          },
+          {
+            "stream": "mark_price",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          }
+        ],
+        "closed_candle_time": "2020-01-01T01:06:00Z",
+        "closed_candles": 66,
+        "history_resets": 1,
+        "last_history_reset": "connection_changed",
+        "trade": {
+          "state": "unavailable",
+          "reasons": [
+            "trade:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "returns": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 66,
+          "values": {
+            "close": "114.4",
+            "simple_return": "0.02142857142857142857142857142857143",
+            "log_return": 0.021202207650602982,
+            "rolling_returns": [
+              {
+                "window": 5,
+                "value": "0.1171875"
+              },
+              {
+                "window": 10,
+                "value": "0.144"
+              },
+              {
+                "window": 20,
+                "value": "0.144"
+              }
+            ]
+          }
+        },
+        "trend": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 50,
+          "available_samples": 66,
+          "values": {
+            "ema_fast": "107.5962026666666666666666666666666",
+            "ema_slow": "104.5924873842092611302364734507348",
+            "ema_long": "102.7899364737637532281417703850915",
+            "fast_slow_spread": "3.0037152824574055364301932159318",
+            "slow_long_spread": "1.8025509104455079020947030656433",
+            "distance_from_fast": "0.06323454884752314431121435363666927",
+            "distance_from_slow": "0.09376880559082504039365514694652216",
+            "distance_from_long": "0.1129494182458184083195084749386805"
+          }
+        },
+        "momentum": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 15,
+          "available_samples": 66,
+          "values": {
+            "rsi": "66.71808563142019601317264811154265",
+            "roc_percent": "14.400",
+            "close_change": "2.4"
+          }
+        },
+        "volatility": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 66,
+          "values": {
+            "true_range": "2.6",
+            "atr": "2.6",
+            "normalized_atr": "0.02272727272727272727272727272727273",
+            "atr_percent": "2.272727272727272727272727272727273",
+            "realized_volatility": 0.022930735935280645
+          }
+        },
+        "volume": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 66,
+          "values": {
+            "rolling_vwap": "103.36",
+            "relative_volume": "1",
+            "taker_buy_ratio": "0.8",
+            "taker_base_volume_delta_proxy": "6"
+          }
+        },
+        "microstructure": {
+          "state": "unavailable",
+          "reasons": [
+            "book_ticker:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "mark_funding": {
+          "state": "unavailable",
+          "reasons": [
+            "mark_price:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "regime": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 66,
+          "values": {
+            "normalized_atr": "0.02272727272727272727272727272727273",
+            "normalized_ema_separation": "0.02871826990234566538523227539307436",
+            "directional_efficiency": "0.6",
+            "relative_volume": "1"
+          }
+        }
+      },
+      "strategy": {
+        "symbol": "BTCUSDT",
+        "generated_at": "2020-01-01T01:06:00Z",
+        "source_feature_timestamp": "2020-01-01T01:06:00Z",
+        "snapshot_id": "features_4afc6b99b299aecfbeeba9fd27d8b8ccdaf85e7f74c0e22f293baad7cf82cf86",
+        "observation_id": "observation_a5171217db2c2990bbc9de03d9d4c9dd37777ce7092875727c8a636a11b485b8",
+        "settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+        "engine_version": "strategy-engine-v1",
+        "assessments": [
+          {
+            "strategy_id": "trend_following",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:06:00Z",
+            "source_feature_timestamp": "2020-01-01T01:06:00Z",
+            "snapshot_id": "features_4afc6b99b299aecfbeeba9fd27d8b8ccdaf85e7f74c0e22f293baad7cf82cf86",
+            "direction": "LONG",
+            "score": "100",
+            "confidence": "1",
+            "readiness": "ready",
+            "reasons": [],
+            "required_feature_groups": [
+              "trend",
+              "momentum",
+              "regime",
+              "volatility"
+            ],
+            "optional_feature_groups": [],
+            "evidence": [
+              {
+                "name": "fast_slow_separation",
+                "value": "0.02871826990234566538523227539307436",
+                "reference": "0.005",
+                "normalized": "1",
+                "weight": "30",
+                "multiplier": "1",
+                "contribution": "30",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "slow_long_separation",
+                "value": "0.01753625862883564979083301025726084",
+                "reference": "0.005",
+                "normalized": "1",
+                "weight": "30",
+                "multiplier": "1",
+                "contribution": "30",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "slow_ema_distance",
+                "value": "0.09376880559082504039365514694652216",
+                "reference": "0.01",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "1",
+                "contribution": "20",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "roc_percent",
+                "value": "14.400",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "1",
+                "contribution": "20",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "trend_efficiency",
+                "value": "0.6",
+                "reference": "0.55",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "corroborating_components",
+                "value": "4",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "normalized_atr_quality",
+                "value": "0.02272727272727272727272727272727273",
+                "reference": "0.05",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "score_strength",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          },
+          {
+            "strategy_id": "momentum_continuation",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:06:00Z",
+            "source_feature_timestamp": "2020-01-01T01:06:00Z",
+            "snapshot_id": "features_4afc6b99b299aecfbeeba9fd27d8b8ccdaf85e7f74c0e22f293baad7cf82cf86",
+            "direction": "LONG",
+            "score": "94.53014271903366002195441351923775",
+            "confidence": "0.7089760703927524501646581013942831",
+            "readiness": "ready",
+            "reasons": [
+              "microstructure:optional_source_missing"
+            ],
+            "required_feature_groups": [
+              "momentum",
+              "volume"
+            ],
+            "optional_feature_groups": [
+              "microstructure"
+            ],
+            "evidence": [
+              {
+                "name": "roc_percent",
+                "value": "14.400",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "40",
+                "multiplier": "1",
+                "contribution": "40",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "rsi_continuation",
+                "value": "66.71808563142019601317264811154265",
+                "reference": "55",
+                "normalized": "0.78120570876134640087817654076951",
+                "weight": "25",
+                "multiplier": "1",
+                "contribution": "19.53014271903366002195441351923775",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "close_change_over_vwap",
+                "value": "0.02321981424148606811145510835913313",
+                "reference": "0.01",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "1",
+                "contribution": "20",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "taker_buy_bias",
+                "value": "0.6",
+                "reference": "0.6",
+                "normalized": "1",
+                "weight": "15",
+                "multiplier": "1",
+                "contribution": "15",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "relative_volume_quality",
+                "value": "1",
+                "reference": "1",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "rsi_exhaustion_quality",
+                "value": "66.71808563142019601317264811154265",
+                "reference": "70",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "taker_base_volume_delta_proxy",
+                "value": "6",
+                "reference": null,
+                "normalized": null,
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "candle_proxy_only"
+              },
+              {
+                "name": "optional_spread_quality",
+                "value": null,
+                "reference": null,
+                "normalized": "0.75",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "optional_missing"
+              },
+              {
+                "name": "score_strength",
+                "value": "0.9453014271903366002195441351923775",
+                "reference": null,
+                "normalized": "0.9453014271903366002195441351923775",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          },
+          {
+            "strategy_id": "mean_reversion",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:06:00Z",
+            "source_feature_timestamp": "2020-01-01T01:06:00Z",
+            "snapshot_id": "features_4afc6b99b299aecfbeeba9fd27d8b8ccdaf85e7f74c0e22f293baad7cf82cf86",
+            "direction": "NEUTRAL",
+            "score": "0E-32",
+            "confidence": "0E-34",
+            "readiness": "ready",
+            "reasons": [
+              "microstructure:optional_source_missing",
+              "below_strategy_dead_zone"
+            ],
+            "required_feature_groups": [
+              "trend",
+              "momentum",
+              "volatility",
+              "regime"
+            ],
+            "optional_feature_groups": [
+              "microstructure"
+            ],
+            "evidence": [
+              {
+                "name": "slow_ema_stretch_atr",
+                "value": "4.125827445996301777320826465646975",
+                "reference": "3",
+                "normalized": "-1",
+                "weight": "60",
+                "multiplier": "0",
+                "contribution": "-0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "rsi_reversion",
+                "value": "66.71808563142019601317264811154265",
+                "reference": "55",
+                "normalized": "-0.78120570876134640087817654076951",
+                "weight": "40",
+                "multiplier": "0",
+                "contribution": "-0E-32",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "weak_trend_quality",
+                "value": "0.6",
+                "reference": "0.55",
+                "normalized": "0",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "quiet_volume_quality",
+                "value": "1",
+                "reference": "3",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "fast_distance_confirmation",
+                "value": "0.06323454884752314431121435363666927",
+                "reference": "0",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "normalized_atr_quality",
+                "value": "0.02272727272727272727272727272727273",
+                "reference": "0.05",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "optional_spread_quality",
+                "value": null,
+                "reference": null,
+                "normalized": "0.75",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "optional_missing"
+              },
+              {
+                "name": "score_strength",
+                "value": "0E-32",
+                "reference": null,
+                "normalized": "0E-32",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "0",
+                "reference": null,
+                "normalized": "0",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          }
+        ],
+        "readiness": "ready",
+        "direction": "LONG",
+        "composite_score": "64.84338090634455334065147117307927",
+        "confidence": "0.5696586901309174833882193671314277",
+        "agreement": "1",
+        "reasons": [
+          "candidate_thresholds_met"
+        ],
+        "candidate": {
+          "candidate_id": "candidate_7f7803e653cd4b1fbc8176203942e9bb5d1b60d9c4144063dc89162af833e5a1",
+          "symbol": "BTCUSDT",
+          "generated_at": "2020-01-01T01:06:00Z",
+          "snapshot_id": "features_4afc6b99b299aecfbeeba9fd27d8b8ccdaf85e7f74c0e22f293baad7cf82cf86",
+          "observation_id": "observation_a5171217db2c2990bbc9de03d9d4c9dd37777ce7092875727c8a636a11b485b8",
+          "direction": "LONG",
+          "composite_score": "64.84338090634455334065147117307927",
+          "confidence": "0.5696586901309174833882193671314277",
+          "contributing_strategies": [
+            "trend_following",
+            "momentum_continuation"
+          ],
+          "reasons": [
+            "candidate_thresholds_met"
+          ]
+        }
+      },
+      "portfolio": {
+        "portfolio_decision_id": "portfolio_decision_7ec1f96f0a76b5dc23c17e03ec196b3fbc2ecb061ff8b6ae29d04bc4d2c41cf5",
+        "upstream": {
+          "decision_id": "decision_cf987514afbf2166a3aeb14272e7cd6040770b3c222d57f1fe29f81a85913bf4",
+          "symbol": "BTCUSDT",
+          "generated_at": "2020-01-01T01:06:00Z",
+          "source_strategy_timestamp": "2020-01-01T01:06:00Z",
+          "source_feature_timestamp": "2020-01-01T01:06:00Z",
+          "strategy_snapshot_id": "features_4afc6b99b299aecfbeeba9fd27d8b8ccdaf85e7f74c0e22f293baad7cf82cf86",
+          "observation_id": "observation_a5171217db2c2990bbc9de03d9d4c9dd37777ce7092875727c8a636a11b485b8",
+          "strategy_settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+          "strategy_engine_version": "strategy-engine-v1",
+          "candidate_id": "candidate_7f7803e653cd4b1fbc8176203942e9bb5d1b60d9c4144063dc89162af833e5a1",
+          "direction": "LONG",
+          "outcome": "ELIGIBLE",
+          "readiness": "ready",
+          "composite_score": "64.84338090634455334065147117307927",
+          "confidence": "0.5696586901309174833882193671314277",
+          "agreement": "1",
+          "contributing_strategies": [
+            "trend_following",
+            "momentum_continuation"
+          ],
+          "incomplete_strategy_coverage": false,
+          "reasons": [
+            {
+              "code": "eligibility_checks_passed",
+              "observed": null,
+              "threshold": null
+            }
+          ],
+          "policy_id": "decision_policy_ab238c159048de1d3aa50ee9cbcda1d337d1b6ecf3c1ca33c6452911fd07e7f6",
+          "engine_version": "decision-engine-v1"
+        },
+        "policy_id": "portfolio_policy_09d06d6f053f75bcf89268a8a6f25848db3fcaaa8866bd6cf296f7c8df651f75",
+        "state_id": "portfolio_state_b3e2e219a52155aeadf466f19319502da4b09bc8e1bd2f726ce61d369a0d3792",
+        "evaluated_at": "2020-01-01T01:06:00Z",
+        "action": "RESERVED",
+        "reason": "capacity_reserved",
+        "desired_notional": "10000.00",
+        "reservation_id": "paper_reservation_3dcb4c53d4b8d729ea04523934477968e46a68952ae2844e5b01dfb685b85d31"
+      }
+    },
+    {
+      "boundary": "2020-01-01T01:05:00Z",
+      "published_at": "2020-01-01T01:05:00Z",
+      "received_at": "2020-01-01T01:05:00Z",
+      "connection_id": "injected_public",
+      "connection_generation": 1,
+      "features": {
+        "symbol": "BTCUSDT",
+        "generated_at": "2020-01-01T01:05:00Z",
+        "interval": "1m",
+        "state": "partial",
+        "reasons": [
+          "trade:trade:missing",
+          "microstructure:book_ticker:missing",
+          "mark_funding:mark_price:missing"
+        ],
+        "sources": [
+          {
+            "stream": "trade",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          },
+          {
+            "stream": "kline:1m",
+            "event_time": "2020-01-01T01:05:00Z",
+            "received_at": "2020-01-01T01:05:00Z",
+            "stale": false,
+            "reason": null,
+            "connection_id": "live_closed_bars",
+            "generation": 1
+          },
+          {
+            "stream": "book_ticker",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          },
+          {
+            "stream": "mark_price",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          }
+        ],
+        "closed_candle_time": "2020-01-01T01:05:00Z",
+        "closed_candles": 65,
+        "history_resets": 1,
+        "last_history_reset": "connection_changed",
+        "trade": {
+          "state": "unavailable",
+          "reasons": [
+            "trade:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "returns": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 65,
+          "values": {
+            "close": "112.0",
+            "simple_return": "0.02189781021897810218978102189781022",
+            "log_return": 0.021661496781179384,
+            "rolling_returns": [
+              {
+                "window": 5,
+                "value": "0.12"
+              },
+              {
+                "window": 10,
+                "value": "0.09375"
+              },
+              {
+                "window": 20,
+                "value": "0.09375"
+              }
+            ]
+          }
+        },
+        "trend": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 50,
+          "available_samples": 65,
+          "values": {
+            "ema_fast": "105.8952533333333333333333333333333",
+            "ema_slow": "103.6117361226301872432601207958083",
+            "ema_long": "102.3160563298357431558210263191769",
+            "fast_slow_spread": "2.2835172107031460900732125375250",
+            "slow_long_spread": "1.2956797927944440874390944766314",
+            "distance_from_fast": "0.05764891696750902527075812274368264",
+            "distance_from_slow": "0.08095862680499669644262997821987551",
+            "distance_from_long": "0.09464735074372078585490217060897919"
+          }
+        },
+        "momentum": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 15,
+          "available_samples": 65,
+          "values": {
+            "rsi": "64.15793837229867262957054412012286",
+            "roc_percent": "9.37500",
+            "close_change": "2.4"
+          }
+        },
+        "volatility": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 65,
+          "values": {
+            "true_range": "2.6",
+            "atr": "2.6",
+            "normalized_atr": "0.02321428571428571428571428571428571",
+            "atr_percent": "2.321428571428571428571428571428571",
+            "realized_volatility": 0.023627487888402673
+          }
+        },
+        "volume": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 65,
+          "values": {
+            "rolling_vwap": "102.64",
+            "relative_volume": "1",
+            "taker_buy_ratio": "0.8",
+            "taker_base_volume_delta_proxy": "6"
+          }
+        },
+        "microstructure": {
+          "state": "unavailable",
+          "reasons": [
+            "book_ticker:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "mark_funding": {
+          "state": "unavailable",
+          "reasons": [
+            "mark_price:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "regime": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 65,
+          "values": {
+            "normalized_atr": "0.02321428571428571428571428571428571",
+            "normalized_ema_separation": "0.02203917525327900984186369354037050",
+            "directional_efficiency": "0.4",
+            "relative_volume": "1"
+          }
+        }
+      },
+      "strategy": {
+        "symbol": "BTCUSDT",
+        "generated_at": "2020-01-01T01:05:00Z",
+        "source_feature_timestamp": "2020-01-01T01:05:00Z",
+        "snapshot_id": "features_7dae67a1e874b5af56d0b125d31fb9fa98d71da1a841c06eee537b0d0f08e5aa",
+        "observation_id": "observation_a9448bd271c605b764f5e194d459c9fb7170a497ac48458065694e8077677c00",
+        "settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+        "engine_version": "strategy-engine-v1",
+        "assessments": [
+          {
+            "strategy_id": "trend_following",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:05:00Z",
+            "source_feature_timestamp": "2020-01-01T01:05:00Z",
+            "snapshot_id": "features_7dae67a1e874b5af56d0b125d31fb9fa98d71da1a841c06eee537b0d0f08e5aa",
+            "direction": "LONG",
+            "score": "50.0",
+            "confidence": "0.5",
+            "readiness": "ready",
+            "reasons": [],
+            "required_feature_groups": [
+              "trend",
+              "momentum",
+              "regime",
+              "volatility"
+            ],
+            "optional_feature_groups": [],
+            "evidence": [
+              {
+                "name": "fast_slow_separation",
+                "value": "0.02203917525327900984186369354037050",
+                "reference": "0.005",
+                "normalized": "1",
+                "weight": "30",
+                "multiplier": "0.5",
+                "contribution": "15.0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "slow_long_separation",
+                "value": "0.01266350404102331525671226627559976",
+                "reference": "0.005",
+                "normalized": "1",
+                "weight": "30",
+                "multiplier": "0.5",
+                "contribution": "15.0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "slow_ema_distance",
+                "value": "0.08095862680499669644262997821987551",
+                "reference": "0.01",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "0.5",
+                "contribution": "10.0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "roc_percent",
+                "value": "9.37500",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "0.5",
+                "contribution": "10.0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "trend_efficiency",
+                "value": "0.4",
+                "reference": "0.55",
+                "normalized": "0.5",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "corroborating_components",
+                "value": "4",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "normalized_atr_quality",
+                "value": "0.02321428571428571428571428571428571",
+                "reference": "0.05",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "score_strength",
+                "value": "0.5",
+                "reference": null,
+                "normalized": "0.5",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          },
+          {
+            "strategy_id": "momentum_continuation",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:05:00Z",
+            "source_feature_timestamp": "2020-01-01T01:05:00Z",
+            "snapshot_id": "features_7dae67a1e874b5af56d0b125d31fb9fa98d71da1a841c06eee537b0d0f08e5aa",
+            "direction": "LONG",
+            "score": "90.26323062049778771595090686687143",
+            "confidence": "0.6769742296537334078696318015015357",
+            "readiness": "ready",
+            "reasons": [
+              "microstructure:optional_source_missing"
+            ],
+            "required_feature_groups": [
+              "momentum",
+              "volume"
+            ],
+            "optional_feature_groups": [
+              "microstructure"
+            ],
+            "evidence": [
+              {
+                "name": "roc_percent",
+                "value": "9.37500",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "40",
+                "multiplier": "1",
+                "contribution": "40",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "rsi_continuation",
+                "value": "64.15793837229867262957054412012286",
+                "reference": "55",
+                "normalized": "0.6105292248199115086380362746748573",
+                "weight": "25",
+                "multiplier": "1",
+                "contribution": "15.26323062049778771595090686687143",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "close_change_over_vwap",
+                "value": "0.02338269680436477007014809041309431",
+                "reference": "0.01",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "1",
+                "contribution": "20",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "taker_buy_bias",
+                "value": "0.6",
+                "reference": "0.6",
+                "normalized": "1",
+                "weight": "15",
+                "multiplier": "1",
+                "contribution": "15",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "relative_volume_quality",
+                "value": "1",
+                "reference": "1",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "rsi_exhaustion_quality",
+                "value": "64.15793837229867262957054412012286",
+                "reference": "70",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "taker_base_volume_delta_proxy",
+                "value": "6",
+                "reference": null,
+                "normalized": null,
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "candle_proxy_only"
+              },
+              {
+                "name": "optional_spread_quality",
+                "value": null,
+                "reference": null,
+                "normalized": "0.75",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "optional_missing"
+              },
+              {
+                "name": "score_strength",
+                "value": "0.9026323062049778771595090686687143",
+                "reference": null,
+                "normalized": "0.9026323062049778771595090686687143",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          },
+          {
+            "strategy_id": "mean_reversion",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:05:00Z",
+            "source_feature_timestamp": "2020-01-01T01:05:00Z",
+            "snapshot_id": "features_7dae67a1e874b5af56d0b125d31fb9fa98d71da1a841c06eee537b0d0f08e5aa",
+            "direction": "SHORT",
+            "score": "-42.21058449639823017276072549349714",
+            "confidence": "0.3165793837229867262957054412012286",
+            "readiness": "ready",
+            "reasons": [
+              "microstructure:optional_source_missing"
+            ],
+            "required_feature_groups": [
+              "trend",
+              "momentum",
+              "volatility",
+              "regime"
+            ],
+            "optional_feature_groups": [
+              "microstructure"
+            ],
+            "evidence": [
+              {
+                "name": "slow_ema_stretch_atr",
+                "value": "3.487448539292165385220983677163869",
+                "reference": "3",
+                "normalized": "-1",
+                "weight": "60",
+                "multiplier": "0.5",
+                "contribution": "-30.0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "rsi_reversion",
+                "value": "64.15793837229867262957054412012286",
+                "reference": "55",
+                "normalized": "-0.6105292248199115086380362746748573",
+                "weight": "40",
+                "multiplier": "0.5",
+                "contribution": "-12.21058449639823017276072549349714",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "weak_trend_quality",
+                "value": "0.4",
+                "reference": "0.55",
+                "normalized": "0.5",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "quiet_volume_quality",
+                "value": "1",
+                "reference": "3",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "fast_distance_confirmation",
+                "value": "0.05764891696750902527075812274368264",
+                "reference": "0",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "normalized_atr_quality",
+                "value": "0.02321428571428571428571428571428571",
+                "reference": "0.05",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "optional_spread_quality",
+                "value": null,
+                "reference": null,
+                "normalized": "0.75",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "optional_missing"
+              },
+              {
+                "name": "score_strength",
+                "value": "0.4221058449639823017276072549349714",
+                "reference": null,
+                "normalized": "0.4221058449639823017276072549349714",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          }
+        ],
+        "readiness": "ready",
+        "direction": "NEUTRAL",
+        "composite_score": "32.68421537469985251439672712445809",
+        "confidence": "0.2675212766390275973288733491829739",
+        "agreement": "0.5373518718906888833015494979889119",
+        "reasons": [
+          "opposing_strategy_evidence",
+          "below_candidate_score",
+          "below_candidate_confidence"
+        ],
+        "candidate": null
+      },
+      "portfolio": {
+        "portfolio_decision_id": "portfolio_decision_5457a7294ca96ce0bc4233b5ac2f494690ff9f2d8affefe3fe8d7df47a1c24dd",
+        "upstream": {
+          "decision_id": "decision_a916db425ee564c22e6255834f606a990f17f7740ed742b464e5e14467d294a2",
+          "symbol": "BTCUSDT",
+          "generated_at": "2020-01-01T01:05:00Z",
+          "source_strategy_timestamp": "2020-01-01T01:05:00Z",
+          "source_feature_timestamp": "2020-01-01T01:05:00Z",
+          "strategy_snapshot_id": "features_7dae67a1e874b5af56d0b125d31fb9fa98d71da1a841c06eee537b0d0f08e5aa",
+          "observation_id": "observation_a9448bd271c605b764f5e194d459c9fb7170a497ac48458065694e8077677c00",
+          "strategy_settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+          "strategy_engine_version": "strategy-engine-v1",
+          "candidate_id": null,
+          "direction": "NEUTRAL",
+          "outcome": "NO_ACTION",
+          "readiness": "ready",
+          "composite_score": null,
+          "confidence": null,
+          "agreement": "0.5373518718906888833015494979889119",
+          "contributing_strategies": [],
+          "incomplete_strategy_coverage": false,
+          "reasons": [
+            {
+              "code": "no_candidate",
+              "observed": null,
+              "threshold": null
+            }
+          ],
+          "policy_id": "decision_policy_ab238c159048de1d3aa50ee9cbcda1d337d1b6ecf3c1ca33c6452911fd07e7f6",
+          "engine_version": "decision-engine-v1"
+        },
+        "policy_id": "portfolio_policy_09d06d6f053f75bcf89268a8a6f25848db3fcaaa8866bd6cf296f7c8df651f75",
+        "state_id": "portfolio_state_98009d395beea923450d7fe5167f61f875d6da87bab7dff93e810244e8d17c8d",
+        "evaluated_at": "2020-01-01T01:05:00Z",
+        "action": "IGNORED",
+        "reason": "decision_not_eligible",
+        "desired_notional": null,
+        "reservation_id": null
+      }
+    },
+    {
+      "boundary": "2020-01-01T01:04:00Z",
+      "published_at": "2020-01-01T01:04:00Z",
+      "received_at": "2020-01-01T01:04:00Z",
+      "connection_id": "injected_public",
+      "connection_generation": 1,
+      "features": {
+        "symbol": "BTCUSDT",
+        "generated_at": "2020-01-01T01:04:00Z",
+        "interval": "1m",
+        "state": "partial",
+        "reasons": [
+          "trade:trade:missing",
+          "microstructure:book_ticker:missing",
+          "mark_funding:mark_price:missing"
+        ],
+        "sources": [
+          {
+            "stream": "trade",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          },
+          {
+            "stream": "kline:1m",
+            "event_time": "2020-01-01T01:04:00Z",
+            "received_at": "2020-01-01T01:04:00Z",
+            "stale": false,
+            "reason": null,
+            "connection_id": "live_closed_bars",
+            "generation": 1
+          },
+          {
+            "stream": "book_ticker",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          },
+          {
+            "stream": "mark_price",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          }
+        ],
+        "closed_candle_time": "2020-01-01T01:04:00Z",
+        "closed_candles": 64,
+        "history_resets": 1,
+        "last_history_reset": "connection_changed",
+        "trade": {
+          "state": "unavailable",
+          "reasons": [
+            "trade:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "returns": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 64,
+          "values": {
+            "close": "109.6",
+            "simple_return": "0.02238805970149253731343283582089552",
+            "log_return": 0.022141125877213546,
+            "rolling_returns": [
+              {
+                "window": 5,
+                "value": "0.0703125"
+              },
+              {
+                "window": 10,
+                "value": "0.096"
+              },
+              {
+                "window": 20,
+                "value": "0.096"
+              }
+            ]
+          }
+        },
+        "trend": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 50,
+          "available_samples": 64,
+          "values": {
+            "ema_fast": "104.3690666666666666666666666666666",
+            "ema_slow": "102.7729097348932059675861328753891",
+            "ema_long": "101.9207933228902632846300478015923",
+            "fast_slow_spread": "1.5961569317734606990805337912775",
+            "slow_long_spread": "0.8521164120029426829560850737968",
+            "distance_from_fast": "0.05011957565971015677697606442777493",
+            "distance_from_slow": "0.06642888950714292278759047186985892",
+            "distance_from_long": "0.07534484796229576941855082946570595"
+          }
+        },
+        "momentum": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 15,
+          "available_samples": 64,
+          "values": {
+            "rsi": "61.40085670862933975492212443705538",
+            "roc_percent": "9.600",
+            "close_change": "2.4"
+          }
+        },
+        "volatility": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 64,
+          "values": {
+            "true_range": "2.6",
+            "atr": "2.6",
+            "normalized_atr": "0.02372262773722627737226277372262774",
+            "atr_percent": "2.372262773722627737226277372262774",
+            "realized_volatility": 0.02371045956517518
+          }
+        },
+        "volume": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 64,
+          "values": {
+            "rolling_vwap": "102.16",
+            "relative_volume": "1",
+            "taker_buy_ratio": "0.8",
+            "taker_base_volume_delta_proxy": "6"
+          }
+        },
+        "microstructure": {
+          "state": "unavailable",
+          "reasons": [
+            "book_ticker:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "mark_funding": {
+          "state": "unavailable",
+          "reasons": [
+            "mark_price:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "regime": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 64,
+          "values": {
+            "normalized_atr": "0.02372262773722627737226277372262774",
+            "normalized_ema_separation": "0.01553091116998449073551900058956837",
+            "directional_efficiency": "0.4",
+            "relative_volume": "1"
+          }
+        }
+      },
+      "strategy": {
+        "symbol": "BTCUSDT",
+        "generated_at": "2020-01-01T01:04:00Z",
+        "source_feature_timestamp": "2020-01-01T01:04:00Z",
+        "snapshot_id": "features_b33c959ba46ad70b16cfddaa0236cbabf9ed46534576022e9d6aaaa8a8cdf199",
+        "observation_id": "observation_2b1114defb042e104f339e7a66fc1656258ad8e295049e5ccf95c86233353cae",
+        "settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+        "engine_version": "strategy-engine-v1",
+        "assessments": [
+          {
+            "strategy_id": "trend_following",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:04:00Z",
+            "source_feature_timestamp": "2020-01-01T01:04:00Z",
+            "snapshot_id": "features_b33c959ba46ad70b16cfddaa0236cbabf9ed46534576022e9d6aaaa8a8cdf199",
+            "direction": "LONG",
+            "score": "50.0",
+            "confidence": "0.5",
+            "readiness": "ready",
+            "reasons": [],
+            "required_feature_groups": [
+              "trend",
+              "momentum",
+              "regime",
+              "volatility"
+            ],
+            "optional_feature_groups": [],
+            "evidence": [
+              {
+                "name": "fast_slow_separation",
+                "value": "0.01553091116998449073551900058956837",
+                "reference": "0.005",
+                "normalized": "1",
+                "weight": "30",
+                "multiplier": "0.5",
+                "contribution": "15.0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "slow_long_separation",
+                "value": "0.008360574758316435960544958045659905",
+                "reference": "0.005",
+                "normalized": "1",
+                "weight": "30",
+                "multiplier": "0.5",
+                "contribution": "15.0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "slow_ema_distance",
+                "value": "0.06642888950714292278759047186985892",
+                "reference": "0.01",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "0.5",
+                "contribution": "10.0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "roc_percent",
+                "value": "9.600",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "0.5",
+                "contribution": "10.0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "trend_efficiency",
+                "value": "0.4",
+                "reference": "0.55",
+                "normalized": "0.5",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "corroborating_components",
+                "value": "4",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "normalized_atr_quality",
+                "value": "0.02372262773722627737226277372262774",
+                "reference": "0.05",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "score_strength",
+                "value": "0.5",
+                "reference": null,
+                "normalized": "0.5",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          },
+          {
+            "strategy_id": "momentum_continuation",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:04:00Z",
+            "source_feature_timestamp": "2020-01-01T01:04:00Z",
+            "snapshot_id": "features_b33c959ba46ad70b16cfddaa0236cbabf9ed46534576022e9d6aaaa8a8cdf199",
+            "direction": "LONG",
+            "score": "85.66809451438223292487020739509230",
+            "confidence": "0.6425107088578667469365265554631922",
+            "readiness": "ready",
+            "reasons": [
+              "microstructure:optional_source_missing"
+            ],
+            "required_feature_groups": [
+              "momentum",
+              "volume"
+            ],
+            "optional_feature_groups": [
+              "microstructure"
+            ],
+            "evidence": [
+              {
+                "name": "roc_percent",
+                "value": "9.600",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "40",
+                "multiplier": "1",
+                "contribution": "40",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "rsi_continuation",
+                "value": "61.40085670862933975492212443705538",
+                "reference": "55",
+                "normalized": "0.426723780575289316994808295803692",
+                "weight": "25",
+                "multiplier": "1",
+                "contribution": "10.66809451438223292487020739509230",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "close_change_over_vwap",
+                "value": "0.02349256068911511354737666405638215",
+                "reference": "0.01",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "1",
+                "contribution": "20",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "taker_buy_bias",
+                "value": "0.6",
+                "reference": "0.6",
+                "normalized": "1",
+                "weight": "15",
+                "multiplier": "1",
+                "contribution": "15",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "relative_volume_quality",
+                "value": "1",
+                "reference": "1",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "rsi_exhaustion_quality",
+                "value": "61.40085670862933975492212443705538",
+                "reference": "70",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "taker_base_volume_delta_proxy",
+                "value": "6",
+                "reference": null,
+                "normalized": null,
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "candle_proxy_only"
+              },
+              {
+                "name": "optional_spread_quality",
+                "value": null,
+                "reference": null,
+                "normalized": "0.75",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "optional_missing"
+              },
+              {
+                "name": "score_strength",
+                "value": "0.856680945143822329248702073950923",
+                "reference": null,
+                "normalized": "0.856680945143822329248702073950923",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          },
+          {
+            "strategy_id": "mean_reversion",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:04:00Z",
+            "source_feature_timestamp": "2020-01-01T01:04:00Z",
+            "snapshot_id": "features_b33c959ba46ad70b16cfddaa0236cbabf9ed46534576022e9d6aaaa8a8cdf199",
+            "direction": "SHORT",
+            "score": "-35.53797343833000367174183351378464",
+            "confidence": "0.2665348007874750275380637513533848",
+            "readiness": "ready",
+            "reasons": [
+              "microstructure:optional_source_missing"
+            ],
+            "required_feature_groups": [
+              "trend",
+              "momentum",
+              "volatility",
+              "regime"
+            ],
+            "optional_feature_groups": [
+              "microstructure"
+            ],
+            "evidence": [
+              {
+                "name": "slow_ema_stretch_atr",
+                "value": "2.800233188454947822123044506514053",
+                "reference": "3",
+                "normalized": "-0.9001165942274739110615222532570265",
+                "weight": "60",
+                "multiplier": "0.5",
+                "contribution": "-27.00349782682421733184566759771080",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "rsi_reversion",
+                "value": "61.40085670862933975492212443705538",
+                "reference": "55",
+                "normalized": "-0.426723780575289316994808295803692",
+                "weight": "40",
+                "multiplier": "0.5",
+                "contribution": "-8.534475611505786339896165916073840",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "weak_trend_quality",
+                "value": "0.4",
+                "reference": "0.55",
+                "normalized": "0.5",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "quiet_volume_quality",
+                "value": "1",
+                "reference": "3",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "fast_distance_confirmation",
+                "value": "0.05011957565971015677697606442777493",
+                "reference": "0",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "normalized_atr_quality",
+                "value": "0.02372262773722627737226277372262774",
+                "reference": "0.05",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "optional_spread_quality",
+                "value": null,
+                "reference": null,
+                "normalized": "0.75",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "optional_missing"
+              },
+              {
+                "name": "score_strength",
+                "value": "0.3553797343833000367174183351378464",
+                "reference": null,
+                "normalized": "0.3553797343833000367174183351378464",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          }
+        ],
+        "readiness": "ready",
+        "direction": "NEUTRAL",
+        "composite_score": "33.37670702535074308437612462710257",
+        "confidence": "0.2746941140766591713646018690973866",
+        "agreement": "0.5848514732766863575627424254588158",
+        "reasons": [
+          "opposing_strategy_evidence",
+          "below_candidate_score",
+          "below_candidate_confidence"
+        ],
+        "candidate": null
+      },
+      "portfolio": {
+        "portfolio_decision_id": "portfolio_decision_79dd2b4f993f89a411b42bde8feab265c95d0329c3ceffbeaf623cf941f1022a",
+        "upstream": {
+          "decision_id": "decision_745b76328a1643ac3b265560706355cfdbd00299e38fd89f6536b1f29bc02664",
+          "symbol": "BTCUSDT",
+          "generated_at": "2020-01-01T01:04:00Z",
+          "source_strategy_timestamp": "2020-01-01T01:04:00Z",
+          "source_feature_timestamp": "2020-01-01T01:04:00Z",
+          "strategy_snapshot_id": "features_b33c959ba46ad70b16cfddaa0236cbabf9ed46534576022e9d6aaaa8a8cdf199",
+          "observation_id": "observation_2b1114defb042e104f339e7a66fc1656258ad8e295049e5ccf95c86233353cae",
+          "strategy_settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+          "strategy_engine_version": "strategy-engine-v1",
+          "candidate_id": null,
+          "direction": "NEUTRAL",
+          "outcome": "NO_ACTION",
+          "readiness": "ready",
+          "composite_score": null,
+          "confidence": null,
+          "agreement": "0.5848514732766863575627424254588158",
+          "contributing_strategies": [],
+          "incomplete_strategy_coverage": false,
+          "reasons": [
+            {
+              "code": "no_candidate",
+              "observed": null,
+              "threshold": null
+            }
+          ],
+          "policy_id": "decision_policy_ab238c159048de1d3aa50ee9cbcda1d337d1b6ecf3c1ca33c6452911fd07e7f6",
+          "engine_version": "decision-engine-v1"
+        },
+        "policy_id": "portfolio_policy_09d06d6f053f75bcf89268a8a6f25848db3fcaaa8866bd6cf296f7c8df651f75",
+        "state_id": "portfolio_state_fea5498cfafa6dffc114dc42aac7915cdae0efb0c4d76cc83078f0d664c48c13",
+        "evaluated_at": "2020-01-01T01:04:00Z",
+        "action": "IGNORED",
+        "reason": "decision_not_eligible",
+        "desired_notional": null,
+        "reservation_id": null
+      }
+    },
+    {
+      "boundary": "2020-01-01T01:03:00Z",
+      "published_at": "2020-01-01T01:03:00Z",
+      "received_at": "2020-01-01T01:03:00Z",
+      "connection_id": "injected_public",
+      "connection_generation": 1,
+      "features": {
+        "symbol": "BTCUSDT",
+        "generated_at": "2020-01-01T01:03:00Z",
+        "interval": "1m",
+        "state": "partial",
+        "reasons": [
+          "trade:trade:missing",
+          "microstructure:book_ticker:missing",
+          "mark_funding:mark_price:missing"
+        ],
+        "sources": [
+          {
+            "stream": "trade",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          },
+          {
+            "stream": "kline:1m",
+            "event_time": "2020-01-01T01:03:00Z",
+            "received_at": "2020-01-01T01:03:00Z",
+            "stale": false,
+            "reason": null,
+            "connection_id": "live_closed_bars",
+            "generation": 1
+          },
+          {
+            "stream": "book_ticker",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          },
+          {
+            "stream": "mark_price",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          }
+        ],
+        "closed_candle_time": "2020-01-01T01:03:00Z",
+        "closed_candles": 63,
+        "history_resets": 1,
+        "last_history_reset": "connection_changed",
+        "trade": {
+          "state": "unavailable",
+          "reasons": [
+            "trade:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "returns": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 63,
+          "values": {
+            "close": "107.2",
+            "simple_return": "0.02290076335877862595419847328244275",
+            "log_return": 0.022642476749759825,
+            "rolling_returns": [
+              {
+                "window": 5,
+                "value": "0.072"
+              },
+              {
+                "window": 10,
+                "value": "0.046875"
+              },
+              {
+                "window": 20,
+                "value": "0.046875"
+              }
+            ]
+          }
+        },
+        "trend": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 50,
+          "available_samples": 63,
+          "values": {
+            "ema_fast": "103.0613333333333333333333333333333",
+            "ema_slow": "102.0902007083825265643447461629280",
+            "ema_long": "101.6073563156612944391047436302287",
+            "fast_slow_spread": "0.9711326249508067689885871704053",
+            "slow_long_spread": "0.4828443927212321252400025326993",
+            "distance_from_fast": "0.04015731732560546470709997930035223",
+            "distance_from_slow": "0.05005180963659240618755088446451020",
+            "distance_from_long": "0.05504172027627768298911670315703580"
+          }
+        },
+        "momentum": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 15,
+          "available_samples": 63,
+          "values": {
+            "rsi": "58.43169184006236588991613400913658",
+            "roc_percent": "4.687500",
+            "close_change": "2.4"
+          }
+        },
+        "volatility": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 63,
+          "values": {
+            "true_range": "2.6",
+            "atr": "2.6",
+            "normalized_atr": "0.02425373134328358208955223880597015",
+            "atr_percent": "2.425373134328358208955223880597015",
+            "realized_volatility": 0.024136665857662876
+          }
+        },
+        "volume": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 63,
+          "values": {
+            "rolling_vwap": "101.68",
+            "relative_volume": "1",
+            "taker_buy_ratio": "0.8",
+            "taker_base_volume_delta_proxy": "6"
+          }
+        },
+        "microstructure": {
+          "state": "unavailable",
+          "reasons": [
+            "book_ticker:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "mark_funding": {
+          "state": "unavailable",
+          "reasons": [
+            "mark_price:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "regime": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 63,
+          "values": {
+            "normalized_atr": "0.02425373134328358208955223880597015",
+            "normalized_ema_separation": "0.009512495990920977968568820467273066",
+            "directional_efficiency": "0.2",
+            "relative_volume": "1"
+          }
+        }
+      },
+      "strategy": {
+        "symbol": "BTCUSDT",
+        "generated_at": "2020-01-01T01:03:00Z",
+        "source_feature_timestamp": "2020-01-01T01:03:00Z",
+        "snapshot_id": "features_2615218ba5049d8c6b56728548c3a11f170290ae3d3c9252e6ad53736bceaf87",
+        "observation_id": "observation_6172ba96da30a618abb384bbc814fb4147204988763b0493537fb7c4455225dd",
+        "settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+        "engine_version": "strategy-engine-v1",
+        "assessments": [
+          {
+            "strategy_id": "trend_following",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:03:00Z",
+            "source_feature_timestamp": "2020-01-01T01:03:00Z",
+            "snapshot_id": "features_2615218ba5049d8c6b56728548c3a11f170290ae3d3c9252e6ad53736bceaf87",
+            "direction": "NEUTRAL",
+            "score": "0E-32",
+            "confidence": "0E-32",
+            "readiness": "ready",
+            "reasons": [
+              "below_strategy_dead_zone"
+            ],
+            "required_feature_groups": [
+              "trend",
+              "momentum",
+              "regime",
+              "volatility"
+            ],
+            "optional_feature_groups": [],
+            "evidence": [
+              {
+                "name": "fast_slow_separation",
+                "value": "0.009512495990920977968568820467273066",
+                "reference": "0.005",
+                "normalized": "1",
+                "weight": "30",
+                "multiplier": "0",
+                "contribution": "0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "slow_long_separation",
+                "value": "0.004752061368678762611919559911520088",
+                "reference": "0.005",
+                "normalized": "0.944902526373058358204346647004464",
+                "weight": "30",
+                "multiplier": "0",
+                "contribution": "0E-32",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "slow_ema_distance",
+                "value": "0.05005180963659240618755088446451020",
+                "reference": "0.01",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "0",
+                "contribution": "0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "roc_percent",
+                "value": "4.687500",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "0",
+                "contribution": "0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "trend_efficiency",
+                "value": "0.2",
+                "reference": "0.55",
+                "normalized": "0",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "corroborating_components",
+                "value": "4",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "normalized_atr_quality",
+                "value": "0.02425373134328358208955223880597015",
+                "reference": "0.05",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "score_strength",
+                "value": "0E-32",
+                "reference": null,
+                "normalized": "0E-32",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "0",
+                "reference": null,
+                "normalized": "0",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          },
+          {
+            "strategy_id": "momentum_continuation",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:03:00Z",
+            "source_feature_timestamp": "2020-01-01T01:03:00Z",
+            "snapshot_id": "features_2615218ba5049d8c6b56728548c3a11f170290ae3d3c9252e6ad53736bceaf87",
+            "direction": "LONG",
+            "score": "80.71948640010394314986022334856097",
+            "confidence": "0.6053961480007795736239516751142073",
+            "readiness": "ready",
+            "reasons": [
+              "microstructure:optional_source_missing"
+            ],
+            "required_feature_groups": [
+              "momentum",
+              "volume"
+            ],
+            "optional_feature_groups": [
+              "microstructure"
+            ],
+            "evidence": [
+              {
+                "name": "roc_percent",
+                "value": "4.687500",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "40",
+                "multiplier": "1",
+                "contribution": "40",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "rsi_continuation",
+                "value": "58.43169184006236588991613400913658",
+                "reference": "55",
+                "normalized": "0.2287794560041577259944089339424387",
+                "weight": "25",
+                "multiplier": "1",
+                "contribution": "5.719486400103943149860223348560968",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "close_change_over_vwap",
+                "value": "0.02360346184107002360346184107002360",
+                "reference": "0.01",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "1",
+                "contribution": "20",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "taker_buy_bias",
+                "value": "0.6",
+                "reference": "0.6",
+                "normalized": "1",
+                "weight": "15",
+                "multiplier": "1",
+                "contribution": "15",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "relative_volume_quality",
+                "value": "1",
+                "reference": "1",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "rsi_exhaustion_quality",
+                "value": "58.43169184006236588991613400913658",
+                "reference": "70",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "taker_base_volume_delta_proxy",
+                "value": "6",
+                "reference": null,
+                "normalized": null,
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "candle_proxy_only"
+              },
+              {
+                "name": "optional_spread_quality",
+                "value": null,
+                "reference": null,
+                "normalized": "0.75",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "optional_missing"
+              },
+              {
+                "name": "score_strength",
+                "value": "0.8071948640010394314986022334856097",
+                "reference": null,
+                "normalized": "0.8071948640010394314986022334856097",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          },
+          {
+            "strategy_id": "mean_reversion",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:03:00Z",
+            "source_feature_timestamp": "2020-01-01T01:03:00Z",
+            "snapshot_id": "features_2615218ba5049d8c6b56728548c3a11f170290ae3d3c9252e6ad53736bceaf87",
+            "direction": "SHORT",
+            "score": "-41.06141662142830069330083598764556",
+            "confidence": "0.3079606246607122551997562699073417",
+            "readiness": "ready",
+            "reasons": [
+              "microstructure:optional_source_missing"
+            ],
+            "required_feature_groups": [
+              "trend",
+              "momentum",
+              "volatility",
+              "regime"
+            ],
+            "optional_feature_groups": [
+              "microstructure"
+            ],
+            "evidence": [
+              {
+                "name": "slow_ema_stretch_atr",
+                "value": "2.063674612708733055117482620998267",
+                "reference": "3",
+                "normalized": "-0.5318373063543665275587413104991335",
+                "weight": "60",
+                "multiplier": "1",
+                "contribution": "-31.91023838126199165352447862994801",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "rsi_reversion",
+                "value": "58.43169184006236588991613400913658",
+                "reference": "55",
+                "normalized": "-0.2287794560041577259944089339424387",
+                "weight": "40",
+                "multiplier": "1",
+                "contribution": "-9.151178240166309039776357357697548",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "weak_trend_quality",
+                "value": "0.2",
+                "reference": "0.55",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "quiet_volume_quality",
+                "value": "1",
+                "reference": "3",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "fast_distance_confirmation",
+                "value": "0.04015731732560546470709997930035223",
+                "reference": "0",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "normalized_atr_quality",
+                "value": "0.02425373134328358208955223880597015",
+                "reference": "0.05",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "optional_spread_quality",
+                "value": null,
+                "reference": null,
+                "normalized": "0.75",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "optional_missing"
+              },
+              {
+                "name": "score_strength",
+                "value": "0.4106141662142830069330083598764556",
+                "reference": null,
+                "normalized": "0.4106141662142830069330083598764556",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          }
+        ],
+        "readiness": "ready",
+        "direction": "NEUTRAL",
+        "composite_score": "13.21935659289188081885312912030514",
+        "confidence": "0.09914517444668910614139846840228853",
+        "agreement": "0.3256509747810265970832161592102651",
+        "reasons": [
+          "opposing_strategy_evidence",
+          "below_candidate_score",
+          "below_candidate_confidence"
+        ],
+        "candidate": null
+      },
+      "portfolio": {
+        "portfolio_decision_id": "portfolio_decision_079a88c8bac4a8992c23cc25e4c016130b0603b0ce10ca82e98f821259bd04c1",
+        "upstream": {
+          "decision_id": "decision_43b1817a85862e26f06439c6c78758194aeb44bb23cfe85c5d44b3259f43ed51",
+          "symbol": "BTCUSDT",
+          "generated_at": "2020-01-01T01:03:00Z",
+          "source_strategy_timestamp": "2020-01-01T01:03:00Z",
+          "source_feature_timestamp": "2020-01-01T01:03:00Z",
+          "strategy_snapshot_id": "features_2615218ba5049d8c6b56728548c3a11f170290ae3d3c9252e6ad53736bceaf87",
+          "observation_id": "observation_6172ba96da30a618abb384bbc814fb4147204988763b0493537fb7c4455225dd",
+          "strategy_settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+          "strategy_engine_version": "strategy-engine-v1",
+          "candidate_id": null,
+          "direction": "NEUTRAL",
+          "outcome": "NO_ACTION",
+          "readiness": "ready",
+          "composite_score": null,
+          "confidence": null,
+          "agreement": "0.3256509747810265970832161592102651",
+          "contributing_strategies": [],
+          "incomplete_strategy_coverage": false,
+          "reasons": [
+            {
+              "code": "no_candidate",
+              "observed": null,
+              "threshold": null
+            }
+          ],
+          "policy_id": "decision_policy_ab238c159048de1d3aa50ee9cbcda1d337d1b6ecf3c1ca33c6452911fd07e7f6",
+          "engine_version": "decision-engine-v1"
+        },
+        "policy_id": "portfolio_policy_09d06d6f053f75bcf89268a8a6f25848db3fcaaa8866bd6cf296f7c8df651f75",
+        "state_id": "portfolio_state_a99a2e82c3465614fed3112b2ff1f1ab20947fe67ab968ae675c2cf7d8fac0ab",
+        "evaluated_at": "2020-01-01T01:03:00Z",
+        "action": "IGNORED",
+        "reason": "decision_not_eligible",
+        "desired_notional": null,
+        "reservation_id": null
+      }
+    },
+    {
+      "boundary": "2020-01-01T01:02:00Z",
+      "published_at": "2020-01-01T01:02:00Z",
+      "received_at": "2020-01-01T01:02:00Z",
+      "connection_id": "injected_public",
+      "connection_generation": 1,
+      "features": {
+        "symbol": "BTCUSDT",
+        "generated_at": "2020-01-01T01:02:00Z",
+        "interval": "1m",
+        "state": "partial",
+        "reasons": [
+          "trade:trade:missing",
+          "microstructure:book_ticker:missing",
+          "mark_funding:mark_price:missing"
+        ],
+        "sources": [
+          {
+            "stream": "trade",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          },
+          {
+            "stream": "kline:1m",
+            "event_time": "2020-01-01T01:02:00Z",
+            "received_at": "2020-01-01T01:02:00Z",
+            "stale": false,
+            "reason": null,
+            "connection_id": "live_closed_bars",
+            "generation": 1
+          },
+          {
+            "stream": "book_ticker",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          },
+          {
+            "stream": "mark_price",
+            "event_time": null,
+            "received_at": null,
+            "stale": true,
+            "reason": "missing",
+            "connection_id": null,
+            "generation": null
+          }
+        ],
+        "closed_candle_time": "2020-01-01T01:02:00Z",
+        "closed_candles": 62,
+        "history_resets": 1,
+        "last_history_reset": "connection_changed",
+        "trade": {
+          "state": "unavailable",
+          "reasons": [
+            "trade:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "returns": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 62,
+          "values": {
+            "close": "104.8",
+            "simple_return": "0.0234375",
+            "log_return": 0.02316705928153438,
+            "rolling_returns": [
+              {
+                "window": 5,
+                "value": "0.0234375"
+              },
+              {
+                "window": 10,
+                "value": "0.048"
+              },
+              {
+                "window": 20,
+                "value": "0.048"
+              }
+            ]
+          }
+        },
+        "trend": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 50,
+          "available_samples": 62,
+          "values": {
+            "ema_fast": "102.0266666666666666666666666666666",
+            "ema_slow": "101.5792207792207792207792207792208",
+            "ema_long": "101.3790851448719595182518760232993",
+            "fast_slow_spread": "0.4474458874458874458874458874458",
+            "slow_long_spread": "0.2001356343488197025273447559215",
+            "distance_from_fast": "0.02718243596445373758494511238891860",
+            "distance_from_slow": "0.03170706760765060857113634039071269",
+            "distance_from_long": "0.03374379291586140356710830726729524"
+          }
+        },
+        "momentum": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 15,
+          "available_samples": 62,
+          "values": {
+            "rsi": "55.23412967391331711221737508676245",
+            "roc_percent": "4.800",
+            "close_change": "2.4"
+          }
+        },
+        "volatility": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 62,
+          "values": {
+            "true_range": "2.6",
+            "atr": "2.6",
+            "normalized_atr": "0.02480916030534351145038167938931298",
+            "atr_percent": "2.480916030534351145038167938931298",
+            "realized_volatility": 0.024185476465524915
+          }
+        },
+        "volume": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 62,
+          "values": {
+            "rolling_vwap": "101.44",
+            "relative_volume": "1",
+            "taker_buy_ratio": "0.8",
+            "taker_base_volume_delta_proxy": "6"
+          }
+        },
+        "microstructure": {
+          "state": "unavailable",
+          "reasons": [
+            "book_ticker:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "mark_funding": {
+          "state": "unavailable",
+          "reasons": [
+            "mark_price:missing"
+          ],
+          "required_samples": 1,
+          "available_samples": 0,
+          "values": null
+        },
+        "regime": {
+          "state": "ready",
+          "reasons": [],
+          "required_samples": 21,
+          "available_samples": 62,
+          "values": {
+            "normalized_atr": "0.02480916030534351145038167938931298",
+            "normalized_ema_separation": "0.004404895843987589921925607718794952",
+            "directional_efficiency": "0.2",
+            "relative_volume": "1"
+          }
+        }
+      },
+      "strategy": {
+        "symbol": "BTCUSDT",
+        "generated_at": "2020-01-01T01:02:00Z",
+        "source_feature_timestamp": "2020-01-01T01:02:00Z",
+        "snapshot_id": "features_4020863c96c6ca0bd6aa30b837abfd2c4fd94dc23f266c6ff00f7349ba69429e",
+        "observation_id": "observation_7919e46f3ec641ac55f3dee6e6a96b5186ff0bf2aa7fee25029011f7437d553f",
+        "settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+        "engine_version": "strategy-engine-v1",
+        "assessments": [
+          {
+            "strategy_id": "trend_following",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:02:00Z",
+            "source_feature_timestamp": "2020-01-01T01:02:00Z",
+            "snapshot_id": "features_4020863c96c6ca0bd6aa30b837abfd2c4fd94dc23f266c6ff00f7349ba69429e",
+            "direction": "NEUTRAL",
+            "score": "0E-33",
+            "confidence": "0E-33",
+            "readiness": "ready",
+            "reasons": [
+              "below_strategy_dead_zone"
+            ],
+            "required_feature_groups": [
+              "trend",
+              "momentum",
+              "regime",
+              "volatility"
+            ],
+            "optional_feature_groups": [],
+            "evidence": [
+              {
+                "name": "fast_slow_separation",
+                "value": "0.004404895843987589921925607718794952",
+                "reference": "0.005",
+                "normalized": "0.8677546319972422048723572708433227",
+                "weight": "30",
+                "multiplier": "0",
+                "contribution": "0E-32",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "slow_long_separation",
+                "value": "0.001974131390738271307189245578700076",
+                "reference": "0.005",
+                "normalized": "0.3275847534973936238198323508222391",
+                "weight": "30",
+                "multiplier": "0",
+                "contribution": "0E-33",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "slow_ema_distance",
+                "value": "0.03170706760765060857113634039071269",
+                "reference": "0.01",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "0",
+                "contribution": "0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "roc_percent",
+                "value": "4.800",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "0",
+                "contribution": "0",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "trend_efficiency",
+                "value": "0.2",
+                "reference": "0.55",
+                "normalized": "0",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "corroborating_components",
+                "value": "4",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "normalized_atr_quality",
+                "value": "0.02480916030534351145038167938931298",
+                "reference": "0.05",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "score_strength",
+                "value": "0E-33",
+                "reference": null,
+                "normalized": "0E-33",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "0",
+                "reference": null,
+                "normalized": "0",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          },
+          {
+            "strategy_id": "momentum_continuation",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:02:00Z",
+            "source_feature_timestamp": "2020-01-01T01:02:00Z",
+            "snapshot_id": "features_4020863c96c6ca0bd6aa30b837abfd2c4fd94dc23f266c6ff00f7349ba69429e",
+            "direction": "LONG",
+            "score": "75.39021612318886185369562514460408",
+            "confidence": "0.5654266209239164639027171885845306",
+            "readiness": "ready",
+            "reasons": [
+              "microstructure:optional_source_missing"
+            ],
+            "required_feature_groups": [
+              "momentum",
+              "volume"
+            ],
+            "optional_feature_groups": [
+              "microstructure"
+            ],
+            "evidence": [
+              {
+                "name": "roc_percent",
+                "value": "4.800",
+                "reference": "2",
+                "normalized": "1",
+                "weight": "40",
+                "multiplier": "1",
+                "contribution": "40",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "rsi_continuation",
+                "value": "55.23412967391331711221737508676245",
+                "reference": "55",
+                "normalized": "0.01560864492755447414782500578416333",
+                "weight": "25",
+                "multiplier": "1",
+                "contribution": "0.3902161231888618536956251446040832",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "close_change_over_vwap",
+                "value": "0.02365930599369085173501577287066246",
+                "reference": "0.01",
+                "normalized": "1",
+                "weight": "20",
+                "multiplier": "1",
+                "contribution": "20",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "taker_buy_bias",
+                "value": "0.6",
+                "reference": "0.6",
+                "normalized": "1",
+                "weight": "15",
+                "multiplier": "1",
+                "contribution": "15",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "relative_volume_quality",
+                "value": "1",
+                "reference": "1",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "rsi_exhaustion_quality",
+                "value": "55.23412967391331711221737508676245",
+                "reference": "70",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "taker_base_volume_delta_proxy",
+                "value": "6",
+                "reference": null,
+                "normalized": null,
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "candle_proxy_only"
+              },
+              {
+                "name": "optional_spread_quality",
+                "value": null,
+                "reference": null,
+                "normalized": "0.75",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "optional_missing"
+              },
+              {
+                "name": "score_strength",
+                "value": "0.7539021612318886185369562514460408",
+                "reference": null,
+                "normalized": "0.7539021612318886185369562514460408",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          },
+          {
+            "strategy_id": "mean_reversion",
+            "symbol": "BTCUSDT",
+            "generated_at": "2020-01-01T01:02:00Z",
+            "source_feature_timestamp": "2020-01-01T01:02:00Z",
+            "snapshot_id": "features_4020863c96c6ca0bd6aa30b837abfd2c4fd94dc23f266c6ff00f7349ba69429e",
+            "direction": "NEUTRAL",
+            "score": "-8.965507550353530253471713380751413",
+            "confidence": "0.06724130662765147690103785035563560",
+            "readiness": "ready",
+            "reasons": [
+              "microstructure:optional_source_missing",
+              "below_strategy_dead_zone"
+            ],
+            "required_feature_groups": [
+              "trend",
+              "momentum",
+              "volatility",
+              "regime"
+            ],
+            "optional_feature_groups": [
+              "microstructure"
+            ],
+            "evidence": [
+              {
+                "name": "slow_ema_stretch_atr",
+                "value": "1.278038725108378376251957104979496",
+                "reference": "3",
+                "normalized": "-0.139019362554189188125978552489748",
+                "weight": "60",
+                "multiplier": "1",
+                "contribution": "-8.341161753251351287558713149384880",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "rsi_reversion",
+                "value": "55.23412967391331711221737508676245",
+                "reference": "55",
+                "normalized": "-0.01560864492755447414782500578416333",
+                "weight": "40",
+                "multiplier": "1",
+                "contribution": "-0.6243457971021789659130002313665332",
+                "code": "directional_contribution"
+              },
+              {
+                "name": "weak_trend_quality",
+                "value": "0.2",
+                "reference": "0.55",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "quiet_volume_quality",
+                "value": "1",
+                "reference": "3",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "fast_distance_confirmation",
+                "value": "0.02718243596445373758494511238891860",
+                "reference": "0",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "normalized_atr_quality",
+                "value": "0.02480916030534351145038167938931298",
+                "reference": "0.05",
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "score_quality"
+              },
+              {
+                "name": "optional_spread_quality",
+                "value": null,
+                "reference": null,
+                "normalized": "0.75",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "optional_missing"
+              },
+              {
+                "name": "score_strength",
+                "value": "0.08965507550353530253471713380751413",
+                "reference": null,
+                "normalized": "0.08965507550353530253471713380751413",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              },
+              {
+                "name": "directional_agreement",
+                "value": "1",
+                "reference": null,
+                "normalized": "1",
+                "weight": "0",
+                "multiplier": "1",
+                "contribution": "0",
+                "code": "confidence_factor"
+              }
+            ]
+          }
+        ],
+        "readiness": "ready",
+        "direction": "NEUTRAL",
+        "composite_score": "22.14156952427844386674130392128422",
+        "confidence": "0.1660617714320883290005597794096316",
+        "agreement": "0.7874357029986454454539770481567483",
+        "reasons": [
+          "opposing_strategy_evidence",
+          "below_candidate_score",
+          "below_candidate_confidence"
+        ],
+        "candidate": null
+      },
+      "portfolio": {
+        "portfolio_decision_id": "portfolio_decision_3f96e2cc8e7c2f1ef7b6b459b56b50ffd3d36407768467c9c5cbdaa7043a1e51",
+        "upstream": {
+          "decision_id": "decision_056caef76ae3c4fd0b9f166b9738787fa0795e2d10db7274566be27922dbd057",
+          "symbol": "BTCUSDT",
+          "generated_at": "2020-01-01T01:02:00Z",
+          "source_strategy_timestamp": "2020-01-01T01:02:00Z",
+          "source_feature_timestamp": "2020-01-01T01:02:00Z",
+          "strategy_snapshot_id": "features_4020863c96c6ca0bd6aa30b837abfd2c4fd94dc23f266c6ff00f7349ba69429e",
+          "observation_id": "observation_7919e46f3ec641ac55f3dee6e6a96b5186ff0bf2aa7fee25029011f7437d553f",
+          "strategy_settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+          "strategy_engine_version": "strategy-engine-v1",
+          "candidate_id": null,
+          "direction": "NEUTRAL",
+          "outcome": "NO_ACTION",
+          "readiness": "ready",
+          "composite_score": null,
+          "confidence": null,
+          "agreement": "0.7874357029986454454539770481567483",
+          "contributing_strategies": [],
+          "incomplete_strategy_coverage": false,
+          "reasons": [
+            {
+              "code": "no_candidate",
+              "observed": null,
+              "threshold": null
+            }
+          ],
+          "policy_id": "decision_policy_ab238c159048de1d3aa50ee9cbcda1d337d1b6ecf3c1ca33c6452911fd07e7f6",
+          "engine_version": "decision-engine-v1"
+        },
+        "policy_id": "portfolio_policy_09d06d6f053f75bcf89268a8a6f25848db3fcaaa8866bd6cf296f7c8df651f75",
+        "state_id": "portfolio_state_f2113c14a333216bfcee8ff7b239a9ea4f6e2b39137ed35221fb98927018bb8f",
+        "evaluated_at": "2020-01-01T01:02:00Z",
+        "action": "IGNORED",
+        "reason": "decision_not_eligible",
+        "desired_notional": null,
+        "reservation_id": null
+      }
+    }
+  ],
+  "events": [
+    {
+      "event_id": "live_event_3e736da6daf18357f8b2d05edd5990687ad7c986f8963994cde0507f32ec672c",
+      "timestamp": "2020-01-01T01:07:00Z",
+      "category": "portfolio",
+      "severity": "info",
+      "symbol": "BTCUSDT",
+      "reason": "symbol_position_active",
+      "explanation": "Virtual portfolio: symbol position active.",
+      "related_id": "portfolio_decision_48803dae862ac92d005feeae6b1f340a74d64edd625dad7ed984bb017188e3c4"
+    },
+    {
+      "event_id": "live_event_c6ede6675a8852123db7bfb3b68a0a3e39d3b7a74a442343528137286cd92c1e",
+      "timestamp": "2020-01-01T01:06:00Z",
+      "category": "portfolio",
+      "severity": "info",
+      "symbol": "BTCUSDT",
+      "reason": "capacity_reserved",
+      "explanation": "Virtual portfolio: capacity reserved.",
+      "related_id": "portfolio_decision_7ec1f96f0a76b5dc23c17e03ec196b3fbc2ecb061ff8b6ae29d04bc4d2c41cf5"
+    },
+    {
+      "event_id": "live_event_5ea5978187d7c614469a70aafcbe3e3310946844fcdf1d71953cd0d11b3dc640",
+      "timestamp": "2020-01-01T01:05:00Z",
+      "category": "portfolio",
+      "severity": "info",
+      "symbol": "BTCUSDT",
+      "reason": "decision_not_eligible",
+      "explanation": "Virtual portfolio: decision not eligible.",
+      "related_id": "portfolio_decision_5457a7294ca96ce0bc4233b5ac2f494690ff9f2d8affefe3fe8d7df47a1c24dd"
+    },
+    {
+      "event_id": "live_event_5181bbf06bf7a9bff3e23016f15c8f1450363cf87abdbfbd3f47f558d0f1ac04",
+      "timestamp": "2020-01-01T01:04:00Z",
+      "category": "portfolio",
+      "severity": "info",
+      "symbol": "BTCUSDT",
+      "reason": "decision_not_eligible",
+      "explanation": "Virtual portfolio: decision not eligible.",
+      "related_id": "portfolio_decision_79dd2b4f993f89a411b42bde8feab265c95d0329c3ceffbeaf623cf941f1022a"
+    },
+    {
+      "event_id": "live_event_aa25b3d43e1e9ef26b81c7a91fa21f6716003410a2e333ab21e6d2439276dde1",
+      "timestamp": "2020-01-01T01:03:00Z",
+      "category": "portfolio",
+      "severity": "info",
+      "symbol": "BTCUSDT",
+      "reason": "decision_not_eligible",
+      "explanation": "Virtual portfolio: decision not eligible.",
+      "related_id": "portfolio_decision_079a88c8bac4a8992c23cc25e4c016130b0603b0ce10ca82e98f821259bd04c1"
+    },
+    {
+      "event_id": "live_event_4c05e4480307bf6977fb82e3fae5ed126d665df694c55abe0d7608a6e5e5caab",
+      "timestamp": "2020-01-01T01:02:00Z",
+      "category": "portfolio",
+      "severity": "info",
+      "symbol": "BTCUSDT",
+      "reason": "decision_not_eligible",
+      "explanation": "Virtual portfolio: decision not eligible.",
+      "related_id": "portfolio_decision_3f96e2cc8e7c2f1ef7b6b459b56b50ffd3d36407768467c9c5cbdaa7043a1e51"
+    }
+  ],
+  "curve": [
+    {
+      "state": {
+        "timestamp": "2020-01-01T01:02:00Z",
+        "realized_equity": "100000",
+        "unrealized_net_pnl": "0",
+        "marked_equity": "100000",
+        "peak_equity": "100000",
+        "drawdown": "0",
+        "exposures": [
+          {
+            "symbol": "BTCUSDT",
+            "open_notional": "0",
+            "reserved_notional": "0",
+            "open_count": 0,
+            "reservation_count": 0
+          }
+        ],
+        "open_notional": "0",
+        "reserved_notional": "0",
+        "gross_exposure": "0",
+        "gross_exposure_fraction": "0",
+        "open_count": 0,
+        "reservation_count": 0
+      },
+      "cumulative_closed_pnl": {
+        "gross_pnl": "0",
+        "fee_cost": "0",
+        "slippage_cost": "0",
+        "total_cost": "0",
+        "net_pnl": "0"
+      },
+      "open_count_before_exits": 0
+    },
+    {
+      "state": {
+        "timestamp": "2020-01-01T01:03:00Z",
+        "realized_equity": "100000",
+        "unrealized_net_pnl": "0",
+        "marked_equity": "100000",
+        "peak_equity": "100000",
+        "drawdown": "0",
+        "exposures": [
+          {
+            "symbol": "BTCUSDT",
+            "open_notional": "0",
+            "reserved_notional": "0",
+            "open_count": 0,
+            "reservation_count": 0
+          }
+        ],
+        "open_notional": "0",
+        "reserved_notional": "0",
+        "gross_exposure": "0",
+        "gross_exposure_fraction": "0",
+        "open_count": 0,
+        "reservation_count": 0
+      },
+      "cumulative_closed_pnl": {
+        "gross_pnl": "0",
+        "fee_cost": "0",
+        "slippage_cost": "0",
+        "total_cost": "0",
+        "net_pnl": "0"
+      },
+      "open_count_before_exits": 0
+    },
+    {
+      "state": {
+        "timestamp": "2020-01-01T01:04:00Z",
+        "realized_equity": "100000",
+        "unrealized_net_pnl": "0",
+        "marked_equity": "100000",
+        "peak_equity": "100000",
+        "drawdown": "0",
+        "exposures": [
+          {
+            "symbol": "BTCUSDT",
+            "open_notional": "0",
+            "reserved_notional": "0",
+            "open_count": 0,
+            "reservation_count": 0
+          }
+        ],
+        "open_notional": "0",
+        "reserved_notional": "0",
+        "gross_exposure": "0",
+        "gross_exposure_fraction": "0",
+        "open_count": 0,
+        "reservation_count": 0
+      },
+      "cumulative_closed_pnl": {
+        "gross_pnl": "0",
+        "fee_cost": "0",
+        "slippage_cost": "0",
+        "total_cost": "0",
+        "net_pnl": "0"
+      },
+      "open_count_before_exits": 0
+    },
+    {
+      "state": {
+        "timestamp": "2020-01-01T01:05:00Z",
+        "realized_equity": "100000",
+        "unrealized_net_pnl": "0",
+        "marked_equity": "100000",
+        "peak_equity": "100000",
+        "drawdown": "0",
+        "exposures": [
+          {
+            "symbol": "BTCUSDT",
+            "open_notional": "0",
+            "reserved_notional": "0",
+            "open_count": 0,
+            "reservation_count": 0
+          }
+        ],
+        "open_notional": "0",
+        "reserved_notional": "0",
+        "gross_exposure": "0",
+        "gross_exposure_fraction": "0",
+        "open_count": 0,
+        "reservation_count": 0
+      },
+      "cumulative_closed_pnl": {
+        "gross_pnl": "0",
+        "fee_cost": "0",
+        "slippage_cost": "0",
+        "total_cost": "0",
+        "net_pnl": "0"
+      },
+      "open_count_before_exits": 0
+    },
+    {
+      "state": {
+        "timestamp": "2020-01-01T01:06:00Z",
+        "realized_equity": "100000",
+        "unrealized_net_pnl": "0",
+        "marked_equity": "100000",
+        "peak_equity": "100000",
+        "drawdown": "0",
+        "exposures": [
+          {
+            "symbol": "BTCUSDT",
+            "open_notional": "0",
+            "reserved_notional": "10000.00",
+            "open_count": 0,
+            "reservation_count": 1
+          }
+        ],
+        "open_notional": "0",
+        "reserved_notional": "10000.00",
+        "gross_exposure": "10000.00",
+        "gross_exposure_fraction": "0.10",
+        "open_count": 0,
+        "reservation_count": 1
+      },
+      "cumulative_closed_pnl": {
+        "gross_pnl": "0",
+        "fee_cost": "0",
+        "slippage_cost": "0",
+        "total_cost": "0",
+        "net_pnl": "0"
+      },
+      "open_count_before_exits": 0
+    },
+    {
+      "state": {
+        "timestamp": "2020-01-01T01:07:00Z",
+        "realized_equity": "100000",
+        "unrealized_net_pnl": "202.7892097902097902097902097902098",
+        "marked_equity": "100202.7892097902097902097902097902",
+        "peak_equity": "100202.7892097902097902097902097902",
+        "drawdown": "0",
+        "exposures": [
+          {
+            "symbol": "BTCUSDT",
+            "open_notional": "10000.00",
+            "reserved_notional": "0",
+            "open_count": 1,
+            "reservation_count": 0
+          }
+        ],
+        "open_notional": "10000.00",
+        "reserved_notional": "0",
+        "gross_exposure": "10000.00",
+        "gross_exposure_fraction": "0.09979762119259411146172582879144549",
+        "open_count": 1,
+        "reservation_count": 0
+      },
+      "cumulative_closed_pnl": {
+        "gross_pnl": "0",
+        "fee_cost": "0",
+        "slippage_cost": "0",
+        "total_cost": "0",
+        "net_pnl": "0"
+      },
+      "open_count_before_exits": 1
+    }
+  ]
+}

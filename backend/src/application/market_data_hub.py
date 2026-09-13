@@ -24,10 +24,11 @@ from src.domain.market_data import (
     KlineEvent,
     MarketConnectionState,
     MarketSymbol,
+    SequenceID,
     NormalizedMarketEvent,
     TradeEvent,
 )
-from src.domain.models import DomainModel
+from src.domain.models import DomainModel, Identifier
 
 
 FreshnessReason = Literal[
@@ -99,6 +100,18 @@ class MarketEventQueue(asyncio.Queue[NormalizedMarketEvent]):
         return self._dropped_events
 
 
+class ClosedBarObservation(DomainModel):
+    bar: KlineEvent
+    connection_id: Identifier
+    generation: SequenceID
+
+
+class ClosedBarQueue(asyncio.Queue[ClosedBarObservation]):
+    def __init__(self, maxsize: int) -> None:
+        super().__init__(maxsize=maxsize)
+        self.dropped_events = 0
+
+
 class MarketDataHub:
     def __init__(
         self,
@@ -137,6 +150,7 @@ class MarketDataHub:
         self._connections: dict[str, MarketConnectionState] = {}
         self._event_connections: dict[EventType, str] = {}
         self._subscribers: set[MarketEventQueue] = set()
+        self._closed_subscribers: set[ClosedBarQueue] = set()
         self._dropped_events = 0
         self._ignored_events = 0
 
@@ -163,6 +177,19 @@ class MarketDataHub:
             self._ignored_events += 1
             return
         now = _TIME_ADAPTER.validate_python(self._clock())
+        # Opt-in close observers need revisions/late arrivals for diagnostics,
+        # even when the ordinary latest-value ordering rejects those events.
+        # Existing subscribers and cache ordering keep their original semantics.
+        if (isinstance(event, KlineEvent) and event.is_closed
+                and event.event_time <= now and event.received_at <= now):
+            observation = ClosedBarObservation(bar=event, connection_id=connection_id, generation=state.generation)
+            for queue in self._closed_subscribers:
+                if queue.full():
+                    queue.get_nowait()
+                    queue.task_done()
+                    queue.dropped_events += 1
+                    self._dropped_events += 1
+                queue.put_nowait(observation)
         previous = self._ordering[event.symbol].get(key)
         if previous is not None and (
             previous.event.event_time > now or previous.event.received_at > now
@@ -253,9 +280,21 @@ class MarketDataHub:
             as_of=now, stale_after_seconds=self.stale_after_seconds,
             stale=any(state.stale for state in symbols.values()),
             connections=tuple(self._connections.values()), symbols=symbols,
-            subscriber_count=len(self._subscribers), dropped_events=self._dropped_events,
+            subscriber_count=len(self._subscribers) + len(self._closed_subscribers), dropped_events=self._dropped_events,
             ignored_events=self._ignored_events,
         )
+
+    @contextmanager
+    def subscribe_closed_bars(self, max_queue_size: int = 1000) -> Iterator[ClosedBarQueue]:
+        """Bounded opt-in finalized observations with connection provenance."""
+        if type(max_queue_size) is not int or max_queue_size < 1:
+            raise ValueError("max_queue_size must be a positive integer")
+        queue = ClosedBarQueue(maxsize=max_queue_size)
+        self._closed_subscribers.add(queue)
+        try:
+            yield queue
+        finally:
+            self._closed_subscribers.discard(queue)
 
     def latest(self, symbol: str) -> SymbolMarketSnapshot:
         symbol = symbol.upper()

@@ -4,6 +4,17 @@
 
 `phase-8-live-paper-dashboard`
 
+## Completion status
+
+Phase 8 implementation and final validation are complete for review. Baseline:
+2059 passed, 2 warnings in 48.57s. Final backend: **2262 passed, 2 warnings in
+73.21s**. Final Phase 8 targeted: 203 passed in 25.55s; broader relevant regression:
+678 passed, 2 warnings in 55.73s. Frontend: 60 passed in 16.96s; TypeScript and
+production build passed. See [the completion report](docs/PHASE_8_REPORT.md) for
+commands, files, architecture and limitations, including unavailable browser
+visual inspection. No commit, push or Phase 9 work. The task specification below
+is retained as the acceptance record.
+
 Phase 7 is merged into `main` at `d334c14ee099834fa1ec7d15d9c08bb5abb724d5` and the accepted backend baseline is **2059 tests passing**.
 
 ## Objective
