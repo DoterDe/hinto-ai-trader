@@ -1,0 +1,56 @@
+{
+  "pipeline": {
+    "bars_per_run": 2000,
+    "runs": 2,
+    "restart_segments": 20,
+    "authoritative_equal": true,
+    "authoritative_checksum": "1c0e724a113c4077bbd2aae2b9a8ce6cf451b07081aa92f21ffe55d0677b1c2e",
+    "completed_positions": 1,
+    "decision_sequence_checksum": "bc88a82b00ea16aa442546c0adcd10dc85c0de0b14d3574125ec6aee99ddd16b",
+    "unique_reservations": 1,
+    "unique_entries": 1,
+    "unique_closes": 1,
+    "prefixes_compared": 20,
+    "maxima": {
+      "candles": 50,
+      "decisions": 5,
+      "events": 5,
+      "curve": 7,
+      "closes": 1,
+      "seen": 5,
+      "sealed": 3,
+      "checkpoints": 3,
+      "audit": 5,
+      "evidence": 4,
+      "pending": 0,
+      "fingerprints": 3
+    },
+    "orphan_workers_tasks_subscribers": 0
+  },
+  "storage": {
+    "transactions": 20000,
+    "retained_checkpoints": 3,
+    "retained_audit_events": 5,
+    "wal_checkpoint_samples": [
+      {
+        "checkpoints_written": 100,
+        "file_bytes": 53248,
+        "pages": 13,
+        "free_pages": 1
+      },
+      {
+        "checkpoints_written": 10001,
+        "file_bytes": 53248,
+        "pages": 13,
+        "free_pages": 1
+      },
+      {
+        "checkpoints_written": 20000,
+        "file_bytes": 53248,
+        "pages": 13,
+        "free_pages": 1
+      }
+    ],
+    "logical_boundedness": true
+  }
+}

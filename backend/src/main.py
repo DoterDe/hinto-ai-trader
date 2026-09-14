@@ -21,6 +21,8 @@ from src.application.live_paper_clock import LiveClock, SystemLiveClock
 from src.application.live_paper_coordinator import LivePaperCoordinator
 from src.application.live_paper_settings import LivePaperSettings
 from src.application.paper_portfolio_settings import PaperPortfolioSettings
+from src.application.paper_persistence_settings import PaperPersistenceSettings
+from src.domain.live_paper import LivePaperStatus
 from src.application.market_data_hub import MarketDataHub
 from src.application.strategy_engine import StrategyEngine
 from src.application.strategy_settings import StrategySettings
@@ -82,6 +84,7 @@ def create_app(
     portfolio_settings: PaperPortfolioSettings | None = None,
     backtest_settings: BacktestSettings | None = None,
     clock: LiveClock | None = None,
+    persistence_settings: PaperPersistenceSettings | None = None,
 ) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
@@ -107,7 +110,7 @@ def create_app(
             paper_config = LivePaperSettings.model_validate(paper_config.model_copy(update={'enabled': False}))
         paper = LivePaperCoordinator(hub, settings=paper_config, portfolio_settings=portfolio_settings,
             costs=backtest_settings, feature_settings=feature_settings, strategy_settings=strategy_settings,
-            decision_settings=decision_settings, clock=runtime_clock)
+            decision_settings=decision_settings, clock=runtime_clock, persistence_settings=persistence_settings)
         application.state.live_paper_coordinator = paper
         feed = source if source is not None else BinancePublicMarketData(config)
         # A disabled feed needs no consumer. Injected offline sources still run.
@@ -119,19 +122,35 @@ def create_app(
         application.state.live_paper_task = None
         task = None
         try:
+            # Recovery completes before any public source can publish. Failures
+            # leave read-only diagnostics available and the paper runtime halted.
+            recovered = True
+            if paper_config.enabled:
+                recovered = await paper.persistence.start(paper)
+                if not recovered:
+                    paper._status = LivePaperStatus.ERROR
+                    paper._last_problem = paper.persistence.state.reason
             # Register the consumer before the feed can publish its first event.
             if feature_task is not None:
                 await asyncio.sleep(0)
-            if paper_config.enabled:
+            if paper_config.enabled and recovered:
                 paper_task = asyncio.create_task(paper.run(), name='live-paper-coordinator')
                 application.state.live_paper_task = paper_task
                 await asyncio.sleep(0)
-            task = asyncio.create_task(_run_market_data(feed, hub), name="market-data")
+            if recovered:
+                task = asyncio.create_task(_run_market_data(feed, hub), name="market-data")
             application.state.market_data_task = task
             # Allow initial disabled/connecting state to be visible immediately.
             await asyncio.sleep(0)
             yield
         finally:
+            # Freeze the durable consumer before the source publishes STOPPED;
+            # shutdown is not evidence that a future holding candle was missed.
+            if paper.persistence.settings.enabled and paper_task is not None:
+                paper_task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await paper_task
+                paper_task = None
             if task is not None:
                 task.cancel()
                 with suppress(asyncio.CancelledError):
@@ -144,6 +163,7 @@ def create_app(
                 feature_task.cancel()
                 with suppress(asyncio.CancelledError):
                     await feature_task
+            await paper.persistence.close()
 
     application = FastAPI(title="Hinto AI Trader", version="0.1.0", lifespan=lifespan)
     application.include_router(market_data_router)

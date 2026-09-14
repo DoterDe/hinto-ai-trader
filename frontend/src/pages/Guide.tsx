@@ -73,6 +73,10 @@ export function Guide({ navigate }: { navigate: (page: Page) => void }) {
           price to finish a position.
         </p>
       </Card>
+      <Card title="What survives a restart?" help="recovery">
+        <p>With persistence enabled, committed virtual positions, reservations, accounting, closed-candle history and dedupe evidence are saved locally. Recovery checks the checksum and fixed configuration before admitting new public candles.</p>
+        <p>An unfinished candle group is not saved as a completed decision. Bars missed while offline stay missing. Corrupt or incompatible state stops paper processing; it is never silently replaced with a fresh session.</p>
+      </Card>
       <Card title="Glossary" help="features">
         <label className="search-label">
           Find a term

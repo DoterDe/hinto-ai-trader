@@ -1,4 +1,4 @@
-# Phase 8 module map
+# Phase 9 module map
 
 Every module in this path handles public information or virtual state. **None can
 move money.** The table explains the input, work and output without requiring a
@@ -19,6 +19,8 @@ Public Binance adapters -> MarketDataHub
                     LivePaperCoordinator
                               |
                   PaperPortfolioPolicy -> bounded live ledger
+                              |
+                   atomic local checkpoint -> strict recovery
                               |
                  telemetry -> GET API -> React dashboard
 ```
@@ -49,10 +51,28 @@ The clock is explicit: real UTC gates freshness; a monotonic timer gates batch
 waiting; canonical close time governs admitted analytical evaluation. Raw
 publication/receipt times and source generations remain visible in telemetry.
 
-The coordinator starts once per application lifespan. The public source starts
-after consumers register. Shutdown cancels and awaits source, coordinator and
-feature consumers, removes subscriptions and resolves timers. No persistence is
-provided: restart starts a new virtual session.
+The coordinator starts once per application lifespan. With persistence enabled,
+recovery completes before consumers admit source events. Shutdown freezes the
+paper consumer before stopping the source, settles its SQLite work, cancels and
+awaits feature tasks, and removes subscriptions/timers. Committed state survives.
+
+| Phase 9 module / source | Input | Responsibility and output | Failure behavior / boundary |
+| --- | --- | --- | --- |
+| [Settings](../backend/src/application/paper_persistence_settings.py) | Explicit settings or `PAPER_PERSISTENCE_` environment | Validates local file path, enable flag, strict resume and bounded retention/timeout | Invalid settings fail validation; no file is opened by settings |
+| [Checkpoint contracts](../backend/src/domain/paper_persistence.py) | Committed ledger/history/admission values | Immutable, bounded, versioned checkpoint and safe health metadata | Rejects inconsistent scope, future analytical evidence and unsupported values; no executable fields |
+| [Checkpoint codec](../backend/src/application/paper_persistence_codec.py) | Typed checkpoint or stored envelope | Canonical JSON, exact Decimal/UTC/null values, SHA-256 and content-derived checkpoint ID | Corruption, noncanonical data or unknown versions are rejected; no pickle/arbitrary Python objects |
+| [DurablePaperStore](../backend/src/infrastructure/sqlite_paper_store.py) | Validated envelopes and continuity-loss markers | One thread-owned local SQLite connection; atomic writes and bounded checkpoint/audit retention | Rollback preserves the prior state on failed transactions; no network or multi-process coordination |
+| [PaperPersistence / recovery manager](../backend/src/application/paper_persistence.py) | Store, runtime, current configuration | Validates recovery before feed startup, orders worker calls and publishes durability after commit | Halts on storage/recovery failure; never silently replaces a corrupt or incompatible session |
+| [Recovery state adapter](../backend/src/application/paper_recovery_state.py) | Owned runtime fields and a validated checkpoint | Captures/restores ledger, closed history/reset provenance, cache generation and admission/dedupe state | Reconciles accounting and scope; cannot evaluate old decisions or supply new public prices |
+| [Holding evidence](../backend/src/application/paper_position_evidence.py) | Observed canonical holding-bar hashes | Bounded fingerprint sequence that restores the existing close-identity hash | Cannot fabricate a missing holding bar or alter existing cost math |
+| [Persistence telemetry](../backend/src/application/live_paper_telemetry.py) | Already published in-memory persistence metadata | Adds safe status/session/checkpoint/lag/count/compatibility fields to GET snapshots | No SQLite reads/writes, path leak, reset or processing triggered by GET |
+| [Session lifecycle](../backend/src/main.py) | Startup/shutdown plus explicit local settings | Recovery, consumer registration, source start; inverse orderly cleanup | Failed recovery keeps the source stopped and diagnostics available; no exchange account connection |
+
+A durable continuity-loss marker does not move the saved candle boundary. It
+records why an already-saved position must remain incomplete after restart.
+Partially collected groups are never recovered as completed decisions. Unknown
+marks stay unknown. Recent histories are bounded; lifetime totals can include
+closes no longer retained. Physical SQLite bytes may remain allocated for reuse.
 
 Phase 6 HistoricalReplay, BacktestEvaluator and Phase 7 PaperPortfolioEngine remain
 offline validation services. The dashboard's Backtest page explains them; it does
@@ -61,4 +81,4 @@ not add a remote execution or report-upload workflow.
 Future execution requires separately reviewed deterministic intent/sizing,
 independent pre-execution risk review, an execution port and an exchange adapter.
 Future P2P public observations would feed separate analytics/quote comparison and
-user-visible information. Neither future boundary is operational in Phase 8.
+user-visible information. Neither future boundary is operational in Phase 9.

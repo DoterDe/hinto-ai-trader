@@ -4,7 +4,7 @@ AI-assisted crypto market research and paper-trading workstation inspired by the
 
 > **Current scope: PAPER / VIRTUAL ONLY.** Public Binance observations, deterministic analytics, offline validation and virtual portfolio simulation. No private account access, real/testnet orders or AI provider is connected.
 
-## Run the Phase 8 dashboard
+## Run the Phase 9 dashboard
 
 Use Python 3.11+ and Node 22.12.0 (the tested frontend runtime). From two terminals:
 
@@ -28,10 +28,14 @@ The default public feed and virtual runtime are enabled. For an offline server,
 set `$env:BINANCE_MARKET_DATA_ENABLED='false'` before starting the backend.
 `$env:LIVE_PAPER_ENABLED='false'` disables only the paper consumer while allowing
 public market observation. Environment files are not loaded automatically.
-Use one backend worker; restarts lose the in-memory virtual session.
+Use one backend worker. Local SQLite persistence is enabled by default at
+`backend/data/paper_runtime.sqlite3` when started from `backend/`. Keep the same
+working directory and settings on restart. Recovery validates the last committed
+virtual session before the public source starts; missing offline bars stay missing.
+Set `PAPER_PERSISTENCE_ENABLED=false` for an explicitly memory-only session.
 
 Learn the screens in [the user guide](docs/USER_GUIDE.md), follow the
-[module map](docs/MODULE_MAP.md), and review [Phase 8 evidence](docs/PHASE_8_REPORT.md).
+[module map](docs/MODULE_MAP.md), and review [Phase 9 evidence](docs/PHASE_9_REPORT.md).
 The frontend polls read-only `/paper/snapshot` through its local `/api` proxy;
 Simple/Advanced is a local display preference, never a policy change.
 
@@ -62,6 +66,7 @@ MarketDataHub -> FeatureEngine -> FeatureSnapshot
         -> DecisionEngine -> DecisionRecord (ELIGIBLE / BLOCKED / NO_ACTION)
 
 Phase 8 closed-bar coordinator -> PaperPortfolioPolicy / bounded virtual ledger
+        -> Phase 9 local atomic SQLite checkpoint -> strict restart recovery
         -> read-only telemetry -> React dashboard
 
 Future orchestration (not connected):
@@ -125,6 +130,18 @@ captured production analytics, a virtual ledger, nine read-only telemetry/help
 routes, and a fresh seven-page React dashboard. Late bars cannot rewrite finalized
 history; missing marks remain Unknown. No upstream frontend implementation was
 copied. See [frontend/README.md](frontend/README.md) for build and contract checks.
+
+Phase 9 adds canonical, checksummed checkpoints, bounded local audit metadata,
+strict configuration/continuity recovery, crash and restart validation, and
+explainable persistence health. A clean shutdown preserves committed open
+exposure. Storage failure stops further paper transitions; corrupt or incompatible
+state never silently starts a replacement session. No strategy, cost, sizing or
+execution formula changes. See [the Phase 9 report](docs/PHASE_9_REPORT.md).
+
+For storage settings, maintenance and operating limits see the
+[backend guide](backend/README.md#durable-virtual-paper-state-phase-9). All capital
+and PnL remain virtual. No reset/mutation endpoint, private account connection,
+real/testnet execution, AI provider or Phase 10 functionality is added.
 
 ## Upstream attribution
 

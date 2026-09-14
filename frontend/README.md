@@ -1,6 +1,6 @@
 # Hinto paper dashboard
 
-Fresh React/TypeScript frontend for Phase 8. All seven pages display public market
+React/TypeScript frontend through Phase 9. All seven pages display public market
 research or virtual simulation state. No credentials, financial controls or
 execution requests exist. No original Hinto components/styles were copied.
 
@@ -76,8 +76,24 @@ data is included in the application bundle. Synthetic fixtures are test-only.
 Four exported runtime fixtures cover disabled, running, incomplete open exposure
 and a real BLOCKED decision under a stricter contributor policy. Component tests
 also cover missing symbols/optional stream metadata, loading and all three
-decision outcomes. Browser visual inspection was unavailable in this Codex
-environment; no screenshot or manual visual verification is claimed.
+decision outcomes. No browser visual inspection was performed for Phase 9;
+no screenshot or manual visual verification is claimed.
+
+## Local persistence and recovery
+
+Overview and System read `status.persistence`; they never open SQLite or ask the
+backend to save/reset a session. Simple mode explains new/recovered/durable,
+disabled, degraded, corrupt and incompatible states. A pending save does not
+claim durability for the newer state. Advanced adds session/checkpoint IDs,
+checksum, schema, compatibility, memory boundary and retained counts. Paths and
+credentials are absent. `PAPER / VIRTUAL ONLY` stays visible.
+
+Guide and the shared catalog explain Persistence, Checkpoint, Recovery, Durable
+boundary, Session ID, Crash consistency and Configuration compatibility. Unknown
+valuation after downtime remains unknown; recovery is not an account reconnect.
+The generated contract and four existing runtime fixtures include the additive
+metadata. Persistence component tests cover all nine states, pending commits,
+Simple/Advanced, missing valuation and absence of financial controls.
 
 See [USER_GUIDE](../docs/USER_GUIDE.md), [MODULE_MAP](../docs/MODULE_MAP.md), and
-[PHASE_8_REPORT](../docs/PHASE_8_REPORT.md) for semantics, evidence and limitations.
+[PHASE_9_REPORT](../docs/PHASE_9_REPORT.md) for semantics, evidence and limitations.

@@ -1,4 +1,4 @@
-# Phase 8 user guide
+# Phase 9 user guide
 
 This workstation observes public market information, explains deterministic
 analytical results, and simulates a portfolio with virtual capital. Every screen
@@ -124,8 +124,54 @@ sides. No actual exchange fill, intrabar stop or liquidation is implied.
 At or above the drawdown limit, new reservations block; existing positions can
 finish their horizon when required bars exist. A missing entry expires capacity.
 A missing holding bar makes valuation unknown, and later prices do not repair
-the missing path. Shutdown does not invent an exit. Restart creates a new virtual
-session and loses prior in-memory history; it is not an accounting recovery tool.
+the missing path. Shutdown does not invent an exit. With persistence enabled,
+restart restores the last committed virtual session as explained below.
+
+## What is saved, and what recovery means
+
+Local persistence is on by default. It saves committed virtual reservations,
+positions, PnL/peak, known marks, bounded recent history and the closed-candle/
+dedupe evidence needed to continue without counting an old decision twice. It
+does not save an exchange account, credentials, real funds, unfinished candle
+groups, raw unbounded messages or future prices.
+
+Overview and System show a separate **Virtual session & recovery** card:
+
+| Persistence state | Meaning |
+| --- | --- |
+| DISABLED | State is memory-only and will not resume after this process exits. |
+| NEW_SESSION | There was no prior checkpoint at the configured local path. The first complete transition has not yet been saved. |
+| RECOVERING | Saved data and configuration are being checked before public observations can be consumed. |
+| RECOVERED | The previous committed virtual session was restored. New public prices are still required. |
+| DURABLE | The indicated checkpoint committed. If newer unsaved state is shown, only the earlier boundary is durable. |
+| DEGRADED / ERROR | A persistence operation failed or storage is unavailable. Further paper transitions stop. |
+| INCOMPATIBLE | Current symbols, interval, versions or fixed settings differ from the saved session. Old positions are not reinterpreted. |
+| CORRUPT | Saved state failed integrity or structural checks. It cannot be presented as recovered. |
+
+The **durable boundary** is the latest finalized candle boundary saved completely.
+It is not proof that today's public feed is fresh. **Crash consistency** means a
+transaction leaves either the complete previous checkpoint or the complete new
+one. The **session ID** survives recovery and has no connection to an exchange
+account. Advanced shows IDs, checksum, schema, memory boundary and compatibility;
+Simple explains the state in plain language.
+
+A clean stop preserves committed open exposure. If the next required bar was
+missed while offline, an entry reservation expires or a holding position becomes
+INCOMPLETE; valuation can become Unknown. The newest price cannot repair the
+missing path. A saved continuity-loss marker preserves an already-known conflict
+or loss without pretending another candle was processed.
+
+Corrupt/incompatible recovery never silently creates a replacement session and
+never falls back to older accounting. To intentionally start fresh, stop the
+backend, preserve the old database and any sidecars, and explicitly choose a new
+unused local `PAPER_PERSISTENCE_PATH`. There is no browser reset button or mutation
+endpoint. Keep the process working directory/path stable between normal restarts.
+Use one backend worker and no concurrent external database writer.
+
+Recent saved lists have retention limits. **Logical history is bounded; physical
+database size is not guaranteed to shrink automatically.** SQLite can reuse freed
+pages. Maintenance and dependency-version notes are in the
+[backend guide](../backend/README.md#retention-maintenance-and-limitations).
 
 ## Unknown values, history and controls
 
@@ -142,6 +188,6 @@ Escape closes it. A skip link reaches the main content. No credential form or
 financial control exists.
 
 See the [module map](MODULE_MAP.md) for the internal path and the
-[Phase 8 report](PHASE_8_REPORT.md) for exact tests and operational limitations.
-Browser visual inspection was unavailable in the Codex environment; component
-and keyboard tests do not replace a future human visual/accessibility review.
+[Phase 9 report](PHASE_9_REPORT.md) for exact tests and operational limitations.
+No browser visual QA was performed for Phase 9. Component and keyboard tests do
+not replace a future human visual/accessibility review.

@@ -7,6 +7,7 @@ from datetime import timedelta
 from backtest_fixtures import START, bar
 from src.application.live_paper_coordinator import LivePaperCoordinator
 from src.application.live_paper_settings import LivePaperSettings
+from src.application.paper_persistence_settings import PaperPersistenceSettings
 from src.application.market_data_hub import MarketDataHub
 from src.domain.market_data import ConnectionStatus, EventType, MarketConnectionState
 
@@ -60,6 +61,7 @@ async def running(symbols=('BTCUSDT',), interval='1m', settings=None, **options)
     hub = MarketDataHub(symbols, kline_intervals=(interval,), clock=clock.now)
     connect(hub, clock)
     config = LivePaperSettings.model_validate((settings or LivePaperSettings()).model_copy(update={'enabled': True}))
+    options.setdefault('persistence_settings', PaperPersistenceSettings(enabled=False))
     coordinator = LivePaperCoordinator(hub, settings=config, clock=clock, **options)
     task = asyncio.create_task(coordinator.run(), name='live-paper-coordinator')
     await checkpoint(lambda: coordinator.running or task.done())

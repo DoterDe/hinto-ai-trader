@@ -219,6 +219,25 @@
       "subscriber_count": 1,
       "dropped_events": 0,
       "ignored_events": 0
+    },
+    "persistence": {
+      "enabled": false,
+      "status": "DISABLED",
+      "reason": null,
+      "database_healthy": false,
+      "session_id": null,
+      "session_created_at": null,
+      "recovered": false,
+      "schema_version": 1,
+      "durable_boundary": null,
+      "checkpoint_at": null,
+      "checkpoint_id": null,
+      "checksum": null,
+      "retained_checkpoints": 0,
+      "retained_audit_events": 0,
+      "in_memory_boundary": "2020-01-01T01:06:00Z",
+      "has_uncommitted_changes": false,
+      "configuration_compatible": null
     }
   },
   "portfolio": {

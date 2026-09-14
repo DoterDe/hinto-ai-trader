@@ -24,7 +24,7 @@ class ModuleExplanation(PortfolioModel):
 
 
 _TERMS = (
-    ('paper', 'PAPER / VIRTUAL ONLY', 'Public market information and simulated capital only. Phase 8 cannot place a real order or move funds.'),
+    ('paper', 'PAPER / VIRTUAL ONLY', 'Public market information and simulated capital only. This workstation cannot place a real order or move funds.'),
     ('market_data', 'Market data', 'Public prices and observations. They describe a market, not your exchange account.'),
     ('features', 'Feature Engine', 'Turns observed market data into numerical measurements. Missing inputs stay unavailable.'),
     ('ema', 'EMA', 'An exponentially weighted moving average gives recent prices more weight. EMA relationships provide trend evidence, not a prediction.'),
@@ -74,6 +74,13 @@ _TERMS = (
     ('taker_proxy', 'Taker-volume proxy', 'Candle taker-buy volume supports a limited order-flow proxy. Raw depth deltas are not a reconstructed full order book.'),
     ('roc', 'ROC and returns', 'Rate of change and returns compare observed closes over fixed windows. Log returns are used for realized volatility.'),
     ('regime', 'Regime inputs', 'Numerical trend efficiency, EMA separation, ATR and relative volume. These are measurements, not learned market predictions.'),
+    ('persistence', 'Persistence', 'Saves committed virtual paper state in a local SQLite file. It saves no exchange account, credentials, or real funds. Disabled persistence keeps state in memory only.'),
+    ('checkpoint', 'Checkpoint', 'One complete saved state after a finalized paper transition. It includes reservations, positions, bounded closed-candle history and dedupe evidence. An unfinished candle group is not a checkpoint.'),
+    ('recovery', 'Recovery', 'Validates and restores the last committed virtual session before consuming new public candles. Missing bars during downtime remain missing; current prices cannot repair them.'),
+    ('durable_boundary', 'Durable boundary', 'The latest finalized candle boundary whose full checkpoint committed successfully. Newer in-memory changes are not yet durable. Saving continuity-loss metadata does not advance this boundary.'),
+    ('session_id', 'Session ID', 'A stable identifier created once for a virtual session and preserved across recovery. It is not an exchange account identifier and does not influence decisions.'),
+    ('crash_consistency', 'Crash consistency', 'A checkpoint transaction saves either the whole new state or leaves the previous state authoritative. A corrupt latest checkpoint stops recovery; silently falling back could duplicate committed accounting.'),
+    ('configuration_compatibility', 'Configuration compatibility', 'Recovery requires the same symbols, interval, analytical versions and fixed settings. A mismatch stops the paper runtime instead of reinterpreting old virtual positions under new rules.'),
 )
 TERMS = tuple(ExplanationTerm(key=key, label=label, explanation=text) for key, label, text in _TERMS)
 
@@ -87,7 +94,10 @@ _MODULES = (
     ('coordinator', 'LivePaperCoordinator', 'Process exact finalized close groups.', 'Bounded, generation-tagged public candles.', 'Captured analysis, virtual portfolio transitions and diagnostics.', 'Late bars cannot rewrite history; no private data or execution.', 'backend/src/application/live_paper_coordinator.py', 'Overview'),
     ('policy', 'PaperPortfolioPolicy', 'Allocate limited virtual capacity deterministically.', 'Eligible decision and current virtual state.', 'RESERVED, REJECTED or IGNORED with a reason.', 'No quantity, leverage, pyramiding, reversal or profit forecast.', 'backend/src/application/paper_portfolio_policy.py', 'Paper Portfolio'),
     ('ledger', 'Virtual portfolio ledgers', 'Track fixed-horizon positions and assumed costs.', 'Reservations and subsequent exact finalized bars.', 'Virtual equity, exposure, closes and incomplete positions.', 'Phase 7 ledger retains a finite report; Phase 8 ledger keeps bounded live histories.', 'backend/src/application/live_paper_portfolio.py', 'Paper Portfolio'),
-    ('telemetry', 'Telemetry API', 'Expose immutable current state for reading.', 'Runtime snapshots and explanation catalog.', 'Read-only JSON endpoints.', 'No financial mutation route; no persistent audit storage.', 'backend/src/api/live_paper.py', 'System / Settings'),
+    ('codec', 'Checkpoint codec', 'Validate a deterministic virtual-state record.', 'Typed committed paper state.', 'Versioned canonical JSON and checksum.', 'Checksums detect corruption, not malicious tampering; no arbitrary Python objects.', 'backend/src/application/paper_persistence_codec.py', 'System / Settings'),
+    ('store', 'DurablePaperStore', 'Save complete virtual checkpoints atomically.', 'Canonical checkpoints and continuity-loss metadata.', 'Bounded local SQLite checkpoints and audit metadata.', 'One local writer only; storage failure halts further paper transitions.', 'backend/src/infrastructure/sqlite_paper_store.py', 'System / Settings'),
+    ('recovery', 'Paper recovery and session lifecycle', 'Restore a compatible virtual session before the public feed starts.', 'Latest committed checkpoint and current configuration identities.', 'Recovered ledger, closed history and admission watermark.', 'Corruption or incompatibility fails closed. Offline gaps cannot be downloaded or invented.', 'backend/src/application/paper_persistence.py', 'System / Settings'),
+    ('telemetry', 'Telemetry API', 'Expose immutable current state for reading.', 'Runtime, persistence health and explanation catalog.', 'Read-only JSON endpoints.', 'GET cannot change accounting, save checkpoints, reset sessions or move money.', 'backend/src/api/live_paper.py', 'System / Settings'),
     ('dashboard', 'Explainable dashboard', 'Make each stage understandable.', 'Read-only telemetry and public market snapshots.', 'Seven pages, Simple/Advanced views and searchable help.', 'Presentation preferences never change backend rules.', 'frontend/src/App.tsx', 'Guide / How It Works'),
 )
 MODULES = tuple(ModuleExplanation(key=key, name=name, purpose=purpose, inputs=inputs, outputs=outputs,

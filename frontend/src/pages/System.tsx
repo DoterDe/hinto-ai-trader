@@ -1,6 +1,7 @@
 import { Card, Empty } from "../components/Common";
 import { number, time, words } from "../utils/format";
 import type { Snapshot } from "../types";
+import { Persistence } from "../components/Persistence";
 
 const groups = [
   ["features", "Feature windows", "features"],
@@ -29,7 +30,7 @@ export function FutureModules() {
             <h3>{name}</h3>
             <p>
               A separate, independently reviewed architectural boundary. No
-              operational controls in Phase 8.
+              operational controls in this workstation.
             </p>
           </section>
         ),
@@ -47,6 +48,7 @@ export function System({
 }) {
   return (
     <>
+      {data && <Persistence state={data.status.persistence} advanced={advanced} />}
       <Card title="Software & public feed" help="market_data">
         <dl className="rows">
           <div>
@@ -124,7 +126,7 @@ export function System({
       )}
       <Card title="Limits of this simulation" help="paper_portfolio">
         <p>
-          Memory only: a backend restart starts a new virtual session.
+          Enabled local persistence restores compatible committed virtual state after a restart.
           Incomplete exposure cannot be repaired by a later price. No funding
           charges, exchange fills, leverage or liquidation model. Simple /
           Advanced changes only the local display.

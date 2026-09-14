@@ -541,8 +541,8 @@ sets fixed notional. Reservations immediately consume capacity; simultaneous
 ranking uses score/confidence/agreement/symbol/decision ID, never future outcomes.
 Exact next-open entry and fixed-horizon exit remain. Missing entry expires; missing
 holding evidence makes exposure INCOMPLETE and valuation unknown. Observed curve
-points remain immutable. Shutdown/reconnect/loss never invents a close; restart
-creates fresh in-memory state.
+points remain immutable. Shutdown/reconnect/loss never invents a close. The
+original Phase 8 memory-only restart behavior is extended by Phase 9 below.
 
 Retention defaults are 1000 events, 1000 captured decisions, 1000 dedupe IDs,
 1000 recent closes, 2000 curve points, eight pending groups/eight sealed groups
@@ -585,7 +585,63 @@ Future execution requires a separately reviewed deterministic intent/sizing buil
 Future P2P public observations would feed separate analytics/risk/quote comparison
 -> user-visible information. Neither boundary is operational. No private account,
 credential, order, transfer or P2P transaction adapter is added. Disabled roadmap
-cards cannot act. AI/ML, optimization and Phase 9 remain unstarted.
+cards cannot act. AI/ML and optimization remain unimplemented.
+
+## Phase 9: local durable virtual state and recovery
+
+The analytical path is unchanged. After a finalized virtual transition,
+`PaperPersistence` captures a typed `PaperCheckpoint`, canonicalizes/checksums it,
+and awaits `DurablePaperStore` on one dedicated SQLite thread. The connection is
+thread-owned; calls are awaited in order. Commit precedes in-memory publication
+of durability. Failure halts further paper transitions. Cancellation settles the
+outstanding operation before closing the connection and joining the worker.
+
+Version 1 uses four small SQLite tables: schema metadata, a single paper session,
+bounded complete checkpoints, and bounded append-only-within-retention audit
+metadata. Foreign keys, WAL, FULL synchronization, busy timeout and explicit
+transactions provide previous-or-new atomicity. Payload SHA-256 is an integrity
+check, not authentication. Session UUIDs do not influence analytical identities.
+
+Authoritative state includes reservations/positions, known net marks, ordered
+holding-bar fingerprints, cumulative closed PnL, peak, lifetime accounting counts,
+last applied boundary, ordered decision dedupe, the admission watermark, retained
+sealed fingerprints, bounded closed history and reset/generation provenance.
+Exposures, realized/marked equity and drawdown are derived with unchanged Phase 7
+math. Bounded recent captures/curve/closes and event counters support diagnostics.
+Source sockets, ordinary live-price cache, queue contents, partial candle groups,
+process timers and process-local drop counts are not restored.
+
+`paper_recovery_state` confines access to the existing runtime's owned history and
+admission fields. Restore validates accounting/marks, reconstructs the existing
+incremental dataset hash from bounded record fingerprints, and installs committed
+closed history in the isolated analytical view. It does not run old strategies
+or decisions. Feature, strategy, decision, cost and portfolio formulas are unchanged.
+
+Strict compatibility includes versions, symbols/interval and runtime, freshness,
+feature, strategy, decision, portfolio and cost identities. Checksum, schema,
+configuration and impossible-state errors fail closed without older-checkpoint
+fallback. Recovery completes before the public producer starts. A restart's first
+connection is bound without inventing a history reset; subsequent rotations after
+any new group starts collecting are real continuity losses. Returned groups retain
+their admission token across SQLite awaits, and age/loss gates are repeated.
+
+No future evidence is restored. The checkpoint watermark excludes later returned
+groups not yet applied, while separately observed loss can preserve a conservative
+admission floor. Durable continuity-loss metadata references the current checkpoint
+without advancing its candle boundary. Recovery applies that invalidation so known
+incomplete exposure cannot be revived. Missing offline bars are never downloaded,
+fabricated or repaired from a later price.
+
+Clean shutdown freezes the durable consumer before stopping the source. Committed
+open exposure stays open; it becomes incomplete only on actual loss or missing
+required evidence. Disabled persistence retains Phase 8 memory-only behavior.
+Telemetry adds a separate persistence dimension to existing GET projections,
+without database I/O or mutation on reads. The frontend remains presentation-only.
+
+Logical retention is bounded; allocated SQLite/WAL bytes are not promised to shrink
+after deletes. See [backend maintenance/version notes](../backend/README.md#retention-maintenance-and-limitations)
+and [Phase 9 validation](PHASE_9_REPORT.md). No distributed writer, remote database,
+private API, execution gateway, AI/ML, optimization or Phase 10 work is introduced.
 
 ## Phase status and future work
 
@@ -597,7 +653,8 @@ cards cannot act. AI/ML, optimization and Phase 9 remain unstarted.
 6. Offline deterministic historical replay and signal-level validation reports.
 7. Offline deterministic shared-capital virtual portfolio and risk simulation.
 8. Bounded live public-data virtual runtime and explainable read-only React dashboard.
+9. Local durable paper checkpoints, strict recovery, restart/soak validation and persistence UI.
 
-Future tasks require separate scope: execution sizing, durable orchestration and
-persistence, AIAdvisor interface/provider, testnet adapter/reconciliation, P2P
+Future tasks require separate scope: execution sizing/orchestration,
+AIAdvisor interface/provider, testnet adapter/reconciliation, P2P
 analytics and operational reliability validation. No later phase is started here.
