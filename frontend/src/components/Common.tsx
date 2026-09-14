@@ -6,10 +6,10 @@ import type { Snapshot } from "../types";
 export function Badge({ value }: { value?: string | null }) {
   const text = value ?? "UNKNOWN";
   const tone =
-    /running|connected|ready|eligible|reserved|fresh/i.test(text) &&
+    /running|connected|ready|eligible|reserved|fresh|durable|recovered/i.test(text) &&
     !/unavailable|disconnected|warming|stale/i.test(text)
       ? "good"
-      : /degraded|stale|error|blocked|rejected|incomplete|unavailable/i.test(
+      : /degraded|stale|error|blocked|rejected|incomplete|unavailable|corrupt|incompatible/i.test(
             text,
           )
         ? "warn"

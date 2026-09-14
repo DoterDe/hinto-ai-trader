@@ -3,7 +3,7 @@
     {
       "key": "paper",
       "label": "PAPER / VIRTUAL ONLY",
-      "explanation": "Public market information and simulated capital only. Phase 8 cannot place a real order or move funds."
+      "explanation": "Public market information and simulated capital only. This workstation cannot place a real order or move funds."
     },
     {
       "key": "market_data",
@@ -249,6 +249,41 @@
       "key": "regime",
       "label": "Regime inputs",
       "explanation": "Numerical trend efficiency, EMA separation, ATR and relative volume. These are measurements, not learned market predictions."
+    },
+    {
+      "key": "persistence",
+      "label": "Persistence",
+      "explanation": "Saves committed virtual paper state in a local SQLite file. It saves no exchange account, credentials, or real funds. Disabled persistence keeps state in memory only."
+    },
+    {
+      "key": "checkpoint",
+      "label": "Checkpoint",
+      "explanation": "One complete saved state after a finalized paper transition. It includes reservations, positions, bounded closed-candle history and dedupe evidence. An unfinished candle group is not a checkpoint."
+    },
+    {
+      "key": "recovery",
+      "label": "Recovery",
+      "explanation": "Validates and restores the last committed virtual session before consuming new public candles. Missing bars during downtime remain missing; current prices cannot repair them."
+    },
+    {
+      "key": "durable_boundary",
+      "label": "Durable boundary",
+      "explanation": "The latest finalized candle boundary whose full checkpoint committed successfully. Newer in-memory changes are not yet durable. Saving continuity-loss metadata does not advance this boundary."
+    },
+    {
+      "key": "session_id",
+      "label": "Session ID",
+      "explanation": "A stable identifier created once for a virtual session and preserved across recovery. It is not an exchange account identifier and does not influence decisions."
+    },
+    {
+      "key": "crash_consistency",
+      "label": "Crash consistency",
+      "explanation": "A checkpoint transaction saves either the whole new state or leaves the previous state authoritative. A corrupt latest checkpoint stops recovery; silently falling back could duplicate committed accounting."
+    },
+    {
+      "key": "configuration_compatibility",
+      "label": "Configuration compatibility",
+      "explanation": "Recovery requires the same symbols, interval, analytical versions and fixed settings. A mismatch stops the paper runtime instead of reinterpreting old virtual positions under new rules."
     }
   ],
   "modules": [
@@ -341,12 +376,45 @@
       "can_move_money": false
     },
     {
+      "key": "codec",
+      "name": "Checkpoint codec",
+      "purpose": "Validate a deterministic virtual-state record.",
+      "inputs": "Typed committed paper state.",
+      "outputs": "Versioned canonical JSON and checksum.",
+      "limitations": "Checksums detect corruption, not malicious tampering; no arbitrary Python objects.",
+      "source_path": "backend/src/application/paper_persistence_codec.py",
+      "page": "System / Settings",
+      "can_move_money": false
+    },
+    {
+      "key": "store",
+      "name": "DurablePaperStore",
+      "purpose": "Save complete virtual checkpoints atomically.",
+      "inputs": "Canonical checkpoints and continuity-loss metadata.",
+      "outputs": "Bounded local SQLite checkpoints and audit metadata.",
+      "limitations": "One local writer only; storage failure halts further paper transitions.",
+      "source_path": "backend/src/infrastructure/sqlite_paper_store.py",
+      "page": "System / Settings",
+      "can_move_money": false
+    },
+    {
+      "key": "recovery",
+      "name": "Paper recovery and session lifecycle",
+      "purpose": "Restore a compatible virtual session before the public feed starts.",
+      "inputs": "Latest committed checkpoint and current configuration identities.",
+      "outputs": "Recovered ledger, closed history and admission watermark.",
+      "limitations": "Corruption or incompatibility fails closed. Offline gaps cannot be downloaded or invented.",
+      "source_path": "backend/src/application/paper_persistence.py",
+      "page": "System / Settings",
+      "can_move_money": false
+    },
+    {
       "key": "telemetry",
       "name": "Telemetry API",
       "purpose": "Expose immutable current state for reading.",
-      "inputs": "Runtime snapshots and explanation catalog.",
+      "inputs": "Runtime, persistence health and explanation catalog.",
       "outputs": "Read-only JSON endpoints.",
-      "limitations": "No financial mutation route; no persistent audit storage.",
+      "limitations": "GET cannot change accounting, save checkpoints, reset sessions or move money.",
       "source_path": "backend/src/api/live_paper.py",
       "page": "System / Settings",
       "can_move_money": false

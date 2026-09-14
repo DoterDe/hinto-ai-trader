@@ -1944,6 +1944,9 @@
         },
         "market": {
           "$ref": "#/$defs/MarketStatus"
+        },
+        "persistence": {
+          "$ref": "#/$defs/PersistenceSnapshot"
         }
       },
       "required": [
@@ -1961,7 +1964,8 @@
         "symbols",
         "counters",
         "configuration",
-        "market"
+        "market",
+        "persistence"
       ],
       "title": "LiveStatusSnapshot",
       "type": "object"
@@ -2869,6 +2873,204 @@
       ],
       "title": "PaperPositionClose",
       "type": "object"
+    },
+    "PersistenceSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "status": {
+          "$ref": "#/$defs/PersistenceStatus"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "database_healthy": {
+          "title": "Database Healthy",
+          "type": "boolean"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Session Id"
+        },
+        "session_created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Session Created At"
+        },
+        "recovered": {
+          "default": false,
+          "title": "Recovered",
+          "type": "boolean"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "durable_boundary": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Durable Boundary"
+        },
+        "checkpoint_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Checkpoint At"
+        },
+        "checkpoint_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Checkpoint Id"
+        },
+        "checksum": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Checksum"
+        },
+        "retained_checkpoints": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Retained Checkpoints",
+          "type": "integer"
+        },
+        "retained_audit_events": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Retained Audit Events",
+          "type": "integer"
+        },
+        "in_memory_boundary": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "In Memory Boundary"
+        },
+        "has_uncommitted_changes": {
+          "default": false,
+          "title": "Has Uncommitted Changes",
+          "type": "boolean"
+        },
+        "configuration_compatible": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Configuration Compatible"
+        }
+      },
+      "required": [
+        "enabled",
+        "status",
+        "reason",
+        "database_healthy",
+        "session_id",
+        "session_created_at",
+        "recovered",
+        "schema_version",
+        "durable_boundary",
+        "checkpoint_at",
+        "checkpoint_id",
+        "checksum",
+        "retained_checkpoints",
+        "retained_audit_events",
+        "in_memory_boundary",
+        "has_uncommitted_changes",
+        "configuration_compatible"
+      ],
+      "title": "PersistenceSnapshot",
+      "type": "object"
+    },
+    "PersistenceStatus": {
+      "enum": [
+        "DISABLED",
+        "NEW_SESSION",
+        "RECOVERING",
+        "RECOVERED",
+        "DURABLE",
+        "DEGRADED",
+        "INCOMPATIBLE",
+        "CORRUPT",
+        "ERROR"
+      ],
+      "title": "PersistenceStatus",
+      "type": "string"
     },
     "PortfolioAction": {
       "enum": [

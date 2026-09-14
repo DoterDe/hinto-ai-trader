@@ -15,6 +15,7 @@ from src.application.paper_portfolio_ledger import zero_pnl
 from src.application.paper_portfolio_math import closed_pnl, marked_pnl, portfolio_state
 from src.application.paper_portfolio_policy import PaperPortfolioPolicy
 from src.application.paper_portfolio_settings import PaperPortfolioSettings
+from src.application.paper_position_evidence import PositionEvidenceIdentity
 from src.domain.decisions import DecisionRecord
 from src.domain.live_paper import LiveClose, LivePosition
 from src.domain.market_data import KlineEvent
@@ -37,7 +38,7 @@ class LivePaperPortfolio:
         self.pending: dict[str, PaperEntryReservation] = {}
         self.active: dict[str, PaperPosition] = {}
         self.marks: dict[str, Decimal] = {}
-        self.evidence: dict[str, DatasetIdentity] = {}
+        self.evidence: dict[str, PositionEvidenceIdentity] = {}
         self.closes: deque[LiveClose] = deque(maxlen=runtime.position_history_limit)
         self.curve: deque[PaperPortfolioCurvePoint] = deque(maxlen=runtime.curve_history_limit)
         self.closed_pnl = zero_pnl()
@@ -120,7 +121,7 @@ class LivePaperPortfolio:
             self.active[symbol] = PaperPosition(position_id=key, reservation=reservation, interval=self.interval,
                 entry_time=bar.open_time, entry_price_raw=bar.open, holding_period_bars=self.costs.holding_period_bars,
                 bars_held=0, expected_next_open=bar.open_time, backtest_settings_id=self.cost_id)
-            self.evidence[symbol] = DatasetIdentity()
+            self.evidence[symbol] = PositionEvidenceIdentity(self.costs.holding_period_bars)
             self.opened_count += 1
         before_exits = len(self.active)
         for symbol, position in sorted(tuple(self.active.items())):

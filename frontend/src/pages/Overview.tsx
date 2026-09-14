@@ -5,8 +5,9 @@ import { number, percent, time, words } from "../utils/format";
 import type { Snapshot } from "../types";
 import { explainReason } from "../help/reasons";
 import { latestPrice } from "../utils/market";
+import { Persistence } from "../components/Persistence";
 
-export function Overview({ data }: { data: Snapshot }) {
+export function Overview({ data, advanced = false }: { data: Snapshot; advanced?: boolean }) {
   const [symbol, setSymbol] = useState(data.market[0]?.symbol ?? "");
   const selected =
     data.market.find((item) => item.symbol === symbol) ?? data.market[0];
@@ -14,6 +15,7 @@ export function Overview({ data }: { data: Snapshot }) {
   const latest = data.decisions[0];
   return (
     <>
+      <Persistence state={data.status.persistence} advanced={advanced} />
       <div className="metrics">
         <Metric
           name="marked_equity"

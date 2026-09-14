@@ -236,7 +236,8 @@ def test_explanations_complete_immutable_deterministic_and_candid():
         'backtest': 'do not predict future returns'}.items():
         assert words in terms[key].explanation
     assert all(not module.can_move_money for module in MODULES)
-    assert len({item.key for item in MODULES}) == len(MODULES) == 10
+    assert len({item.key for item in MODULES}) == len(MODULES) == 13
+    assert {'codec', 'store', 'recovery'} <= {item.key for item in MODULES}
     with pytest.raises(ValidationError):
         TERMS[0].explanation = 'changed'
 

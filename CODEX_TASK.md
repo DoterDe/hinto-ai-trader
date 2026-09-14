@@ -1,5 +1,14 @@
 # Current Codex Task — Phase 9: Durable Paper Persistence, Recovery & Soak Validation
 
+## Implementation status
+
+Phase 9 is implemented in the working tree. Final backend validation: **2410 passed,
+2 existing warnings in 1879.75s**; frontend: **77 passed**, types/build passed.
+The 2,000-bar restart comparison and 20,000-commit retention stress passed.
+Exact evidence, file inventory, operating limits and repository checks are in
+`docs/PHASE_9_REPORT.md`. Changes remain uncommitted; no push, merge or Phase 10
+work is authorized. The original acceptance requirements below remain the review checklist.
+
 ## Working branch
 
 `phase-9-paper-persistence-recovery`

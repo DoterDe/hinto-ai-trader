@@ -1,6 +1,7 @@
 """Incremental normalized dataset identity and deterministic simulation identities."""
 
 import hashlib
+import re
 from datetime import datetime
 
 from src.application.backtest_settings import BacktestSettings
@@ -18,7 +19,13 @@ class DatasetIdentity:
 
     def add(self, event: KlineEvent) -> None:
         # A fixed-length canonical record hash avoids ambiguous concatenation.
-        self._digest.update(identity("bar", validate_bar(event)).encode("ascii"))
+        self.add_fingerprint(identity("bar", validate_bar(event)))
+
+    def add_fingerprint(self, fingerprint: str) -> None:
+        """Restore ordered validated record hashes without serializing hash objects."""
+        if not isinstance(fingerprint, str) or re.fullmatch(r'bar_[0-9a-f]{64}', fingerprint) is None:
+            raise ValueError('invalid canonical bar fingerprint')
+        self._digest.update(fingerprint.encode("ascii"))
         self._digest.update(b"\n")
         self.count += 1
 

@@ -63,7 +63,7 @@ export function Dashboard({ telemetry }: { telemetry: Telemetry }) {
           </Empty>
         </div>
       );
-    if (page === "Overview") return <Overview data={data} />;
+    if (page === "Overview") return <Overview data={data} advanced={advanced} />;
     if (page === "Market")
       return <MarketPage data={data} advanced={advanced} />;
     if (page === "Signals & Decisions")
@@ -109,7 +109,7 @@ export function Dashboard({ telemetry }: { telemetry: Telemetry }) {
             <br />
             Every action stays simulated.
           </p>
-          <span className="version">PHASE 08 / v0.8.0</span>
+          <span className="version">PHASE 09 / local paper recovery</span>
         </div>
       </aside>
       <div className="workspace">

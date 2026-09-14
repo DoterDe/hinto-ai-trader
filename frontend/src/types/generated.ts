@@ -142,6 +142,32 @@ export type Generation1 = number | null;
 export type SubscriberCount = number;
 export type DroppedEvents = number;
 export type IgnoredEvents = number;
+export type Enabled1 = boolean;
+export type PersistenceStatus =
+  | "DISABLED"
+  | "NEW_SESSION"
+  | "RECOVERING"
+  | "RECOVERED"
+  | "DURABLE"
+  | "DEGRADED"
+  | "INCOMPATIBLE"
+  | "CORRUPT"
+  | "ERROR";
+export type Reason2 = string | null;
+export type DatabaseHealthy = boolean;
+export type SessionId = string | null;
+export type SessionCreatedAt = string | null;
+export type Recovered = boolean;
+export type SchemaVersion = 1;
+export type DurableBoundary = string | null;
+export type CheckpointAt = string | null;
+export type CheckpointId = string | null;
+export type Checksum = string | null;
+export type RetainedCheckpoints = number;
+export type RetainedAuditEvents = number;
+export type InMemoryBoundary = string | null;
+export type HasUncommittedChanges = boolean;
+export type ConfigurationCompatible = boolean | null;
 export type AsOf3 = string;
 export type ValuationAsOf = string | null;
 export type ValuationComplete = boolean;
@@ -193,7 +219,7 @@ export type BarsHeld = number;
 export type ExpectedNextOpen = string;
 export type BacktestSettingsId = string;
 export type Status = "OPEN" | "CLOSED" | "INCOMPLETE";
-export type Reason2 =
+export type Reason3 =
   "holding" | "horizon_completed" | "missing_horizon_bar" | "dataset_ended";
 export type LastMarkTime = string | null;
 export type LastMarkPrice = string | null;
@@ -269,7 +295,7 @@ export type Stream = string;
 export type EventTime5 = string | null;
 export type ReceivedAt6 = string | null;
 export type Stale3 = boolean;
-export type Reason3 = string | null;
+export type Reason4 = string | null;
 export type ConnectionId3 = string | null;
 export type Generation2 = number | null;
 export type Sources = FeatureSource[];
@@ -709,7 +735,7 @@ export type Timestamp1 = string;
 export type Category = "runtime" | "feed" | "batch" | "portfolio";
 export type Severity = "info" | "warning" | "error";
 export type Symbol14 = string | null;
-export type Reason4 = string;
+export type Reason5 = string;
 export type Explanation = string;
 export type RelatedId = string | null;
 export type Events = LivePaperEvent[];
@@ -742,6 +768,7 @@ export interface LiveStatusSnapshot {
   counters: Counters;
   configuration: LiveConfiguration;
   market: MarketStatus;
+  persistence: PersistenceSnapshot;
 }
 export interface LiveSymbolSummary {
   symbol: Symbol;
@@ -901,6 +928,25 @@ export interface StreamFreshness {
   connection_status: ConnectionStatus | null;
   generation: Generation1;
 }
+export interface PersistenceSnapshot {
+  enabled: Enabled1;
+  status: PersistenceStatus;
+  reason: Reason2;
+  database_healthy: DatabaseHealthy;
+  session_id: SessionId;
+  session_created_at: SessionCreatedAt;
+  recovered: Recovered;
+  schema_version: SchemaVersion;
+  durable_boundary: DurableBoundary;
+  checkpoint_at: CheckpointAt;
+  checkpoint_id: CheckpointId;
+  checksum: Checksum;
+  retained_checkpoints: RetainedCheckpoints;
+  retained_audit_events: RetainedAuditEvents;
+  in_memory_boundary: InMemoryBoundary;
+  has_uncommitted_changes: HasUncommittedChanges;
+  configuration_compatible: ConfigurationCompatible;
+}
 export interface LivePortfolioSnapshot {
   as_of: AsOf3;
   valuation_as_of: ValuationAsOf;
@@ -976,7 +1022,7 @@ export interface PaperPosition {
   expected_next_open: ExpectedNextOpen;
   backtest_settings_id: BacktestSettingsId;
   status: Status;
-  reason: Reason2;
+  reason: Reason3;
   last_mark_time: LastMarkTime;
   last_mark_price: LastMarkPrice;
 }
@@ -1102,7 +1148,7 @@ export interface FeatureSource {
   event_time: EventTime5;
   received_at: ReceivedAt6;
   stale: Stale3;
-  reason: Reason3;
+  reason: Reason4;
   connection_id: ConnectionId3;
   generation: Generation2;
 }
@@ -1336,7 +1382,7 @@ export interface LivePaperEvent {
   category: Category;
   severity: Severity;
   symbol: Symbol14;
-  reason: Reason4;
+  reason: Reason5;
   explanation: Explanation;
   related_id: RelatedId;
 }

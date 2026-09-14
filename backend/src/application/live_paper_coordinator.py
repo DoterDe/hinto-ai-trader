@@ -15,6 +15,8 @@ from src.application.live_paper_settings import LivePaperSettings
 from src.application.market_data_hub import ClosedBarObservation, MarketDataHub
 from src.application.paper_portfolio_settings import PaperPortfolioSettings
 from src.application.strategy_settings import StrategySettings
+from src.application.paper_persistence import PaperPersistence
+from src.application.paper_persistence_settings import PaperPersistenceSettings
 from src.domain.live_paper import LiveAnalysis, LiveBarBatch, LivePaperEvent, LivePaperStatus as Status
 from src.domain.market_data import ConnectionStatus
 from src.strategies.identity import identity
@@ -24,7 +26,8 @@ class LivePaperCoordinator:
     def __init__(self, hub: MarketDataHub, *, settings: LivePaperSettings | None = None,
                  portfolio_settings: PaperPortfolioSettings | None = None, costs: BacktestSettings | None = None,
                  feature_settings: FeatureSettings | None = None, strategy_settings: StrategySettings | None = None,
-                 decision_settings: DecisionSettings | None = None, clock: LiveClock | None = None) -> None:
+                 decision_settings: DecisionSettings | None = None, clock: LiveClock | None = None,
+                 persistence_settings: PaperPersistenceSettings | None = None) -> None:
         self.hub = hub
         self.settings = LivePaperSettings.model_validate(settings) if settings is not None else LivePaperSettings()
         self.clock = clock or SystemLiveClock()
@@ -51,6 +54,36 @@ class LivePaperCoordinator:
         self._drops = 0
         self._last_problem: str | None = None
         self._last_wall = None
+        storage = persistence_settings or PaperPersistenceSettings()
+        if not self.settings.enabled:
+            storage = storage.model_copy(update={'enabled': False})
+        self.persistence = PaperPersistence(storage)
+        self._continuity_dirty = False
+        self._recovered_bootstrap = False
+        self._admission_floor: datetime | None = None
+        self._active_queue = None
+
+    def _discard_ambiguous(self) -> None:
+        self.batcher.discard_pending()
+        self._admission_floor = self.batcher.watermark
+
+    def _invalidate(self) -> None:
+        self.portfolio.invalidate()
+        self._continuity_dirty = True
+
+    async def _save_fence(self) -> None:
+        if self._continuity_dirty:
+            await self.persistence.fence(self)
+            self._continuity_dirty = False
+
+    async def _synchronize_durable(self) -> None:
+        while True:
+            self._synchronize()
+            if not self._continuity_dirty:
+                return
+            await self._save_fence()
+            # A public source may rotate while the bounded worker is committing.
+            # Recheck its current token before admitting the held observation.
 
     def health(self) -> tuple[Status, tuple[str, ...]]:
         if self._status in (Status.DISABLED, Status.STARTING, Status.STOPPING, Status.STOPPED, Status.ERROR):
@@ -89,9 +122,15 @@ class LivePaperCoordinator:
         connection = next((item for item in self.hub.status().connections if item.connection_id == stream.connection_id), None)
         token = None if connection is None else (connection.connection_id, connection.generation, connection.status)
         if token != self._connection:
+            if self._recovered_bootstrap:
+                # A new process's transport token is not analytical evidence of
+                # a missing candle. The first new group must still pass all
+                # current-source and wall-age gates; gaps use existing semantics.
+                self._connection = token
+                return
             if self._connection is not None:
-                self.batcher.discard_pending()
-                self.portfolio.invalidate()
+                self._discard_ambiguous()
+                self._invalidate()
                 self._event('connection_changed', 'Public candle connection changed; continuity must warm up again.', category='feed')
                 self._last_problem = 'connection_changed'
             self._connection = token
@@ -101,20 +140,28 @@ class LivePaperCoordinator:
         """Explicit boundary also used by deterministic offline integration tests."""
         if not self.running:
             raise RuntimeError('live coordinator is not running')
-        self._synchronize()
+        if self.persistence.halted:
+            raise RuntimeError('paper persistence is halted')
+        await self._synchronize_durable()
         observation = ClosedBarObservation.model_validate(observation)
         token = (observation.connection_id, observation.generation, ConnectionStatus.CONNECTED)
         if self._connection != token:
             self._event('obsolete_generation', 'A candle belongs to an obsolete public connection.', category='feed')
             return
         result = self.batcher.push(observation.bar, now=self.clock.now())
+        if self.batcher.pending_count or result.batches:
+            # Once a recovered process admits any part of a new group, further
+            # transport changes are real continuity losses. Bootstrap must not
+            # allow candles from two socket generations to share that group.
+            self._recovered_bootstrap = False
         await self._result(result)
 
     async def _result(self, result: BatchResult) -> None:
         # Already finalized earlier groups must be applied before diagnostics
         # caused by the newly arriving (possibly later) observation.
+        source_token = self._connection
         for batch in result.batches:
-            await self._apply(batch)
+            await self._apply(batch, source_token=source_token)
         for notice in result.notices:
             if notice.reason == 'unfinished_candle':
                 continue
@@ -123,14 +170,15 @@ class LivePaperCoordinator:
             if notice.reason != 'duplicate_bar':
                 self._last_problem = notice.reason
             if notice.reason in ('conflicting_bar', 'conflicting_late_bar', 'batch_buffer_full'):
-                self.portfolio.invalidate()
+                self._invalidate()
                 self._generation += 1
+        await self._save_fence()
 
-    async def _apply(self, batch: LiveBarBatch) -> None:
+    async def _apply(self, batch: LiveBarBatch, *, source_token=None) -> None:
         if batch.conflicting_symbols:
-            self.portfolio.invalidate()
+            self._invalidate()
             self._generation += 1
-        token = self._connection
+        token = self._connection if source_token is None else source_token
         await self.analysis.start(batch.boundary)
         # Lazy consumer startup yields once. Recheck provenance and real age
         # afterwards, before admitting any data to the canonical analytical view.
@@ -138,7 +186,8 @@ class LivePaperCoordinator:
         now = self.clock.now()
         maximum = min(self.hub.stale_after_seconds, float(self.strategy_settings.max_feature_age_seconds),
                       float(self.decision_settings.max_strategy_snapshot_age_seconds))
-        accepted = tuple(event for event in batch.bars if token == self._connection and all(0 <= (now-stamp).total_seconds() < maximum
+        queue_intact = self._active_queue is None or self._active_queue.dropped_events == self._drops
+        accepted = tuple(event for event in batch.bars if queue_intact and token == self._connection and all(0 <= (now-stamp).total_seconds() < maximum
             for stamp in (batch.boundary, event.event_time, event.received_at)))
         if token != self._connection:
             self._event('generation_changed_during_batch', 'Connection changed while the close group was being prepared.', category='feed')
@@ -166,9 +215,14 @@ class LivePaperCoordinator:
                 symbol=symbol, related_id=record.portfolio_decision_id, category='portfolio', severity='info', timestamp=batch.boundary)
         self.counts['finalized_batches'] += 1
         self.counts['admitted_bars'] += len(accepted)
+        self._recovered_bootstrap = False
+        await self.persistence.checkpoint(self)
+        self._continuity_dirty = False
 
     async def poll(self) -> None:
-        self._synchronize()
+        if self.persistence.halted:
+            raise RuntimeError('paper persistence is halted')
+        await self._synchronize_durable()
         await self._result(self.batcher.poll())
         due = self.portfolio.next_required_boundary()
         grace = timedelta(seconds=self.hub.stale_after_seconds+self.settings.batch_timeout_ms/1000)
@@ -181,6 +235,7 @@ class LivePaperCoordinator:
                 self.batcher.watermark = max(self.batcher.watermark, due) if self.batcher.watermark else due
                 self._last_problem = 'missing_symbol_bar'
                 self._event('missing_symbol_bar', 'A required holding or entry candle never arrived.', category='batch')
+                await self.persistence.checkpoint(self)
 
     async def run(self) -> None:
         if self._started:
@@ -189,24 +244,31 @@ class LivePaperCoordinator:
         if not self.settings.enabled:
             self._status = Status.DISABLED
             return
+        if not await self.persistence.start(self):
+            self._status = Status.ERROR
+            self._last_problem = self.persistence.state.reason
+            await self.persistence.close()
+            return
         self.running = True
         self.started_at = self.clock.now()
         self._status = Status.WARMING_UP
         self._event('runtime_started', 'Public-data virtual paper runtime started.', severity='info')
         try:
             with self.hub.subscribe_closed_bars(self.settings.queue_limit) as queue:
+                self._active_queue = queue
                 processed = 0
                 while True:
                     if queue.dropped_events != self._drops:
                         self._drops = queue.dropped_events
-                        self.batcher.discard_pending()
-                        self.portfolio.invalidate()
+                        self._discard_ambiguous()
+                        self._invalidate()
                         self._generation += 1
                         self._last_problem = 'subscriber_gap'
                         self._event('subscriber_gap', 'The bounded candle queue lost observations; continuity is unknown.', category='feed')
                         while not queue.empty():
                             queue.get_nowait()
                             queue.task_done()
+                        await self._save_fence()
                     if not queue.empty():
                         observation = queue.get_nowait()
                         try:
@@ -245,16 +307,31 @@ class LivePaperCoordinator:
         except Exception:
             self._status = Status.ERROR
             self._last_problem = 'runtime_error'
-            self.portfolio.invalidate()
+            self._discard_ambiguous()
+            self._invalidate()
+            self._generation += 1
             self._event('runtime_error', 'The virtual runtime stopped after an internal error.', severity='error')
+            if not self.persistence.halted:
+                try:
+                    await self._save_fence()
+                except Exception:
+                    # Persistence has recorded its own failure. The previous
+                    # checkpoint remains authoritative; no transition can follow.
+                    pass
         finally:
             failed = self._status == Status.ERROR
             if not failed:
                 self._status = Status.STOPPING
             self.batcher.discard_pending()
-            self.portfolio.invalidate()
+            if not self.persistence.settings.enabled:
+                self.portfolio.invalidate()
             await self.analysis.stop()
+            await self.persistence.close()
             self.running = False
+            self._active_queue = None
             if not failed:
                 self._status = Status.STOPPED
-            self._event('runtime_stopped', 'Virtual runtime stopped; active exposure is unresolved, not liquidated.', severity='info')
+            self._event('runtime_stopped',
+                'Virtual runtime stopped; the last committed state is preserved for recovery.'
+                if self.persistence.settings.enabled else
+                'Virtual runtime stopped; active exposure is unresolved, not liquidated.', severity='info')

@@ -25,6 +25,7 @@ from src.domain.market_data import BookTickerEvent, KlineEvent, MarkPriceEvent, 
 from src.domain.models import Identifier
 from src.domain.paper_portfolio import PaperEntryReservation, PaperPnl, PaperPortfolioCurvePoint, PaperPortfolioState, PortfolioModel
 from src.domain.strategies import StrategyReadiness
+from src.domain.paper_persistence import PersistenceSnapshot
 from src.strategies.identity import identity
 
 
@@ -73,6 +74,7 @@ class LiveStatusSnapshot(PortfolioModel):
     counters: dict[SafeReason, Count]
     configuration: LiveConfiguration
     market: MarketStatus
+    persistence: PersistenceSnapshot
 
 
 class LivePortfolioSnapshot(PortfolioModel):
@@ -138,6 +140,7 @@ def status_snapshot(runtime: LivePaperCoordinator, as_of: datetime | None = None
     return LiveStatusSnapshot(as_of=as_of or runtime.clock.now(), status=state, reasons=reasons, running=runtime.running,
         started_at=runtime.started_at, latest_update_at=runtime.events[-1].timestamp if runtime.events else None,
         subscriber_dropped_events=runtime._drops,
+        persistence=runtime.persistence.snapshot(runtime.portfolio.last_boundary),
         last_boundary=runtime.portfolio.last_boundary, interval=runtime.batcher.interval, symbols=tuple(summaries),
         counters=dict(sorted(runtime.counts.items())), market=runtime.hub.status(), configuration=LiveConfiguration(
             runtime=runtime.settings, features=runtime.feature_settings, strategies=runtime.strategy_settings,

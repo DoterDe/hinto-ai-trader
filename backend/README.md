@@ -1,6 +1,6 @@
 # Backend
 
-Phase 1–8 backend for Hinto AI Trader. Phase 8 is public-data and virtual-only.
+Phase 1–9 backend for Hinto AI Trader. The live runtime remains public-data and virtual-only.
 
 ## Setup
 
@@ -82,11 +82,12 @@ Application code must obtain them from `RiskEngine`; no HTTP execution endpoint
 is exposed. The paper adapter always records mode `paper`, including when the
 API configuration reports `testnet`; the testnet adapter is a later phase.
 
-Audit history, duplicate protection, and fills are local to each service instance
+These Phase 1 services' audit history, duplicate protection and fills are local to each instance
 and are lost on restart. They are not shared between workers and currently grow
 without a retention limit. Use a single instance of each service in a process.
-Durable storage, portfolio/notional limits, market-price freshness, slippage,
-and commissions remain future work.
+Durability, portfolio/notional limits, market-price freshness, slippage and
+commissions for this separate execution scaffold remain future work. Phases 6–9
+provide their own analytical/virtual portfolio path; they do not call these services.
 
 ## Public market data (Phase 2)
 
@@ -927,8 +928,10 @@ Absent entry expires capacity; an absent holding bar retains INCOMPLETE exposure
 and null aggregate marked equity. Later bars cannot repair that path. If no bar
 arrives at all, a required missing boundary is detected after the Hub stale
 allowance plus batch timeout (11.5 seconds default). This advances explicit empty
-evidence, never prices. Reconnect/loss/shutdown expires reservations and marks
+evidence, never prices. Observed reconnect/loss expires reservations and marks
 active exposure unresolved without fabricated closes or changed historical points.
+With persistence disabled, shutdown retains the Phase 8 invalidation behavior.
+With persistence enabled, clean shutdown preserves the committed state for recovery.
 
 ### Runtime lifecycle and telemetry
 
@@ -941,8 +944,8 @@ Consumers register before an enabled public or injected source starts. A disable
 paper consumer has no coordinator task/subscription. Public data disabled without
 an injected source also disables paper and feature consumers. Import/OpenAPI
 starts no feed. Shutdown cancels/awaits source, coordinator and feature tasks;
-nested analysis, queues and timers are cleaned up. Restart starts a new virtual
-session; no persistence or resume API exists.
+nested analysis, queues and timers are cleaned up. The Phase 9 lifecycle below
+adds local recovery; no HTTP resume/reset/mutation API exists.
 
 | GET route | Response |
 | --- | --- |
@@ -983,5 +986,113 @@ See [frontend setup](../frontend/README.md), [user guide](../docs/USER_GUIDE.md)
 [module map](../docs/MODULE_MAP.md), and [Phase 8 report](../docs/PHASE_8_REPORT.md).
 The dashboard uses sequential GET polling; no additional WebSocket or financial
 mutation endpoint is introduced. Depth remains normalized deltas only. Private
-data, execution, AI, databases, optimization, browser backtest execution and
-Phase 9 are outside this implementation.
+data, execution, AI, optimization and browser backtest execution remain outside
+this runtime. Local paper persistence is described below.
+
+## Durable virtual paper state (Phase 9)
+
+`PaperPersistence` owns one stdlib `sqlite3` connection on one dedicated worker
+thread. No ORM or dependency was added. Importing the app and generating OpenAPI
+open no database. A disabled paper runtime opens no persistence worker or file.
+Tests explicitly enable storage only with temporary paths.
+
+| `PAPER_PERSISTENCE_` suffix | Default | Validation |
+| --- | --- | --- |
+| `ENABLED` | `true` | true/false only |
+| `PATH` | `./data/paper_runtime.sqlite3` | Local `.db`, `.sqlite` or `.sqlite3` file; no URI, UNC, traversal or directory |
+| `CHECKPOINT_HISTORY` | `32` | 1–256 complete checkpoints |
+| `EVENT_HISTORY` | `5000` | 1–100000 durable audit metadata rows |
+| `BUSY_TIMEOUT_MS` | `5000` | 1–60000 ms |
+| `RESUME_POLICY` | `strict` | No automatic fallback/new-session policy |
+
+Paths resolve against the process working directory. Keep that directory fixed,
+or configure an absolute local path. Do not put this database on a network share
+or let another process/database browser write or checkpoint it while the backend
+runs. The in-process owner guard is not distributed locking.
+
+Schema and checkpoint versions are `1`. Tables are `schema_metadata`,
+`paper_sessions`, `paper_checkpoints`, and `paper_audit_events`. Storage uses
+foreign keys, WAL, `synchronous=FULL`, a 1000-page automatic WAL checkpoint,
+parameterized DML and explicit `BEGIN IMMEDIATE`/`COMMIT`/rollback. A successful
+portfolio transition is encoded before its write; the published durable boundary
+advances only after commit succeeds. Storage errors stop further transitions.
+
+Canonical JSON retains Decimal values as exact strings, UTC timestamps with
+microseconds, ordered dedupe evidence and nulls. SHA-256 covers the complete
+payload. Checkpoint IDs derive from session, boundary and checksum; a UUID is
+created once for the session and then preserved. Checksums detect accidental
+corruption, not malicious tampering or removal of the whole database.
+
+Recovery compares runtime/feature/strategy/decision/portfolio/backtest versions,
+symbols, interval, runtime/freshness settings and every analytical/policy/cost
+identity. It reconstructs authoritative accounting, bounded closed-candle history
+with reset provenance, current analytical cache generations and admission/dedupe
+state. It never re-evaluates old decisions or publishes recovered history into the
+ordinary live-price Hub. Partial candle groups, queued events and timers are not
+restored. A bootstrap connection does not itself prove a missed bar; once any new
+group begins collecting, subsequent rotations invalidate its continuity.
+
+Each returned close group retains its original source token across persistence
+awaits. Generation, publication/receipt age and queue-loss checks remain active.
+Missing next-entry bars expire reservations; missing holding bars leave INCOMPLETE
+exposure and unknown valuation. No history downloader or latest-price repair exists.
+
+Detected continuity loss after a checkpoint is stored as separate checksummed
+session metadata plus a bounded audit row. This safety marker cannot advance the
+durable candle boundary or rewrite its checkpoint. It prevents restart from
+reviving exposure already invalidated by a conflict, disconnect, queue loss or
+internal analytical failure. Clean shutdown is different: it stops the paper
+consumer before the source publishes STOPPED and preserves the committed ledger.
+Outstanding worker writes settle before its connection/thread is closed.
+
+`/paper/status` and `/paper/snapshot` add `persistence`: enabled/health/status,
+session metadata, checkpoint ID/checksum/time, durable and in-memory boundaries,
+unsaved-change flag, compatibility and retained counts. Reads perform no SQLite
+I/O or analytical transitions. Status is separate from feed/runtime health:
+DISABLED, NEW_SESSION, RECOVERING, RECOVERED, DURABLE, DEGRADED, INCOMPATIBLE,
+CORRUPT or ERROR. Host paths are not exposed. All 19 API paths remain GET-only.
+
+### Retention, maintenance and limitations
+
+Logical histories are bounded; physical SQLite file size is not guaranteed to
+shrink automatically. Retention deletes old checkpoint/audit rows on writes;
+SQLite can reuse freed pages. Lowered storage retention limits take effect on the
+next successful write. WAL checkpointing and offline VACUUM are distinct from a
+paper checkpoint. Maintenance must run only with the backend stopped; VACUUM is
+not invoked automatically. Never remove a live WAL file.
+
+No archive/reset CLI or browser control was added. To intentionally start a new
+virtual session, stop the backend, preserve the old database and any remaining
+sidecars together, then explicitly configure a different unused local path. Do
+not edit a checksum, delete the latest checkpoint, or fall back to an older one
+to make incompatible/corrupt state appear recovered.
+
+The validated Windows environment uses Python 3.11.9 / SQLite 3.45.1. SQLite's
+[WAL-reset advisory](https://www.sqlite.org/wal.html#walreset) describes a concurrent
+multi-connection write/checkpoint defect fixed in 3.51.3 and listed backports.
+This runtime uses one connection/worker and does not exercise that trigger. A
+patched SQLite build through a supported Python environment update remains an
+operational recommendation; concurrent external database use is unsupported.
+
+Checkpoint serialization cost scales with configured bounded histories and symbol
+count. A slow/full disk can delay admission until freshness/queue-loss gates block
+it. FULL durability still depends on the filesystem/device honoring sync requests.
+No cross-machine backup, distributed writer, real fills, funding/liquidation model,
+private data, execution or optimization is introduced. Phase 1 execution scaffold
+state remains separate and is not made durable by Phase 9.
+
+Offline checks (run from `backend/`):
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m pip check
+.\.venv\Scripts\python.exe tests/soak_paper_persistence.py --bars 2000 --restart-every 100 --storage-checkpoints 20000
+```
+
+The soak separates full analytical replay from the larger small-checkpoint SQLite
+stress. It compares every restart prefix, all identity sequences and exact final
+accounting, and checks retention and cleanup. It is not a real Binance/network
+load test. The extended command is a local release check; ordinary CI instead runs
+120 bars per run and 300 storage transactions through pytest, using isolated
+temporary databases. Exact results and remaining limitations are in
+[PHASE_9_REPORT](../docs/PHASE_9_REPORT.md).
