@@ -24,6 +24,16 @@ class ModuleExplanation(PortfolioModel):
 
 
 _TERMS = (
+    ('walk_forward', 'Walk-forward validation', 'Replay fixed rules over chronological test windows. Earlier context warms indicators; no parameters are fitted to later results.'),
+    ('context_window', 'Context window', 'Past bars used only to warm analytical state. Context decisions and outcomes are excluded from test metrics.'),
+    ('out_of_sample', 'Out-of-sample test', 'A later chronological evaluation window separated from its past context. Fixed rules are evaluated, not trained or selected.'),
+    ('causal_regime', 'Causal regime', 'A descriptive trend or volatility label using only feature evidence available at that decision boundary. UNKNOWN means required evidence was unavailable.'),
+    ('cost_sensitivity', 'Cost sensitivity', 'Compare the same signals under fixed fee and adverse slippage assumptions. Decisions, horizons and raw price evidence do not change; no scenario is ranked as best.'),
+    ('data_leakage', 'Data leakage', 'Using future evidence in an earlier decision or label would invalidate the comparison. Future mutation tests check that earlier evidence stays unchanged.'),
+    ('dataset_identity', 'Dataset identity', 'A SHA-256 content identity for canonical finalized public bars and declared scope. Identical canonical input has the same identity; this does not certify external authenticity.'),
+    ('sample_size', 'Sample size', 'Counts distinguish all decisions, eligible signals, completed outcomes and incomplete evidence. Groups with fewer than 30 completed outcomes are flagged as small samples.'),
+    ('incomplete_outcome', 'Incomplete outcome', 'A next entry bar or complete holding horizon is absent or outside the test window. No exit or return is fabricated, and the signal is not counted as a win or loss.'),
+    ('historical_hit_rate', 'Historical hit rate', 'Wins divided by wins plus losses among completed historical signals; flat and incomplete outcomes are excluded. The sample count is essential. This is not a future probability of profit.'),
     ('paper', 'PAPER / VIRTUAL ONLY', 'Public market information and simulated capital only. This workstation cannot place a real order or move funds.'),
     ('market_data', 'Market data', 'Public prices and observations. They describe a market, not your exchange account.'),
     ('features', 'Feature Engine', 'Turns observed market data into numerical measurements. Missing inputs stay unavailable.'),

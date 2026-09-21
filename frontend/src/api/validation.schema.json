@@ -1,0 +1,1043 @@
+{
+  "$defs": {
+    "CostScenario": {
+      "additionalProperties": false,
+      "properties": {
+        "model_version": {
+          "const": "phase6-cost-v1",
+          "default": "phase6-cost-v1",
+          "title": "Model Version",
+          "type": "string"
+        },
+        "fee_bps_per_side": {
+          "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+          "title": "Fee Bps Per Side",
+          "type": "string"
+        },
+        "slippage_bps_per_side": {
+          "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+          "title": "Slippage Bps Per Side",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model_version",
+        "fee_bps_per_side",
+        "slippage_bps_per_side"
+      ],
+      "title": "CostScenario",
+      "type": "object"
+    },
+    "DatasetCoverage": {
+      "additionalProperties": false,
+      "properties": {
+        "symbol": {
+          "pattern": "^[A-Z0-9]{3,32}$",
+          "title": "Symbol",
+          "type": "string"
+        },
+        "observed_bars": {
+          "minimum": 0,
+          "title": "Observed Bars",
+          "type": "integer"
+        },
+        "expected_bars": {
+          "exclusiveMinimum": 0,
+          "title": "Expected Bars",
+          "type": "integer"
+        },
+        "missing_bars": {
+          "minimum": 0,
+          "title": "Missing Bars",
+          "type": "integer"
+        },
+        "coverage_fraction": {
+          "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+          "title": "Coverage Fraction",
+          "type": "string"
+        },
+        "first_open": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "First Open"
+        },
+        "last_boundary": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Last Boundary"
+        },
+        "gaps": {
+          "items": {
+            "$ref": "#/$defs/DatasetGap"
+          },
+          "maxItems": 100001,
+          "title": "Gaps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "symbol",
+        "observed_bars",
+        "expected_bars",
+        "missing_bars",
+        "coverage_fraction",
+        "first_open",
+        "last_boundary",
+        "gaps"
+      ],
+      "title": "DatasetCoverage",
+      "type": "object"
+    },
+    "DatasetGap": {
+      "additionalProperties": false,
+      "description": "Missing open-time slots in [start, end); no materialized missing bars.",
+      "properties": {
+        "start": {
+          "format": "date-time",
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "format": "date-time",
+          "title": "End",
+          "type": "string"
+        },
+        "missing_bars": {
+          "exclusiveMinimum": 0,
+          "title": "Missing Bars",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "missing_bars"
+      ],
+      "title": "DatasetGap",
+      "type": "object"
+    },
+    "RegimeDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "const": "causal-regimes-v1",
+          "default": "causal-regimes-v1",
+          "title": "Version",
+          "type": "string"
+        },
+        "ema_separation_deadband": {
+          "const": "0.0005",
+          "default": "0.0005",
+          "title": "Ema Separation Deadband",
+          "type": "string"
+        },
+        "directional_efficiency_floor": {
+          "const": "0.25",
+          "default": "0.25",
+          "title": "Directional Efficiency Floor",
+          "type": "string"
+        },
+        "normalized_atr_low_upper": {
+          "const": "0.005",
+          "default": "0.005",
+          "title": "Normalized Atr Low Upper",
+          "type": "string"
+        },
+        "normalized_atr_medium_upper": {
+          "const": "0.02",
+          "default": "0.02",
+          "title": "Normalized Atr Medium Upper",
+          "type": "string"
+        },
+        "minimum_completed_samples": {
+          "const": 30,
+          "default": 30,
+          "title": "Minimum Completed Samples",
+          "type": "integer"
+        }
+      },
+      "title": "RegimeDefinition",
+      "type": "object",
+      "required": [
+        "version",
+        "ema_separation_deadband",
+        "directional_efficiency_floor",
+        "normalized_atr_low_upper",
+        "normalized_atr_medium_upper",
+        "minimum_completed_samples"
+      ]
+    },
+    "SampleSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "minimum": 0,
+          "title": "Count",
+          "type": "integer"
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Minimum"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Maximum"
+        },
+        "mean": {
+          "anyOf": [
+            {
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mean"
+        }
+      },
+      "required": [
+        "count",
+        "minimum",
+        "maximum",
+        "mean"
+      ],
+      "title": "SampleSummary",
+      "type": "object"
+    },
+    "ValidationAnalysisSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "$ref": "#/$defs/ValidationMetricSummary"
+        },
+        "groups": {
+          "items": {
+            "$ref": "#/$defs/ValidationGroupSummary"
+          },
+          "maxItems": 136,
+          "title": "Groups",
+          "type": "array"
+        },
+        "costs": {
+          "items": {
+            "$ref": "#/$defs/ValidationCostSummary"
+          },
+          "maxItems": 4,
+          "title": "Costs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "metrics",
+        "groups",
+        "costs"
+      ],
+      "title": "ValidationAnalysisSummary",
+      "type": "object"
+    },
+    "ValidationCostSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "scenario_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "assumptions": {
+          "$ref": "#/$defs/CostScenario"
+        },
+        "is_baseline": {
+          "title": "Is Baseline",
+          "type": "boolean"
+        },
+        "metrics": {
+          "$ref": "#/$defs/ValidationMetricSummary"
+        },
+        "mean_cost_return": {
+          "anyOf": [
+            {
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mean Cost Return"
+        },
+        "sign_changed_count": {
+          "minimum": 0,
+          "title": "Sign Changed Count",
+          "type": "integer"
+        },
+        "warnings": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "scenario_id",
+        "assumptions",
+        "is_baseline",
+        "metrics",
+        "mean_cost_return",
+        "sign_changed_count",
+        "warnings"
+      ],
+      "title": "ValidationCostSummary",
+      "type": "object"
+    },
+    "ValidationGroupSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "dimension": {
+          "enum": [
+            "symbol",
+            "trend",
+            "volatility"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "key": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "metrics": {
+          "$ref": "#/$defs/ValidationMetricSummary"
+        },
+        "confidence": {
+          "$ref": "#/$defs/SampleSummary"
+        },
+        "composite_score": {
+          "$ref": "#/$defs/SampleSummary"
+        },
+        "warnings": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "dimension",
+        "key",
+        "metrics",
+        "confidence",
+        "composite_score",
+        "warnings"
+      ],
+      "title": "ValidationGroupSummary",
+      "type": "object"
+    },
+    "ValidationMetricSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "evaluated_decision_count": {
+          "minimum": 0,
+          "title": "Evaluated Decision Count",
+          "type": "integer"
+        },
+        "eligible_count": {
+          "minimum": 0,
+          "title": "Eligible Count",
+          "type": "integer"
+        },
+        "blocked_count": {
+          "minimum": 0,
+          "title": "Blocked Count",
+          "type": "integer"
+        },
+        "no_action_count": {
+          "minimum": 0,
+          "title": "No Action Count",
+          "type": "integer"
+        },
+        "completed_count": {
+          "minimum": 0,
+          "title": "Completed Count",
+          "type": "integer"
+        },
+        "incomplete_count": {
+          "minimum": 0,
+          "title": "Incomplete Count",
+          "type": "integer"
+        },
+        "boundary_censored_count": {
+          "minimum": 0,
+          "title": "Boundary Censored Count",
+          "type": "integer"
+        },
+        "win_count": {
+          "minimum": 0,
+          "title": "Win Count",
+          "type": "integer"
+        },
+        "loss_count": {
+          "minimum": 0,
+          "title": "Loss Count",
+          "type": "integer"
+        },
+        "flat_count": {
+          "minimum": 0,
+          "title": "Flat Count",
+          "type": "integer"
+        },
+        "win_rate": {
+          "anyOf": [
+            {
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Win Rate"
+        },
+        "mean_gross_return": {
+          "anyOf": [
+            {
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mean Gross Return"
+        },
+        "mean_net_return": {
+          "anyOf": [
+            {
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mean Net Return"
+        },
+        "sum_gross_returns": {
+          "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+          "title": "Sum Gross Returns",
+          "type": "string"
+        },
+        "sum_simulated_costs": {
+          "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+          "title": "Sum Simulated Costs",
+          "type": "string"
+        },
+        "sum_net_returns": {
+          "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+          "title": "Sum Net Returns",
+          "type": "string"
+        },
+        "normalized_max_drawdown": {
+          "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$",
+          "title": "Normalized Max Drawdown",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evaluated_decision_count",
+        "eligible_count",
+        "blocked_count",
+        "no_action_count",
+        "completed_count",
+        "incomplete_count",
+        "boundary_censored_count",
+        "win_count",
+        "loss_count",
+        "flat_count",
+        "win_rate",
+        "mean_gross_return",
+        "mean_net_return",
+        "sum_gross_returns",
+        "sum_simulated_costs",
+        "sum_net_returns",
+        "normalized_max_drawdown"
+      ],
+      "title": "ValidationMetricSummary",
+      "type": "object"
+    },
+    "ValidationProjection": {
+      "additionalProperties": false,
+      "properties": {
+        "report_id": {
+          "pattern": "^validation_report_[0-9a-f]{64}$",
+          "title": "Report Id",
+          "type": "string"
+        },
+        "content_checksum": {
+          "title": "Content Checksum",
+          "type": "string"
+        },
+        "dataset_id": {
+          "pattern": "^historical_dataset_[0-9a-f]{64}$",
+          "title": "Dataset Id",
+          "type": "string"
+        },
+        "dataset_status": {
+          "enum": [
+            "VALID",
+            "VALID_WITH_GAPS"
+          ],
+          "title": "Dataset Status",
+          "type": "string"
+        },
+        "dataset_start": {
+          "format": "date-time",
+          "title": "Dataset Start",
+          "type": "string"
+        },
+        "dataset_end": {
+          "format": "date-time",
+          "title": "Dataset End",
+          "type": "string"
+        },
+        "total_bars": {
+          "minimum": 0,
+          "title": "Total Bars",
+          "type": "integer"
+        },
+        "duplicate_count": {
+          "minimum": 0,
+          "title": "Duplicate Count",
+          "type": "integer"
+        },
+        "missing_bar_count": {
+          "minimum": 0,
+          "title": "Missing Bar Count",
+          "type": "integer"
+        },
+        "coverage": {
+          "items": {
+            "$ref": "#/$defs/DatasetCoverage"
+          },
+          "maxItems": 128,
+          "title": "Coverage",
+          "type": "array"
+        },
+        "protocol_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Protocol Id",
+          "type": "string"
+        },
+        "protocol": {
+          "$ref": "#/$defs/WalkForwardProtocol"
+        },
+        "engines": {
+          "$ref": "#/$defs/WalkForwardEngineIdentity"
+        },
+        "regime_definition_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Regime Definition Id",
+          "type": "string"
+        },
+        "regime_definition": {
+          "$ref": "#/$defs/RegimeDefinition"
+        },
+        "windows": {
+          "items": {
+            "$ref": "#/$defs/ValidationWindowSummary"
+          },
+          "maxItems": 256,
+          "title": "Windows",
+          "type": "array"
+        },
+        "aggregate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValidationAnalysisSummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "warnings": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        },
+        "limitations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Limitations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "report_id",
+        "content_checksum",
+        "dataset_id",
+        "dataset_status",
+        "dataset_start",
+        "dataset_end",
+        "total_bars",
+        "duplicate_count",
+        "missing_bar_count",
+        "coverage",
+        "protocol_id",
+        "protocol",
+        "engines",
+        "regime_definition_id",
+        "regime_definition",
+        "windows",
+        "aggregate",
+        "warnings",
+        "limitations"
+      ],
+      "title": "ValidationProjection",
+      "type": "object"
+    },
+    "ValidationStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "enum": [
+            "UNAVAILABLE",
+            "READY",
+            "INVALID"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "NO_REPORT_CONFIGURED",
+            "REPORT_NOT_FOUND",
+            "REPORT_INVALID",
+            "REPORT_LOADED"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "report_id": {
+          "anyOf": [
+            {
+              "pattern": "^validation_report_[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Report Id"
+        },
+        "dataset_id": {
+          "anyOf": [
+            {
+              "pattern": "^historical_dataset_[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dataset Id"
+        },
+        "mode": {
+          "const": "PAPER / VIRTUAL / RESEARCH ONLY",
+          "default": "PAPER / VIRTUAL / RESEARCH ONLY",
+          "title": "Mode",
+          "type": "string"
+        },
+        "read_only": {
+          "const": true,
+          "default": true,
+          "title": "Read Only",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "state",
+        "reason",
+        "report_id",
+        "dataset_id",
+        "mode",
+        "read_only"
+      ],
+      "title": "ValidationStatus",
+      "type": "object"
+    },
+    "ValidationWindowSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "split_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Split Id",
+          "type": "string"
+        },
+        "result_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Result Id",
+          "type": "string"
+        },
+        "ordinal": {
+          "minimum": 0,
+          "title": "Ordinal",
+          "type": "integer"
+        },
+        "status": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Status",
+          "type": "string"
+        },
+        "context_start": {
+          "format": "date-time",
+          "title": "Context Start",
+          "type": "string"
+        },
+        "context_end": {
+          "format": "date-time",
+          "title": "Context End",
+          "type": "string"
+        },
+        "test_start": {
+          "format": "date-time",
+          "title": "Test Start",
+          "type": "string"
+        },
+        "test_end": {
+          "format": "date-time",
+          "title": "Test End",
+          "type": "string"
+        },
+        "required_warmup": {
+          "minimum": 0,
+          "title": "Required Warmup",
+          "type": "integer"
+        },
+        "context_boundary_count": {
+          "minimum": 0,
+          "title": "Context Boundary Count",
+          "type": "integer"
+        },
+        "test_boundary_count": {
+          "minimum": 0,
+          "title": "Test Boundary Count",
+          "type": "integer"
+        },
+        "observed_test_boundaries": {
+          "minimum": 0,
+          "title": "Observed Test Boundaries",
+          "type": "integer"
+        },
+        "test_coverage": {
+          "items": {
+            "$ref": "#/$defs/DatasetCoverage"
+          },
+          "maxItems": 128,
+          "title": "Test Coverage",
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        },
+        "analysis": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValidationAnalysisSummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "split_id",
+        "result_id",
+        "ordinal",
+        "status",
+        "context_start",
+        "context_end",
+        "test_start",
+        "test_end",
+        "required_warmup",
+        "context_boundary_count",
+        "test_boundary_count",
+        "observed_test_boundaries",
+        "test_coverage",
+        "warnings",
+        "analysis"
+      ],
+      "title": "ValidationWindowSummary",
+      "type": "object"
+    },
+    "WalkForwardEngineIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "evaluator_version": {
+          "const": "walk-forward-evaluator-v1",
+          "default": "walk-forward-evaluator-v1",
+          "title": "Evaluator Version",
+          "type": "string"
+        },
+        "backtest_engine_version": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Backtest Engine Version",
+          "type": "string"
+        },
+        "strategy_engine_version": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategy Engine Version",
+          "type": "string"
+        },
+        "decision_engine_version": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Decision Engine Version",
+          "type": "string"
+        },
+        "feature_settings_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Feature Settings Id",
+          "type": "string"
+        },
+        "strategy_settings_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategy Settings Id",
+          "type": "string"
+        },
+        "decision_policy_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Decision Policy Id",
+          "type": "string"
+        },
+        "backtest_settings_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Backtest Settings Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evaluator_version",
+        "backtest_engine_version",
+        "strategy_engine_version",
+        "decision_engine_version",
+        "feature_settings_id",
+        "strategy_settings_id",
+        "decision_policy_id",
+        "backtest_settings_id"
+      ],
+      "title": "WalkForwardEngineIdentity",
+      "type": "object"
+    },
+    "WalkForwardMode": {
+      "enum": [
+        "EXPANDING",
+        "ROLLING"
+      ],
+      "title": "WalkForwardMode",
+      "type": "string"
+    },
+    "WalkForwardProtocol": {
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "const": "walk-forward-v1",
+          "default": "walk-forward-v1",
+          "title": "Version",
+          "type": "string"
+        },
+        "dataset_id": {
+          "pattern": "^historical_dataset_[0-9a-f]{64}$",
+          "title": "Dataset Id",
+          "type": "string"
+        },
+        "dataset_schema_version": {
+          "const": "historical-dataset-v1",
+          "default": "historical-dataset-v1",
+          "title": "Dataset Schema Version",
+          "type": "string"
+        },
+        "symbols": {
+          "items": {
+            "pattern": "^[A-Z0-9]{3,32}$",
+            "type": "string"
+          },
+          "maxItems": 128,
+          "minItems": 1,
+          "title": "Symbols",
+          "type": "array"
+        },
+        "interval": {
+          "default": "1m",
+          "pattern": "^[1-9][0-9]*[smhdwM]$",
+          "title": "Interval",
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/WalkForwardMode",
+          "default": "EXPANDING"
+        },
+        "minimum_context_boundaries": {
+          "default": 50,
+          "exclusiveMinimum": 0,
+          "maximum": 100000,
+          "title": "Minimum Context Boundaries",
+          "type": "integer"
+        },
+        "warmup_boundaries": {
+          "default": 50,
+          "exclusiveMinimum": 0,
+          "maximum": 100000,
+          "title": "Warmup Boundaries",
+          "type": "integer"
+        },
+        "test_boundaries": {
+          "default": 20,
+          "exclusiveMinimum": 0,
+          "maximum": 100000,
+          "title": "Test Boundaries",
+          "type": "integer"
+        },
+        "step_boundaries": {
+          "default": 20,
+          "exclusiveMinimum": 0,
+          "maximum": 100000,
+          "title": "Step Boundaries",
+          "type": "integer"
+        },
+        "rolling_context_boundaries": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 100000,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rolling Context Boundaries"
+        },
+        "allow_test_overlap": {
+          "default": false,
+          "title": "Allow Test Overlap",
+          "type": "boolean"
+        },
+        "partial_window": {
+          "default": "INCLUDE",
+          "enum": [
+            "INCLUDE",
+            "REJECT"
+          ],
+          "title": "Partial Window",
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "dataset_id",
+        "dataset_schema_version",
+        "symbols",
+        "interval",
+        "mode",
+        "minimum_context_boundaries",
+        "warmup_boundaries",
+        "test_boundaries",
+        "step_boundaries",
+        "rolling_context_boundaries",
+        "allow_test_overlap",
+        "partial_window"
+      ],
+      "title": "WalkForwardProtocol",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "$ref": "#/$defs/ValidationStatus"
+    },
+    "report": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ValidationProjection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "status",
+    "report"
+  ],
+  "title": "ValidationSnapshot",
+  "type": "object"
+}

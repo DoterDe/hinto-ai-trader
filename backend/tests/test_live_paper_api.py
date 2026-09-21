@@ -244,8 +244,9 @@ def test_explanations_complete_immutable_deterministic_and_candid():
 
 def test_openapi_typed_get_only_no_executable_or_private_contract():
     schema = create_app().openapi()
-    assert set(PATHS) <= schema['paths'].keys() and len(schema['paths']) == 19
-    for path in PATHS:
+    assert set(PATHS) | {'/validation/status', '/validation/latest'} <= schema['paths'].keys()
+    assert len(schema['paths']) == 21
+    for path in schema['paths']:
         assert set(schema['paths'][path]) == {'get'}
         assert 'requestBody' not in schema['paths'][path]['get']
     encoded = json.dumps(schema['components']['schemas'])

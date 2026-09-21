@@ -170,7 +170,9 @@ def test_openapi_declares_typed_read_only_feature_contracts() -> None:
                                      "/decisions/{symbol}/latest", *expected,
                                      "/paper/status", "/paper/portfolio", "/paper/positions",
                                      "/paper/decisions", "/paper/events", "/paper/curve",
-                                     "/paper/snapshot", "/explain/modules", "/explain/terms"}
+                                     "/paper/snapshot", "/explain/modules", "/explain/terms",
+                                     "/validation/status", "/validation/latest"}
+    assert all(set(operations) == {"get"} for operations in schema["paths"].values())
 
 
 def test_ready_feature_api_uses_closed_history_and_exact_decimal_json() -> None:
