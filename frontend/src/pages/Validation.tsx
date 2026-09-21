@@ -27,7 +27,7 @@ export function ValidationView({ advanced, telemetry }: { advanced: boolean; tel
       {report && <>
         <p>{report.total_bars} observed bars · {report.windows.length} chronological windows · {report.protocol.mode.toLowerCase()} context.</p>
         <p>{report.missing_bar_count} missing bars · {report.duplicate_count} identical duplicates diagnosed.</p>
-        <p><Label name="dataset_identity" /> <code>{report.dataset_id}</code></p>
+        <div><Label name="dataset_identity" /> <code>{report.dataset_id}</code></div>
         <p>Dataset period: {time(report.dataset_start)} through {time(report.dataset_end)}.</p>
         {!!report.warnings.length && <div className="notice" role="status">{report.warnings.map(words).join(" · ")}</div>}
         <label>Displayed evidence scope <select value={selectedWindow ? scope : "aggregate"} onChange={event => setScope(event.target.value)}>
@@ -54,8 +54,8 @@ export function ValidationView({ advanced, telemetry }: { advanced: boolean; tel
         <p>{analysis.metrics.evaluated_decision_count} test decisions: {analysis.metrics.eligible_count} eligible,
           {" "}{analysis.metrics.blocked_count} blocked, {analysis.metrics.no_action_count} no action.</p>
         <p>{analysis.metrics.completed_count} completed · {analysis.metrics.incomplete_count} incomplete · {analysis.metrics.boundary_censored_count} window-censored.</p>
-        <p><Label name="historical_hit_rate" /> {percent(analysis.metrics.win_rate)} from {analysis.metrics.win_count} wins and {analysis.metrics.loss_count} losses;
-          {" "}{analysis.metrics.flat_count} flats excluded.</p>
+        <div><Label name="historical_hit_rate" /> {percent(analysis.metrics.win_rate)} from {analysis.metrics.win_count} wins and {analysis.metrics.loss_count} losses;
+          {" "}{analysis.metrics.flat_count} flats excluded.</div>
         <p>Mean net return: {percent(analysis.metrics.mean_net_return)}. Normalized signal drawdown: {percent(analysis.metrics.normalized_max_drawdown)}.</p>
         <p>These are independent signal returns and an additive normalized curve, not portfolio equity.</p>
       </Card>
@@ -89,9 +89,9 @@ export function ValidationView({ advanced, telemetry }: { advanced: boolean; tel
       <ul>{report.limitations.map(item => <li key={item}>{item}</li>)}</ul>
     </Card>}
     <Card title="Reading validation evidence" help="walk_forward">
-      <p><Label name="context_window" /> · <Label name="out_of_sample" /> · <Label name="data_leakage" /></p>
-      <p><Label name="causal_regime" /> · <Label name="cost_sensitivity" /> · <Label name="sample_size" /></p>
-      <p><Label name="incomplete_outcome" /> · <Label name="historical_hit_rate" /> · <Label name="dataset_identity" /></p>
+      <div><Label name="context_window" /> · <Label name="out_of_sample" /> · <Label name="data_leakage" /></div>
+      <div><Label name="causal_regime" /> · <Label name="cost_sensitivity" /> · <Label name="sample_size" /></div>
+      <div><Label name="incomplete_outcome" /> · <Label name="historical_hit_rate" /> · <Label name="dataset_identity" /></div>
     </Card>
   </>;
 }

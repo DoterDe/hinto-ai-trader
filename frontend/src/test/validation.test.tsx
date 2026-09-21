@@ -59,6 +59,19 @@ describe("read-only validation contract", () => {
 });
 
 describe("explainable Validation panel", () => {
+  it.each([false, true])("renders help without invalid nesting or hydration errors (advanced=%s)", advanced => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const { container } = render(<ValidationView advanced={advanced} telemetry={{ state: "connected", data: parseValidation(fixture) }} />);
+      const nestingErrors = errors.mock.calls.filter(args =>
+        /validateDOMNesting|hydration|cannot be a (?:child|descendant)|cannot contain a nested/i.test(args.map(String).join(" ")));
+      expect(nestingErrors).toEqual([]);
+      // React can deduplicate diagnostics from earlier renders; inspect the DOM too.
+      expect(container.querySelectorAll("p .label-help, p details, p summary, p div, p p")).toHaveLength(0);
+    } finally {
+      errors.mockRestore();
+    }
+  });
   it("opens the lazy-loaded panel from dashboard navigation", async () => {
     const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify(fixture)));
     vi.stubGlobal("fetch", fetch);
