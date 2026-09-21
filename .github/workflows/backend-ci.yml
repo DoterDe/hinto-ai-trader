@@ -36,6 +36,9 @@ jobs:
       - run: python -m pip check
       - run: python scripts/export_dashboard_contract.py --check
       - run: python tests/export_dashboard_examples.py --check
+      - run: python scripts/export_validation_report.py --check
+      - run: python tests/export_validation_example.py --check
+      - run: python tests/export_validation_example.py --medium --check
 
   frontend:
     runs-on: ubuntu-latest
@@ -51,6 +54,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run types
-      - run: git diff --exit-code -- src/types/generated.ts
+      - run: npm run types -- --check
+      - run: git diff --exit-code -- src/types/generated.ts src/types/validation.generated.ts
       - run: npm test
       - run: npm run build

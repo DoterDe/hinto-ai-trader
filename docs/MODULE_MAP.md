@@ -82,3 +82,45 @@ Future execution requires separately reviewed deterministic intent/sizing,
 independent pre-execution risk review, an execution port and an exchange adapter.
 Future P2P public observations would feed separate analytics/quote comparison and
 user-visible information. Neither future boundary is operational in Phase 9.
+
+## Phase 10 Batch 1: canonical historical dataset
+
+| Module | Input / output | Boundary |
+| --- | --- | --- |
+| [Dataset contracts](../backend/src/domain/historical_dataset.py) | Immutable dataset, manifest, coverage, gap and validation-result types | UTC, finite numbers, closed schemas and explicit resource limits; no exchange/framework dependency |
+| [Dataset validator](../backend/src/application/historical_dataset.py) | Bounded finalized KlineEvent iterable plus scope -> canonical bars and content-derived manifest | Reuses Phase 6 bar/grid/hash contracts; conflicts invalidate, duplicates are diagnosed, gaps are never filled |
+| [Dataset codec](../backend/src/application/historical_dataset_codec.py) | Typed evidence <-> canonical UTF-8 JSON bytes | Explicit version, exact Decimal/UTC values, bounded bytes, recomputed hashes/coverage; no filesystem/network/database calls |
+
+Consumers pass the validated dataset's `bars` and manifest scope to unchanged
+Phase 6 replay/backtest interfaces and the Batch 2 planner below. The later layers
+consume these fixed results; no registry is added. See the [Phase 10 report](PHASE_10_REPORT.md)
+for exact tests and limitations.
+
+## Phase 10 Batch 2: deterministic walk-forward
+
+| Module | Input / output | Boundary |
+| --- | --- | --- |
+| [Walk-forward contracts](../backend/src/domain/walk_forward.py) | Protocol, mode, split/plan, engine/evidence identities, window result and evaluation types | Immutable explicit scope/counts/UTC ranges; no executable fields or training parameters |
+| [Split planner](../backend/src/application/walk_forward.py) | Verified dataset + protocol + feature settings -> chronological plan and per-symbol coverage | EXPANDING/ROLLING; derived warmup; missing context and partial windows explicit; resource budgets checked before replay |
+| [Window evaluator](../backend/src/application/walk_forward_evaluator.py) | Canonical data + one fixed settings set -> independent window evidence, existing outcome metrics and IDs | Reuses HistoricalReplay/BacktestEvaluator/calculate_metrics; context decisions excluded; no exit tail beyond the window |
+
+Context reconstructs past-only state; it is not fitted training data. Interval
+slots preserve same-time symbol groups and missing boundaries. Dataset provenance
+is separate from stable split structure and window-local evidence identity.
+This planner/evaluator does no ranking, optimization, storage or UI work.
+
+## Phase 10 Batches 3–7: reports and read-only delivery
+
+| Module | Input / output | Boundary |
+| --- | --- | --- |
+| [Regime contracts](../backend/src/domain/validation_regimes.py) and [analyzer](../backend/src/application/validation_regimes.py) | Actual feature frame -> fixed descriptive labels/IDs; captured cohorts -> sample-counted summaries | No outcome-dependent label, future distribution, decision feedback or threshold fitting |
+| [Cost contracts](../backend/src/domain/validation_costs.py) and [analyzer](../backend/src/application/validation_costs.py) | Fixed outcomes -> baseline/zero/stress assumptions and metrics | Reuses Phase 6 math; no horizon, sizing or strategy changes; no ranking |
+| [Report contracts](../backend/src/domain/validation_report.py), [assembler](../backend/src/application/validation_report.py), [metric adapter](../backend/src/application/validation_metrics.py) | Dataset/evaluation -> content-addressed report, disjoint aggregate and window cohorts | Context never scored; originating cutoffs retained; overlapping aggregate withheld |
+| [Report codec](../backend/src/application/validation_report_codec.py) | Versioned bounded JSON <-> verified report | Strict schema, exact Decimal/UTC, checksum and summary reconciliation; no pickle |
+| [Offline exporter](../backend/scripts/export_validation_report.py) | Explicit local dataset or synthetic example -> JSON file / deterministic check | No network, cloud store, optimizer or implicit write destination |
+| [Validation telemetry](../backend/src/application/validation_telemetry.py) and [routes](../backend/src/api/validation.py) | One configured startup report -> safe cached status/projection -> two GETs | No path leak, browser-selected file, reload/compute/write on reads |
+| [Validation panel](../frontend/src/pages/Validation.tsx), [client](../frontend/src/api/validation.ts), [poller](../frontend/src/hooks/useValidation.ts) | Generated-contract GET projection -> Simple/Advanced research display | Lazy-loaded; bounded response, timeout/cancellation/retry; no financial controls |
+
+Phase 6–9 analytical, portfolio and live formulas remain unchanged. Report JSON is
+an explicit offline artifact; it is not stored in the Phase 9 SQLite checkpoint.
+Resource caps and release evidence are in [PHASE_10_REPORT](PHASE_10_REPORT.md).

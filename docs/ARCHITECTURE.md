@@ -645,6 +645,118 @@ private API, execution gateway, AI/ML, optimization or Phase 10 work is introduc
 
 ## Phase status and future work
 
+### Phase 10 Batch 1: canonical historical evidence
+
+The new offline `validate_historical_dataset` adapter accepts bounded local
+finalized `KlineEvent` input with explicit symbols and interval. It reuses Phase 6
+bar validation and content identity, sorts `(boundary, symbol)`, diagnoses identical
+duplicates once, rejects conflicting evidence and returns a typed manifest with
+per-symbol coverage. Leading, internal and trailing gaps stay missing; absent
+symbols are explicit. No live cache or future price repairs historical evidence.
+
+`HistoricalDatasetCodec` exports/imports canonical JSON bytes with exact Decimal
+values, strict UTC timestamps, explicit schema and recomputed manifest/checksums.
+The dataset ID covers canonical content plus scope/bounds; `replay_dataset_id`
+preserves the existing Phase 6 hash. Source labels and duplicate provenance are
+separate from data identity. Canonical Decimal scale is normalized before replay;
+numeric values and the prior analytical formulas are unchanged.
+
+The adapter retains at most 100,000 input rows and 128 symbols; JSON has a separate
+64MiB byte cap. Missing ranges are counted arithmetically, not expanded into rows.
+Existing HistoricalReplay/BacktestEngine consume `dataset.bars` unchanged. This
+layer has no API, runtime, persistence or execution side effects. Batch 2 uses it
+for the walk-forward orchestration below; Batches 3–6 add descriptive regimes,
+sensitivity, report export and dashboard integration. See [Phase 10 report](PHASE_10_REPORT.md) for contracts,
+resource limits, tests and known limitations.
+
+### Phase 10 Batch 2: fixed walk-forward validation
+
+`WalkForwardProtocol` declares EXPANDING or ROLLING, scope/dataset version,
+minimum context, warmup, test and step counts, overlap opt-in and partial-window
+policy. Counts describe UTC interval slots, not symbol rows. Context/test ranges
+are `[start, end)` by candle open time, equivalently `(start, end]` by finalized
+close time. The last context close is `test_start`; the first test decision is
+strictly later. Every equal-time symbol group stays in one range.
+
+EXPANDING retains the dataset's earliest context start and advances its end.
+ROLLING uses the declared fixed number of immediately preceding slots. Each split
+reconstructs a fresh `HistoricalReplay` state from its own context. Context is
+never parameter fitting, and walk-forward validation never changes settings.
+
+Warmup admission derives the candle-feature sample requirement from active
+`FeatureSettings` (50 by default); an underspecified protocol is rejected. Every
+symbol must have the declared contiguous warmup suffix ending at the context
+boundary. Missing context produces an explicit rejected split. Admitted test gaps
+follow existing FeatureHistory reset/readiness and incomplete-outcome behavior.
+No candle, absent book/mark/trade stream or continuity is fabricated.
+
+Only test frames reach `BacktestEvaluator.accept`; only those decisions enter
+`calculate_metrics`. Existing next-open entry, fixed horizon and cost math remain
+unchanged. No row after `test_end` is replayed for that window; unfinished horizons
+stay incomplete. Zero-eligible and empty-observation windows remain explicit.
+Partial final windows are included and flagged by default, or retained as rejected
+results with the explicit REJECT policy. Overlap requires opt-in and has no combined
+performance metric, so repeated decision cohorts are not silently summed.
+
+Dataset identity covers complete input; protocol and structural split identities
+exclude unrelated future content. Each window has a local input/result identity
+and retains its global dataset reference. Whole-evaluation identity includes that
+global reference. Compact hashes retain actual feature/strategy frame evidence.
+
+Work is capped at 256 splits, 200,000 cumulative context-plus-test rows and 100,000
+test rows. Chronological missing-slot counts are independent of the dataset row
+cap. Each actual test replay frame also captures a descriptive causal regime.
+The report layer below consumes those fixed observations, never modifies them.
+
+### Phase 10 Batches 3–7: descriptive validation and report delivery
+
+`assign_regime` reads the current production feature snapshot only. Fixed
+`causal-regimes-v1` uses normalized EMA separation outside ±0.0005 and directional
+efficiency >= 0.25 for UPTREND/DOWNTREND; other available evidence is RANGE.
+Trailing ATR/close <= 0.005 / <= 0.02 / > 0.02 gives LOW/MEDIUM/HIGH volatility.
+Unavailable dependencies give independent UNKNOWN buckets. No future quantiles,
+outcomes or return fitting enter these labels; they never feed analytical engines.
+Independent symbol/trend/volatility partitions retain empty groups and flag fewer
+than 30 completed samples. Existing Phase 6 metrics and separate confidence/score
+count/min/max/mean summaries are reused.
+
+`analyze_costs` holds captured decisions, direction, horizon and raw prices fixed.
+It calls existing Phase 6 return math for at most four unique per-side fee/slippage
+assumptions: baseline, (0,0), (10,5), (20,10) bps, ordered by assumptions only.
+Each input is capped at 100 bps on this surface. Incomplete outcomes stay incomplete.
+Gross, cost and net values are separate; sign changes are disclosed, never ranked.
+
+`ValidationReport` contains the canonical manifest, protocol/plan, engine/settings
+identities, window evidence, regimes, cost comparisons, warnings and limitations.
+Pooled metrics use only disjoint test decisions and retain originating-window
+censoring. Overlap explicitly withholds pooled metrics; individual windows remain.
+The SHA-256 content ID excludes optional generated_at. Strict JSON uses exact
+Decimal strings, UTC, sorted keys, no nonfinite/float tokens or unknown fields;
+decode verifies checksums and rebuilds derived summaries. Checksums are integrity
+checks, not proof that an external historical source is authentic.
+
+Limits are 100,000 input rows, 128 symbols, 256 splits, 200,000 replay rows,
+100,000 test rows; report limits further cap decisions at 20,000, total independent
+regime groups at 4,096 and JSON at 32 MiB. Missing-slot arithmetic allocates no
+synthetic rows. The canonical dataset codec allows 64 MiB. Cost and regime counts
+do not multiply into a Cartesian scenario search.
+
+`export_validation_report.py` runs only offline local data or an explicitly
+synthetic example. `VALIDATION_REPORT_PATH` is server-only configuration for one
+report loaded/validated/projected at startup. No registry or database is added.
+An invalid/missing report produces sanitized status; HTTP reads use the frozen
+in-memory projection without I/O/replay. New GET /validation/status and /validation/latest
+bring the total to **21 GET-only paths**. Projection and browser response limits
+are both 8 MiB; the browser caps bytes before parsing and times out after 5s.
+
+The existing Backtest & Validation page lazy-loads the Validation panel. Separate
+generated schema/types, offline backend-produced examples and shared glossary
+support Simple/Advanced views. Scope selection is presentation-only. The page
+cannot load arbitrary paths, run validation, alter policies or submit financial
+actions. Historical validation is not a prediction of future profit; confidence
+is evidence/agreement quality, not profit probability. No execution, AI or optimizer
+connection was added. See [Phase 10 report](PHASE_10_REPORT.md) for final evidence.
+
 1. Domain + RiskEngine + PaperExecution + FastAPI scaffold.
 2. Binance public market data for 8 symbols.
 3. FeatureEngine with deterministic numerical snapshots.
@@ -654,6 +766,9 @@ private API, execution gateway, AI/ML, optimization or Phase 10 work is introduc
 7. Offline deterministic shared-capital virtual portfolio and risk simulation.
 8. Bounded live public-data virtual runtime and explainable read-only React dashboard.
 9. Local durable paper checkpoints, strict recovery, restart/soak validation and persistence UI.
+10. Research Validation Lab: canonical datasets, fixed walk-forward replay, causal regimes,
+    cost sensitivity, deterministic report export and read-only dashboard; release checks
+    and exact completion state are recorded in the Phase 10 report.
 
 Future tasks require separate scope: execution sizing/orchestration,
 AIAdvisor interface/provider, testnet adapter/reconciliation, P2P

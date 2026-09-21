@@ -1,6 +1,6 @@
 # Hinto paper dashboard
 
-React/TypeScript frontend through Phase 9. All seven pages display public market
+React/TypeScript frontend through Phase 10. All seven pages display public market
 research or virtual simulation state. No credentials, financial controls or
 execution requests exist. No original Hinto components/styles were copied.
 
@@ -43,6 +43,8 @@ Regenerate after backend contract/help changes, from `backend/`:
 ```bash
 python scripts/export_dashboard_contract.py
 python tests/export_dashboard_examples.py
+python tests/export_validation_example.py
+python tests/export_validation_example.py --medium
 ```
 
 Then `npm run types` from `frontend/`. `--check` on either Python script verifies
@@ -70,8 +72,25 @@ Simple/Advanced persists only `hinto.view` in localStorage. It never sends a
 mutation request. Help uses a keyboard-operable disclosure (Enter/Space to toggle,
 Escape to close). Guide/module information works even when the backend is offline.
 Technical configuration values are read-only. Disabled future cards are not
-operational modules. Backtest is educational; no report run or fake performance
-data is included in the application bundle. Synthetic fixtures are test-only.
+operational modules. Backtest includes a lazy-loaded read-only Validation panel
+plus educational material; no report runner or fake performance is included in
+the application bundle. Synthetic fixtures are test-only.
+
+The Validation panel reads `/validation/latest` with a generated separate schema
+and TypeScript contract. Backend startup may load one server-configured offline
+report. The client caps responses at 8 MiB before JSON parsing, times out after 5s,
+polls sequentially every 15s and retries failures at 30/60s (60s maximum). Unmount
+cancels work; errors clear previous evidence. There are no upload, run, optimize
+or financial controls. Simple/Advanced and window scope only change presentation.
+Missing/corrupt reports, empty/sparse groups, incomplete horizons and overlapping
+aggregate withholding are explicit. Historical hit rate is not future probability;
+confidence is evidence quality, not profit probability. Advanced shows exact IDs,
+definitions, cutoffs, settings identities, assumptions and checksum.
+
+`npm run types -- --check` verifies both generated files without rewriting them.
+The original dashboard generated.ts remains semantically unchanged; validation
+types are in validation.generated.ts. Vite currently warns about a main bundle
+slightly above 500 kB; the Validation panel is loaded as a separate chunk.
 
 Four exported runtime fixtures cover disabled, running, incomplete open exposure
 and a real BLOCKED decision under a stricter contributor policy. Component tests

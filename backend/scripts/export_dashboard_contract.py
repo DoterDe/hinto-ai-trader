@@ -10,6 +10,7 @@ sys.path.insert(0, str(BACKEND))
 
 from src.application.explanations import MODULES, TERMS
 from src.application.live_paper_telemetry import LiveDashboardSnapshot
+from src.application.validation_telemetry import ValidationSnapshot
 from pydantic.json_schema import GenerateJsonSchema
 
 
@@ -38,8 +39,11 @@ def artifacts() -> dict[Path, str]:
             for value in node:
                 output_required(value)
     output_required(schema)
+    validation_schema = ValidationSnapshot.model_json_schema(mode='serialization', schema_generator=DashboardSchema)
+    output_required(validation_schema)
     objects = {
         frontend / 'api' / 'dashboard.schema.json': schema,
+        frontend / 'api' / 'validation.schema.json': validation_schema,
         frontend / 'help' / 'catalog.json': {
             'terms': [item.model_dump(mode='json') for item in TERMS],
             'modules': [item.model_dump(mode='json') for item in MODULES],
@@ -58,5 +62,5 @@ if __name__ == '__main__':
                 raise SystemExit(f'Outdated generated contract: {path.name}')
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content, encoding='utf-8', newline='\n')
+            path.write_text(content, encoding='utf-8')
     print('Dashboard schema and explanation catalog: '+('verified' if args.check else 'exported'))

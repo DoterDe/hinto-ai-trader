@@ -52,7 +52,7 @@ export function Dashboard({ telemetry }: { telemetry: Telemetry }) {
     if (page === "Guide / How It Works") return <Guide navigate={setPage} />;
     if (page === "System / Settings")
       return <System data={data} advanced={advanced} />;
-    if (page === "Backtest & Validation") return <Backtest />;
+    if (page === "Backtest & Validation") return <Backtest advanced={advanced} />;
     if (!data)
       return (
         <div className="card">
@@ -109,7 +109,7 @@ export function Dashboard({ telemetry }: { telemetry: Telemetry }) {
             <br />
             Every action stays simulated.
           </p>
-          <span className="version">PHASE 09 / local paper recovery</span>
+          <span className="version">PHASE 10 / research validation</span>
         </div>
       </aside>
       <div className="workspace">

@@ -1,0 +1,1678 @@
+{
+  "status": {
+    "state": "READY",
+    "reason": "REPORT_LOADED",
+    "report_id": "validation_report_87f1cf7913db4fdc29ff5077da29fc8a46784a0a898433460b68a11346c2ae8e",
+    "dataset_id": "historical_dataset_cd0743ff88ec0d84b18fdf9caa75ae3287ec9b386c501f7763b3b499ffd619ec",
+    "mode": "PAPER / VIRTUAL / RESEARCH ONLY",
+    "read_only": true
+  },
+  "report": {
+    "report_id": "validation_report_87f1cf7913db4fdc29ff5077da29fc8a46784a0a898433460b68a11346c2ae8e",
+    "content_checksum": "87f1cf7913db4fdc29ff5077da29fc8a46784a0a898433460b68a11346c2ae8e",
+    "dataset_id": "historical_dataset_cd0743ff88ec0d84b18fdf9caa75ae3287ec9b386c501f7763b3b499ffd619ec",
+    "dataset_status": "VALID",
+    "dataset_start": "2020-01-01T00:00:00Z",
+    "dataset_end": "2020-01-01T01:25:00Z",
+    "total_bars": 85,
+    "duplicate_count": 0,
+    "missing_bar_count": 0,
+    "coverage": [
+      {
+        "symbol": "BTCUSDT",
+        "observed_bars": 85,
+        "expected_bars": 85,
+        "missing_bars": 0,
+        "coverage_fraction": "1",
+        "first_open": "2020-01-01T00:00:00Z",
+        "last_boundary": "2020-01-01T01:25:00Z",
+        "gaps": []
+      }
+    ],
+    "protocol_id": "walk_protocol_ef840096b73ae26ae5c4944e36019b580018702c863721f72babd5fc0a009022",
+    "protocol": {
+      "version": "walk-forward-v1",
+      "dataset_id": "historical_dataset_cd0743ff88ec0d84b18fdf9caa75ae3287ec9b386c501f7763b3b499ffd619ec",
+      "dataset_schema_version": "historical-dataset-v1",
+      "symbols": [
+        "BTCUSDT"
+      ],
+      "interval": "1m",
+      "mode": "EXPANDING",
+      "minimum_context_boundaries": 50,
+      "warmup_boundaries": 50,
+      "test_boundaries": 23,
+      "step_boundaries": 23,
+      "rolling_context_boundaries": null,
+      "allow_test_overlap": false,
+      "partial_window": "INCLUDE"
+    },
+    "engines": {
+      "evaluator_version": "walk-forward-evaluator-v1",
+      "backtest_engine_version": "backtest-engine-v1",
+      "strategy_engine_version": "strategy-engine-v1",
+      "decision_engine_version": "decision-engine-v1",
+      "feature_settings_id": "feature_settings_ee36bf186f2a32e0a3756085aeba050f4a07da3fe65560dd3b59724dca74eefe",
+      "strategy_settings_id": "settings_228338bdad142adfd59df674b710597309f4eda7b9bb67c880e3eba7d50340a2",
+      "decision_policy_id": "decision_policy_ab238c159048de1d3aa50ee9cbcda1d337d1b6ecf3c1ca33c6452911fd07e7f6",
+      "backtest_settings_id": "backtest_settings_bab4b71a0287976dc179f7c3b627f6e64bae2b1c400ef39d3978e5b78e0332b9"
+    },
+    "regime_definition_id": "regime_definition_6c19d608d6c2588e6dad344205fccf30fdc2ce4626e6f1b053b6b40c498b5468",
+    "regime_definition": {
+      "version": "causal-regimes-v1",
+      "ema_separation_deadband": "0.0005",
+      "directional_efficiency_floor": "0.25",
+      "normalized_atr_low_upper": "0.005",
+      "normalized_atr_medium_upper": "0.02",
+      "minimum_completed_samples": 30
+    },
+    "windows": [
+      {
+        "split_id": "walk_split_4cc6b470ea788a0270e6cff66d39e03ecfde9c6a758cc1969140fe1bd7e6c856",
+        "result_id": "walk_window_a680c99a0a1dea9296007c974734c0310ce739fc603b48b0f2c9b0fce8d6b4cd",
+        "ordinal": 0,
+        "status": "EVALUATED",
+        "context_start": "2020-01-01T00:00:00Z",
+        "context_end": "2020-01-01T00:50:00Z",
+        "test_start": "2020-01-01T00:50:00Z",
+        "test_end": "2020-01-01T01:13:00Z",
+        "required_warmup": 50,
+        "context_boundary_count": 50,
+        "test_boundary_count": 23,
+        "observed_test_boundaries": 23,
+        "test_coverage": [
+          {
+            "symbol": "BTCUSDT",
+            "observed_bars": 23,
+            "expected_bars": 23,
+            "missing_bars": 0,
+            "coverage_fraction": "1",
+            "first_open": "2020-01-01T00:50:00Z",
+            "last_boundary": "2020-01-01T01:13:00Z",
+            "gaps": []
+          }
+        ],
+        "warnings": [
+          "INCOMPLETE_OUTCOMES",
+          "BOUNDARY_CENSORED_OUTCOMES"
+        ],
+        "analysis": {
+          "metrics": {
+            "evaluated_decision_count": 23,
+            "eligible_count": 4,
+            "blocked_count": 0,
+            "no_action_count": 19,
+            "completed_count": 3,
+            "incomplete_count": 1,
+            "boundary_censored_count": 1,
+            "win_count": 3,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": "1",
+            "mean_gross_return": "0.1027686572873664902717031061243620",
+            "mean_net_return": "0.1012967295041310624651619411203855",
+            "sum_gross_returns": "0.3083059718620994708151093183730859",
+            "sum_simulated_costs": "0.004415783349706283419623495011929323",
+            "sum_net_returns": "0.3038901885123931873954858233611566",
+            "normalized_max_drawdown": "0"
+          },
+          "groups": [
+            {
+              "dimension": "symbol",
+              "key": "BTCUSDT",
+              "metrics": {
+                "evaluated_decision_count": 23,
+                "eligible_count": 4,
+                "blocked_count": 0,
+                "no_action_count": 19,
+                "completed_count": 3,
+                "incomplete_count": 1,
+                "boundary_censored_count": 1,
+                "win_count": 3,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": "1",
+                "mean_gross_return": "0.1027686572873664902717031061243620",
+                "mean_net_return": "0.1012967295041310624651619411203855",
+                "sum_gross_returns": "0.3083059718620994708151093183730859",
+                "sum_simulated_costs": "0.004415783349706283419623495011929323",
+                "sum_net_returns": "0.3038901885123931873954858233611566",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 4,
+                "minimum": "0.5553946971202922417366973156551893",
+                "maximum": "0.5795640217882329012414417932887067",
+                "mean": "0.569273437381990619110444024515741"
+              },
+              "composite_score": {
+                "count": 4,
+                "minimum": "62.9415151715945211204485309762475",
+                "maximum": "66.16409179398660905441446132738313",
+                "mean": "64.7920138731543047702814254909877"
+              },
+              "warnings": [
+                "SMALL_SAMPLE",
+                "INCOMPLETE_OUTCOMES"
+              ]
+            },
+            {
+              "dimension": "trend",
+              "key": "UPTREND",
+              "metrics": {
+                "evaluated_decision_count": 10,
+                "eligible_count": 4,
+                "blocked_count": 0,
+                "no_action_count": 6,
+                "completed_count": 3,
+                "incomplete_count": 1,
+                "boundary_censored_count": 1,
+                "win_count": 3,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": "1",
+                "mean_gross_return": "0.1027686572873664902717031061243620",
+                "mean_net_return": "0.1012967295041310624651619411203855",
+                "sum_gross_returns": "0.3083059718620994708151093183730859",
+                "sum_simulated_costs": "0.004415783349706283419623495011929323",
+                "sum_net_returns": "0.3038901885123931873954858233611566",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 4,
+                "minimum": "0.5553946971202922417366973156551893",
+                "maximum": "0.5795640217882329012414417932887067",
+                "mean": "0.569273437381990619110444024515741"
+              },
+              "composite_score": {
+                "count": 4,
+                "minimum": "62.9415151715945211204485309762475",
+                "maximum": "66.16409179398660905441446132738313",
+                "mean": "64.7920138731543047702814254909877"
+              },
+              "warnings": [
+                "SMALL_SAMPLE",
+                "INCOMPLETE_OUTCOMES"
+              ]
+            },
+            {
+              "dimension": "trend",
+              "key": "DOWNTREND",
+              "metrics": {
+                "evaluated_decision_count": 0,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 0,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "EMPTY_GROUP",
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "trend",
+              "key": "RANGE",
+              "metrics": {
+                "evaluated_decision_count": 13,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 13,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "trend",
+              "key": "UNKNOWN",
+              "metrics": {
+                "evaluated_decision_count": 0,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 0,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "EMPTY_GROUP",
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "volatility",
+              "key": "LOW",
+              "metrics": {
+                "evaluated_decision_count": 0,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 0,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "EMPTY_GROUP",
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "volatility",
+              "key": "MEDIUM",
+              "metrics": {
+                "evaluated_decision_count": 1,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 1,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "volatility",
+              "key": "HIGH",
+              "metrics": {
+                "evaluated_decision_count": 22,
+                "eligible_count": 4,
+                "blocked_count": 0,
+                "no_action_count": 18,
+                "completed_count": 3,
+                "incomplete_count": 1,
+                "boundary_censored_count": 1,
+                "win_count": 3,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": "1",
+                "mean_gross_return": "0.1027686572873664902717031061243620",
+                "mean_net_return": "0.1012967295041310624651619411203855",
+                "sum_gross_returns": "0.3083059718620994708151093183730859",
+                "sum_simulated_costs": "0.004415783349706283419623495011929323",
+                "sum_net_returns": "0.3038901885123931873954858233611566",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 4,
+                "minimum": "0.5553946971202922417366973156551893",
+                "maximum": "0.5795640217882329012414417932887067",
+                "mean": "0.569273437381990619110444024515741"
+              },
+              "composite_score": {
+                "count": 4,
+                "minimum": "62.9415151715945211204485309762475",
+                "maximum": "66.16409179398660905441446132738313",
+                "mean": "64.7920138731543047702814254909877"
+              },
+              "warnings": [
+                "SMALL_SAMPLE",
+                "INCOMPLETE_OUTCOMES"
+              ]
+            },
+            {
+              "dimension": "volatility",
+              "key": "UNKNOWN",
+              "metrics": {
+                "evaluated_decision_count": 0,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 0,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "EMPTY_GROUP",
+                "SMALL_SAMPLE"
+              ]
+            }
+          ],
+          "costs": [
+            {
+              "scenario_id": "cost_scenario_24f524ebd0bf63c0754cdd48c626d971601514c1984ceba39ce48a60d3ac5d0e",
+              "assumptions": {
+                "model_version": "phase6-cost-v1",
+                "fee_bps_per_side": "0",
+                "slippage_bps_per_side": "0"
+              },
+              "is_baseline": false,
+              "metrics": {
+                "evaluated_decision_count": 23,
+                "eligible_count": 4,
+                "blocked_count": 0,
+                "no_action_count": 19,
+                "completed_count": 3,
+                "incomplete_count": 1,
+                "boundary_censored_count": 1,
+                "win_count": 3,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": "1",
+                "mean_gross_return": "0.1027686572873664902717031061243620",
+                "mean_net_return": "0.1027686572873664902717031061243620",
+                "sum_gross_returns": "0.3083059718620994708151093183730859",
+                "sum_simulated_costs": "0E-33",
+                "sum_net_returns": "0.3083059718620994708151093183730859",
+                "normalized_max_drawdown": "0"
+              },
+              "mean_cost_return": "0E-33",
+              "sign_changed_count": 0,
+              "warnings": [
+                "SMALL_SAMPLE",
+                "INCOMPLETE_OUTCOMES"
+              ]
+            },
+            {
+              "scenario_id": "cost_scenario_34ead1eb52f360ac19130730bf047add2530639085b89c1e4c7c5e10d08a00ad",
+              "assumptions": {
+                "model_version": "phase6-cost-v1",
+                "fee_bps_per_side": "5",
+                "slippage_bps_per_side": "2"
+              },
+              "is_baseline": true,
+              "metrics": {
+                "evaluated_decision_count": 23,
+                "eligible_count": 4,
+                "blocked_count": 0,
+                "no_action_count": 19,
+                "completed_count": 3,
+                "incomplete_count": 1,
+                "boundary_censored_count": 1,
+                "win_count": 3,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": "1",
+                "mean_gross_return": "0.1027686572873664902717031061243620",
+                "mean_net_return": "0.1012967295041310624651619411203855",
+                "sum_gross_returns": "0.3083059718620994708151093183730859",
+                "sum_simulated_costs": "0.004415783349706283419623495011929323",
+                "sum_net_returns": "0.3038901885123931873954858233611566",
+                "normalized_max_drawdown": "0"
+              },
+              "mean_cost_return": "0.001471927783235427806541165003976441",
+              "sign_changed_count": 0,
+              "warnings": [
+                "SMALL_SAMPLE",
+                "INCOMPLETE_OUTCOMES"
+              ]
+            },
+            {
+              "scenario_id": "cost_scenario_b6b7332df89e38875a73a4949781503dd0b4841169435230cb4215184342596f",
+              "assumptions": {
+                "model_version": "phase6-cost-v1",
+                "fee_bps_per_side": "10",
+                "slippage_bps_per_side": "5"
+              },
+              "is_baseline": false,
+              "metrics": {
+                "evaluated_decision_count": 23,
+                "eligible_count": 4,
+                "blocked_count": 0,
+                "no_action_count": 19,
+                "completed_count": 3,
+                "incomplete_count": 1,
+                "boundary_censored_count": 1,
+                "win_count": 3,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": "1",
+                "mean_gross_return": "0.1027686572873664902717031061243620",
+                "mean_net_return": "0.0996145556857640842195406873167285",
+                "sum_gross_returns": "0.3083059718620994708151093183730859",
+                "sum_simulated_costs": "0.009462304804807218156487256422900442",
+                "sum_net_returns": "0.2988436670572922526586220619501855",
+                "normalized_max_drawdown": "0"
+              },
+              "mean_cost_return": "0.003154101601602406052162418807633481",
+              "sign_changed_count": 0,
+              "warnings": [
+                "SMALL_SAMPLE",
+                "INCOMPLETE_OUTCOMES"
+              ]
+            },
+            {
+              "scenario_id": "cost_scenario_e81dd1c05f5faa0948d1391a6dfab026b4cfec3decdf341f9681b7bf940e1f7c",
+              "assumptions": {
+                "model_version": "phase6-cost-v1",
+                "fee_bps_per_side": "20",
+                "slippage_bps_per_side": "10"
+              },
+              "is_baseline": false,
+              "metrics": {
+                "evaluated_decision_count": 23,
+                "eligible_count": 4,
+                "blocked_count": 0,
+                "no_action_count": 19,
+                "completed_count": 3,
+                "incomplete_count": 1,
+                "boundary_censored_count": 1,
+                "win_count": 3,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": "1",
+                "mean_gross_return": "0.1027686572873664902717031061243620",
+                "mean_net_return": "0.09646055685281896553386854021220113",
+                "sum_gross_returns": "0.3083059718620994708151093183730859",
+                "sum_simulated_costs": "0.01892430130364257421350369773648251",
+                "sum_net_returns": "0.2893816705584568966016056206366034",
+                "normalized_max_drawdown": "0"
+              },
+              "mean_cost_return": "0.006308100434547524737834565912160837",
+              "sign_changed_count": 0,
+              "warnings": [
+                "SMALL_SAMPLE",
+                "INCOMPLETE_OUTCOMES"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "split_id": "walk_split_a9b7a792c65b32d2056594b14e2dee2e10d0f0266dafaf9b5114fe10a7dc8565",
+        "result_id": "walk_window_cf89946f48d2e086f198972a04abb928385b145957bdc50432ff3f403093a30f",
+        "ordinal": 1,
+        "status": "EVALUATED",
+        "context_start": "2020-01-01T00:00:00Z",
+        "context_end": "2020-01-01T01:13:00Z",
+        "test_start": "2020-01-01T01:13:00Z",
+        "test_end": "2020-01-01T01:25:00Z",
+        "required_warmup": 50,
+        "context_boundary_count": 73,
+        "test_boundary_count": 12,
+        "observed_test_boundaries": 12,
+        "test_coverage": [
+          {
+            "symbol": "BTCUSDT",
+            "observed_bars": 12,
+            "expected_bars": 12,
+            "missing_bars": 0,
+            "coverage_fraction": "1",
+            "first_open": "2020-01-01T01:13:00Z",
+            "last_boundary": "2020-01-01T01:25:00Z",
+            "gaps": []
+          }
+        ],
+        "warnings": [
+          "PARTIAL_TEST_WINDOW",
+          "VALID_NO_SIGNALS"
+        ],
+        "analysis": {
+          "metrics": {
+            "evaluated_decision_count": 12,
+            "eligible_count": 0,
+            "blocked_count": 0,
+            "no_action_count": 12,
+            "completed_count": 0,
+            "incomplete_count": 0,
+            "boundary_censored_count": 0,
+            "win_count": 0,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": null,
+            "mean_gross_return": null,
+            "mean_net_return": null,
+            "sum_gross_returns": "0",
+            "sum_simulated_costs": "0",
+            "sum_net_returns": "0",
+            "normalized_max_drawdown": "0"
+          },
+          "groups": [
+            {
+              "dimension": "symbol",
+              "key": "BTCUSDT",
+              "metrics": {
+                "evaluated_decision_count": 12,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 12,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "trend",
+              "key": "UPTREND",
+              "metrics": {
+                "evaluated_decision_count": 12,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 12,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "trend",
+              "key": "DOWNTREND",
+              "metrics": {
+                "evaluated_decision_count": 0,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 0,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "EMPTY_GROUP",
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "trend",
+              "key": "RANGE",
+              "metrics": {
+                "evaluated_decision_count": 0,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 0,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "EMPTY_GROUP",
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "trend",
+              "key": "UNKNOWN",
+              "metrics": {
+                "evaluated_decision_count": 0,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 0,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "EMPTY_GROUP",
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "volatility",
+              "key": "LOW",
+              "metrics": {
+                "evaluated_decision_count": 0,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 0,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "EMPTY_GROUP",
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "volatility",
+              "key": "MEDIUM",
+              "metrics": {
+                "evaluated_decision_count": 12,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 12,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "volatility",
+              "key": "HIGH",
+              "metrics": {
+                "evaluated_decision_count": 0,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 0,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "EMPTY_GROUP",
+                "SMALL_SAMPLE"
+              ]
+            },
+            {
+              "dimension": "volatility",
+              "key": "UNKNOWN",
+              "metrics": {
+                "evaluated_decision_count": 0,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 0,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "confidence": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "composite_score": {
+                "count": 0,
+                "minimum": null,
+                "maximum": null,
+                "mean": null
+              },
+              "warnings": [
+                "EMPTY_GROUP",
+                "SMALL_SAMPLE"
+              ]
+            }
+          ],
+          "costs": [
+            {
+              "scenario_id": "cost_scenario_24f524ebd0bf63c0754cdd48c626d971601514c1984ceba39ce48a60d3ac5d0e",
+              "assumptions": {
+                "model_version": "phase6-cost-v1",
+                "fee_bps_per_side": "0",
+                "slippage_bps_per_side": "0"
+              },
+              "is_baseline": false,
+              "metrics": {
+                "evaluated_decision_count": 12,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 12,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "mean_cost_return": null,
+              "sign_changed_count": 0,
+              "warnings": [
+                "SMALL_SAMPLE",
+                "NO_COMPLETED_OUTCOMES"
+              ]
+            },
+            {
+              "scenario_id": "cost_scenario_34ead1eb52f360ac19130730bf047add2530639085b89c1e4c7c5e10d08a00ad",
+              "assumptions": {
+                "model_version": "phase6-cost-v1",
+                "fee_bps_per_side": "5",
+                "slippage_bps_per_side": "2"
+              },
+              "is_baseline": true,
+              "metrics": {
+                "evaluated_decision_count": 12,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 12,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "mean_cost_return": null,
+              "sign_changed_count": 0,
+              "warnings": [
+                "SMALL_SAMPLE",
+                "NO_COMPLETED_OUTCOMES"
+              ]
+            },
+            {
+              "scenario_id": "cost_scenario_b6b7332df89e38875a73a4949781503dd0b4841169435230cb4215184342596f",
+              "assumptions": {
+                "model_version": "phase6-cost-v1",
+                "fee_bps_per_side": "10",
+                "slippage_bps_per_side": "5"
+              },
+              "is_baseline": false,
+              "metrics": {
+                "evaluated_decision_count": 12,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 12,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "mean_cost_return": null,
+              "sign_changed_count": 0,
+              "warnings": [
+                "SMALL_SAMPLE",
+                "NO_COMPLETED_OUTCOMES"
+              ]
+            },
+            {
+              "scenario_id": "cost_scenario_e81dd1c05f5faa0948d1391a6dfab026b4cfec3decdf341f9681b7bf940e1f7c",
+              "assumptions": {
+                "model_version": "phase6-cost-v1",
+                "fee_bps_per_side": "20",
+                "slippage_bps_per_side": "10"
+              },
+              "is_baseline": false,
+              "metrics": {
+                "evaluated_decision_count": 12,
+                "eligible_count": 0,
+                "blocked_count": 0,
+                "no_action_count": 12,
+                "completed_count": 0,
+                "incomplete_count": 0,
+                "boundary_censored_count": 0,
+                "win_count": 0,
+                "loss_count": 0,
+                "flat_count": 0,
+                "win_rate": null,
+                "mean_gross_return": null,
+                "mean_net_return": null,
+                "sum_gross_returns": "0",
+                "sum_simulated_costs": "0",
+                "sum_net_returns": "0",
+                "normalized_max_drawdown": "0"
+              },
+              "mean_cost_return": null,
+              "sign_changed_count": 0,
+              "warnings": [
+                "SMALL_SAMPLE",
+                "NO_COMPLETED_OUTCOMES"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "aggregate": {
+      "metrics": {
+        "evaluated_decision_count": 35,
+        "eligible_count": 4,
+        "blocked_count": 0,
+        "no_action_count": 31,
+        "completed_count": 3,
+        "incomplete_count": 1,
+        "boundary_censored_count": 1,
+        "win_count": 3,
+        "loss_count": 0,
+        "flat_count": 0,
+        "win_rate": "1",
+        "mean_gross_return": "0.1027686572873664902717031061243620",
+        "mean_net_return": "0.1012967295041310624651619411203855",
+        "sum_gross_returns": "0.3083059718620994708151093183730859",
+        "sum_simulated_costs": "0.004415783349706283419623495011929323",
+        "sum_net_returns": "0.3038901885123931873954858233611566",
+        "normalized_max_drawdown": "0"
+      },
+      "groups": [
+        {
+          "dimension": "symbol",
+          "key": "BTCUSDT",
+          "metrics": {
+            "evaluated_decision_count": 35,
+            "eligible_count": 4,
+            "blocked_count": 0,
+            "no_action_count": 31,
+            "completed_count": 3,
+            "incomplete_count": 1,
+            "boundary_censored_count": 1,
+            "win_count": 3,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": "1",
+            "mean_gross_return": "0.1027686572873664902717031061243620",
+            "mean_net_return": "0.1012967295041310624651619411203855",
+            "sum_gross_returns": "0.3083059718620994708151093183730859",
+            "sum_simulated_costs": "0.004415783349706283419623495011929323",
+            "sum_net_returns": "0.3038901885123931873954858233611566",
+            "normalized_max_drawdown": "0"
+          },
+          "confidence": {
+            "count": 4,
+            "minimum": "0.5553946971202922417366973156551893",
+            "maximum": "0.5795640217882329012414417932887067",
+            "mean": "0.569273437381990619110444024515741"
+          },
+          "composite_score": {
+            "count": 4,
+            "minimum": "62.9415151715945211204485309762475",
+            "maximum": "66.16409179398660905441446132738313",
+            "mean": "64.7920138731543047702814254909877"
+          },
+          "warnings": [
+            "SMALL_SAMPLE",
+            "INCOMPLETE_OUTCOMES"
+          ]
+        },
+        {
+          "dimension": "trend",
+          "key": "UPTREND",
+          "metrics": {
+            "evaluated_decision_count": 22,
+            "eligible_count": 4,
+            "blocked_count": 0,
+            "no_action_count": 18,
+            "completed_count": 3,
+            "incomplete_count": 1,
+            "boundary_censored_count": 1,
+            "win_count": 3,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": "1",
+            "mean_gross_return": "0.1027686572873664902717031061243620",
+            "mean_net_return": "0.1012967295041310624651619411203855",
+            "sum_gross_returns": "0.3083059718620994708151093183730859",
+            "sum_simulated_costs": "0.004415783349706283419623495011929323",
+            "sum_net_returns": "0.3038901885123931873954858233611566",
+            "normalized_max_drawdown": "0"
+          },
+          "confidence": {
+            "count": 4,
+            "minimum": "0.5553946971202922417366973156551893",
+            "maximum": "0.5795640217882329012414417932887067",
+            "mean": "0.569273437381990619110444024515741"
+          },
+          "composite_score": {
+            "count": 4,
+            "minimum": "62.9415151715945211204485309762475",
+            "maximum": "66.16409179398660905441446132738313",
+            "mean": "64.7920138731543047702814254909877"
+          },
+          "warnings": [
+            "SMALL_SAMPLE",
+            "INCOMPLETE_OUTCOMES"
+          ]
+        },
+        {
+          "dimension": "trend",
+          "key": "DOWNTREND",
+          "metrics": {
+            "evaluated_decision_count": 0,
+            "eligible_count": 0,
+            "blocked_count": 0,
+            "no_action_count": 0,
+            "completed_count": 0,
+            "incomplete_count": 0,
+            "boundary_censored_count": 0,
+            "win_count": 0,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": null,
+            "mean_gross_return": null,
+            "mean_net_return": null,
+            "sum_gross_returns": "0",
+            "sum_simulated_costs": "0",
+            "sum_net_returns": "0",
+            "normalized_max_drawdown": "0"
+          },
+          "confidence": {
+            "count": 0,
+            "minimum": null,
+            "maximum": null,
+            "mean": null
+          },
+          "composite_score": {
+            "count": 0,
+            "minimum": null,
+            "maximum": null,
+            "mean": null
+          },
+          "warnings": [
+            "EMPTY_GROUP",
+            "SMALL_SAMPLE"
+          ]
+        },
+        {
+          "dimension": "trend",
+          "key": "RANGE",
+          "metrics": {
+            "evaluated_decision_count": 13,
+            "eligible_count": 0,
+            "blocked_count": 0,
+            "no_action_count": 13,
+            "completed_count": 0,
+            "incomplete_count": 0,
+            "boundary_censored_count": 0,
+            "win_count": 0,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": null,
+            "mean_gross_return": null,
+            "mean_net_return": null,
+            "sum_gross_returns": "0",
+            "sum_simulated_costs": "0",
+            "sum_net_returns": "0",
+            "normalized_max_drawdown": "0"
+          },
+          "confidence": {
+            "count": 0,
+            "minimum": null,
+            "maximum": null,
+            "mean": null
+          },
+          "composite_score": {
+            "count": 0,
+            "minimum": null,
+            "maximum": null,
+            "mean": null
+          },
+          "warnings": [
+            "SMALL_SAMPLE"
+          ]
+        },
+        {
+          "dimension": "trend",
+          "key": "UNKNOWN",
+          "metrics": {
+            "evaluated_decision_count": 0,
+            "eligible_count": 0,
+            "blocked_count": 0,
+            "no_action_count": 0,
+            "completed_count": 0,
+            "incomplete_count": 0,
+            "boundary_censored_count": 0,
+            "win_count": 0,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": null,
+            "mean_gross_return": null,
+            "mean_net_return": null,
+            "sum_gross_returns": "0",
+            "sum_simulated_costs": "0",
+            "sum_net_returns": "0",
+            "normalized_max_drawdown": "0"
+          },
+          "confidence": {
+            "count": 0,
+            "minimum": null,
+            "maximum": null,
+            "mean": null
+          },
+          "composite_score": {
+            "count": 0,
+            "minimum": null,
+            "maximum": null,
+            "mean": null
+          },
+          "warnings": [
+            "EMPTY_GROUP",
+            "SMALL_SAMPLE"
+          ]
+        },
+        {
+          "dimension": "volatility",
+          "key": "LOW",
+          "metrics": {
+            "evaluated_decision_count": 0,
+            "eligible_count": 0,
+            "blocked_count": 0,
+            "no_action_count": 0,
+            "completed_count": 0,
+            "incomplete_count": 0,
+            "boundary_censored_count": 0,
+            "win_count": 0,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": null,
+            "mean_gross_return": null,
+            "mean_net_return": null,
+            "sum_gross_returns": "0",
+            "sum_simulated_costs": "0",
+            "sum_net_returns": "0",
+            "normalized_max_drawdown": "0"
+          },
+          "confidence": {
+            "count": 0,
+            "minimum": null,
+            "maximum": null,
+            "mean": null
+          },
+          "composite_score": {
+            "count": 0,
+            "minimum": null,
+            "maximum": null,
+            "mean": null
+          },
+          "warnings": [
+            "EMPTY_GROUP",
+            "SMALL_SAMPLE"
+          ]
+        },
+        {
+          "dimension": "volatility",
+          "key": "MEDIUM",
+          "metrics": {
+            "evaluated_decision_count": 13,
+            "eligible_count": 0,
+            "blocked_count": 0,
+            "no_action_count": 13,
+            "completed_count": 0,
+            "incomplete_count": 0,
+            "boundary_censored_count": 0,
+            "win_count": 0,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": null,
+            "mean_gross_return": null,
+            "mean_net_return": null,
+            "sum_gross_returns": "0",
+            "sum_simulated_costs": "0",
+            "sum_net_returns": "0",
+            "normalized_max_drawdown": "0"
+          },
+          "confidence": {
+            "count": 0,
+            "minimum": null,
+            "maximum": null,
+            "mean": null
+          },
+          "composite_score": {
+            "count": 0,
+            "minimum": null,
+            "maximum": null,
+            "mean": null
+          },
+          "warnings": [
+            "SMALL_SAMPLE"
+          ]
+        },
+        {
+          "dimension": "volatility",
+          "key": "HIGH",
+          "metrics": {
+            "evaluated_decision_count": 22,
+            "eligible_count": 4,
+            "blocked_count": 0,
+            "no_action_count": 18,
+            "completed_count": 3,
+            "incomplete_count": 1,
+            "boundary_censored_count": 1,
+            "win_count": 3,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": "1",
+            "mean_gross_return": "0.1027686572873664902717031061243620",
+            "mean_net_return": "0.1012967295041310624651619411203855",
+            "sum_gross_returns": "0.3083059718620994708151093183730859",
+            "sum_simulated_costs": "0.004415783349706283419623495011929323",
+            "sum_net_returns": "0.3038901885123931873954858233611566",
+            "normalized_max_drawdown": "0"
+          },
+          "confidence": {
+            "count": 4,
+            "minimum": "0.5553946971202922417366973156551893",
+            "maximum": "0.5795640217882329012414417932887067",
+            "mean": "0.569273437381990619110444024515741"
+          },
+          "composite_score": {
+            "count": 4,
+            "minimum": "62.9415151715945211204485309762475",
+            "maximum": "66.16409179398660905441446132738313",
+            "mean": "64.7920138731543047702814254909877"
+          },
+          "warnings": [
+            "SMALL_SAMPLE",
+            "INCOMPLETE_OUTCOMES"
+          ]
+        },
+        {
+          "dimension": "volatility",
+          "key": "UNKNOWN",
+          "metrics": {
+            "evaluated_decision_count": 0,
+            "eligible_count": 0,
+            "blocked_count": 0,
+            "no_action_count": 0,
+            "completed_count": 0,
+            "incomplete_count": 0,
+            "boundary_censored_count": 0,
+            "win_count": 0,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": null,
+            "mean_gross_return": null,
+            "mean_net_return": null,
+            "sum_gross_returns": "0",
+            "sum_simulated_costs": "0",
+            "sum_net_returns": "0",
+            "normalized_max_drawdown": "0"
+          },
+          "confidence": {
+            "count": 0,
+            "minimum": null,
+            "maximum": null,
+            "mean": null
+          },
+          "composite_score": {
+            "count": 0,
+            "minimum": null,
+            "maximum": null,
+            "mean": null
+          },
+          "warnings": [
+            "EMPTY_GROUP",
+            "SMALL_SAMPLE"
+          ]
+        }
+      ],
+      "costs": [
+        {
+          "scenario_id": "cost_scenario_24f524ebd0bf63c0754cdd48c626d971601514c1984ceba39ce48a60d3ac5d0e",
+          "assumptions": {
+            "model_version": "phase6-cost-v1",
+            "fee_bps_per_side": "0",
+            "slippage_bps_per_side": "0"
+          },
+          "is_baseline": false,
+          "metrics": {
+            "evaluated_decision_count": 35,
+            "eligible_count": 4,
+            "blocked_count": 0,
+            "no_action_count": 31,
+            "completed_count": 3,
+            "incomplete_count": 1,
+            "boundary_censored_count": 1,
+            "win_count": 3,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": "1",
+            "mean_gross_return": "0.1027686572873664902717031061243620",
+            "mean_net_return": "0.1027686572873664902717031061243620",
+            "sum_gross_returns": "0.3083059718620994708151093183730859",
+            "sum_simulated_costs": "0E-33",
+            "sum_net_returns": "0.3083059718620994708151093183730859",
+            "normalized_max_drawdown": "0"
+          },
+          "mean_cost_return": "0E-33",
+          "sign_changed_count": 0,
+          "warnings": [
+            "SMALL_SAMPLE",
+            "INCOMPLETE_OUTCOMES"
+          ]
+        },
+        {
+          "scenario_id": "cost_scenario_34ead1eb52f360ac19130730bf047add2530639085b89c1e4c7c5e10d08a00ad",
+          "assumptions": {
+            "model_version": "phase6-cost-v1",
+            "fee_bps_per_side": "5",
+            "slippage_bps_per_side": "2"
+          },
+          "is_baseline": true,
+          "metrics": {
+            "evaluated_decision_count": 35,
+            "eligible_count": 4,
+            "blocked_count": 0,
+            "no_action_count": 31,
+            "completed_count": 3,
+            "incomplete_count": 1,
+            "boundary_censored_count": 1,
+            "win_count": 3,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": "1",
+            "mean_gross_return": "0.1027686572873664902717031061243620",
+            "mean_net_return": "0.1012967295041310624651619411203855",
+            "sum_gross_returns": "0.3083059718620994708151093183730859",
+            "sum_simulated_costs": "0.004415783349706283419623495011929323",
+            "sum_net_returns": "0.3038901885123931873954858233611566",
+            "normalized_max_drawdown": "0"
+          },
+          "mean_cost_return": "0.001471927783235427806541165003976441",
+          "sign_changed_count": 0,
+          "warnings": [
+            "SMALL_SAMPLE",
+            "INCOMPLETE_OUTCOMES"
+          ]
+        },
+        {
+          "scenario_id": "cost_scenario_b6b7332df89e38875a73a4949781503dd0b4841169435230cb4215184342596f",
+          "assumptions": {
+            "model_version": "phase6-cost-v1",
+            "fee_bps_per_side": "10",
+            "slippage_bps_per_side": "5"
+          },
+          "is_baseline": false,
+          "metrics": {
+            "evaluated_decision_count": 35,
+            "eligible_count": 4,
+            "blocked_count": 0,
+            "no_action_count": 31,
+            "completed_count": 3,
+            "incomplete_count": 1,
+            "boundary_censored_count": 1,
+            "win_count": 3,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": "1",
+            "mean_gross_return": "0.1027686572873664902717031061243620",
+            "mean_net_return": "0.0996145556857640842195406873167285",
+            "sum_gross_returns": "0.3083059718620994708151093183730859",
+            "sum_simulated_costs": "0.009462304804807218156487256422900442",
+            "sum_net_returns": "0.2988436670572922526586220619501855",
+            "normalized_max_drawdown": "0"
+          },
+          "mean_cost_return": "0.003154101601602406052162418807633481",
+          "sign_changed_count": 0,
+          "warnings": [
+            "SMALL_SAMPLE",
+            "INCOMPLETE_OUTCOMES"
+          ]
+        },
+        {
+          "scenario_id": "cost_scenario_e81dd1c05f5faa0948d1391a6dfab026b4cfec3decdf341f9681b7bf940e1f7c",
+          "assumptions": {
+            "model_version": "phase6-cost-v1",
+            "fee_bps_per_side": "20",
+            "slippage_bps_per_side": "10"
+          },
+          "is_baseline": false,
+          "metrics": {
+            "evaluated_decision_count": 35,
+            "eligible_count": 4,
+            "blocked_count": 0,
+            "no_action_count": 31,
+            "completed_count": 3,
+            "incomplete_count": 1,
+            "boundary_censored_count": 1,
+            "win_count": 3,
+            "loss_count": 0,
+            "flat_count": 0,
+            "win_rate": "1",
+            "mean_gross_return": "0.1027686572873664902717031061243620",
+            "mean_net_return": "0.09646055685281896553386854021220113",
+            "sum_gross_returns": "0.3083059718620994708151093183730859",
+            "sum_simulated_costs": "0.01892430130364257421350369773648251",
+            "sum_net_returns": "0.2893816705584568966016056206366034",
+            "normalized_max_drawdown": "0"
+          },
+          "mean_cost_return": "0.006308100434547524737834565912160837",
+          "sign_changed_count": 0,
+          "warnings": [
+            "SMALL_SAMPLE",
+            "INCOMPLETE_OUTCOMES"
+          ]
+        }
+      ]
+    },
+    "warnings": [
+      "BOUNDARY_CENSORED_OUTCOMES",
+      "INCOMPLETE_OUTCOMES",
+      "PARTIAL_TEST_WINDOW",
+      "SPARSE_OR_EMPTY_GROUPS",
+      "VALID_NO_SIGNALS"
+    ],
+    "limitations": [
+      "Historical validation is not a prediction. Historical hit rate is not a future probability of profit.",
+      "Confidence measures analytical evidence/agreement quality, not probability of profit.",
+      "Context warms fixed production features; test data never fits parameters. No strategy/settings ranking.",
+      "Signal returns and additive normalized drawdown are not allocated portfolio PnL or account equity.",
+      "Missing bars stay missing. Incomplete outcomes never receive fabricated exits or returns.",
+      "Window-end censoring is retained when pooling disjoint test cohorts. Overlap disables pooled aggregates.",
+      "Regime thresholds are fixed engineering partitions, not empirically estimated trading thresholds.",
+      "OHLCV alone cannot establish intrabar execution, full liquidity, funding payments or a reconstructed order book."
+    ]
+  }
+}

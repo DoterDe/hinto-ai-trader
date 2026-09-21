@@ -1050,7 +1050,38 @@ session metadata, checkpoint ID/checksum/time, durable and in-memory boundaries,
 unsaved-change flag, compatibility and retained counts. Reads perform no SQLite
 I/O or analytical transitions. Status is separate from feed/runtime health:
 DISABLED, NEW_SESSION, RECOVERING, RECOVERED, DURABLE, DEGRADED, INCOMPATIBLE,
-CORRUPT or ERROR. Host paths are not exposed. All 19 API paths remain GET-only.
+CORRUPT or ERROR. Host paths are not exposed. Phase 9's 19 API paths remain GET-only;
+Phase 10 adds two GET-only validation paths (21 total).
+
+### Phase 10 offline Research Validation Lab
+
+Canonical local finalized bars feed isolated EXPANDING/ROLLING windows through the
+unchanged production feature, strategy, decision and Phase 6 outcome logic. Context
+is warm-up only. Missing bars and incomplete horizons are never filled. Fixed
+descriptive regimes and cost assumptions summarize captured test evidence; no
+strategy fitting, intent generation or execution path is connected.
+
+From this directory:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/export_validation_report.py --check
+.\.venv\Scripts\python.exe scripts/export_validation_report.py --output report.json
+.\.venv\Scripts\python.exe scripts/export_validation_report.py --dataset dataset.json --mode ROLLING --output report.json
+```
+
+The no-dataset example is explicitly synthetic. Supply a `HistoricalDatasetCodec`
+artifact for local public data. Set `VALIDATION_REPORT_PATH` to an explicit local
+report before startup; leave unset for no report. This file is separate from paper
+SQLite persistence. GET `/validation/status` and `/validation/latest` expose only
+cached validated projections. No file read or computation occurs during GET, and
+no arbitrary host path is returned. New reports require a restart. Corrupt or
+unsupported reports fail closed with safe status; they never reach paper state.
+
+Reports cap captured test decisions at 20,000, independent regime groups at 4,096,
+JSON at 32 MiB and API/browser projections at 8 MiB. Dataset/replay budgets are
+documented in [PHASE_10_REPORT](../docs/PHASE_10_REPORT.md). All validation fixtures
+and release tests are offline. No dataset downloader or local report registry is
+provided. Signal-level additive drawdown is not account or portfolio performance.
 
 ### Retention, maintenance and limitations
 

@@ -6,6 +6,11 @@
 
 ## Accepted base
 
+Current implementation status: **Batches 1–7 complete; ready for review.**
+See [`docs/PHASE_10_REPORT.md`](docs/PHASE_10_REPORT.md) for the accepted baseline,
+contracts, exact final regression results, file inventory and limitations.
+All final release gates passed. No commit, push, merge or Phase 11 work was performed.
+
 Phase 9 is fully merged and green on `main` at:
 
 `2925f38d6423c28e92a39c9758766112bd197714`

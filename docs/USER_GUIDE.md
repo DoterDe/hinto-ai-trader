@@ -55,10 +55,36 @@ open/incomplete positions; and recent closes. Charts show equity, drawdown and
 gross exposure fraction. An incomplete position keeps its unresolved exposure.
 Its last historical mark is evidence from that time, not a valid current valuation.
 
-**Backtest & Validation** explains the existing offline signal and shared-capital
-validation services and their metrics. It does not run a browser backtest, load
-an executed report or show invented performance. Historical results do not predict
-future performance. No parameter optimizer is available.
+**Backtest & Validation** reads an explicitly configured offline validation report
+and explains existing signal and shared-capital validation services. No configured
+report means an honest unavailable state; no performance is invented. The browser
+cannot run a backtest, upload data or optimize settings. Historical validation is
+not a prediction of future profit.
+
+The Validation panel loads when this page is opened. Simple mode shows chronological
+test windows, observed/missing coverage, eligible/blocked/no-action counts,
+completed/incomplete outcomes, causal regime groups and fixed cost assumptions.
+Context warms indicators and is excluded from test metrics. Use the scope selector
+to inspect individual windows; overlapping tests deliberately have no pooled
+aggregate. Missing evidence stays missing; a horizon outside its window is incomplete.
+Groups with fewer than 30 completed outcomes are marked small, including empty
+groups. UNKNOWN regime evidence is not interpreted as a neutral market.
+
+Advanced adds report/dataset/protocol/split IDs, checksum, engine/settings identities,
+warm-up/boundaries, exact fixed regime thresholds and fee/slippage assumptions.
+Confidence is evidence/agreement quality, not probability of profit. Historical
+hit rate is a sample statistic, not future win probability. Cost scenarios are
+assumptions, not forecasts. Regime labels are descriptive research categories, not
+execution instructions. The normalized signal curve is not portfolio equity.
+
+To display a report, prepare it offline from `backend/` using
+`python scripts/export_validation_report.py --output FILE` (synthetic example), or
+also pass `--dataset CANONICAL_DATASET.json` for validated local public data.
+Set server-only `VALIDATION_REPORT_PATH` to that report before starting the backend.
+No configured path is sent to the browser. Reports load once at startup; replace
+the file and restart to read a new export. A missing/corrupt/unsupported file has an
+explicit unavailable/invalid status. `/validation/status` and `/validation/latest`
+are GET-only. Failed browser refreshes clear the displayed report and retry.
 
 **System / Settings** displays configured symbols, engine settings, costs, limits
 and runtime health. Advanced view adds configuration identities and technical

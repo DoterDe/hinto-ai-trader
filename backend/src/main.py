@@ -12,6 +12,8 @@ from src.api.features import router as features_router
 from src.api.market_data import router as market_data_router
 from src.api.strategies import router as strategies_router
 from src.api.live_paper import router as live_paper_router
+from src.api.validation import router as validation_router
+from src.application.validation_telemetry import load_validation
 from src.application.decision_engine import DecisionEngine
 from src.application.decision_settings import DecisionSettings
 from src.application.feature_engine import FeatureEngine
@@ -85,10 +87,13 @@ def create_app(
     backtest_settings: BacktestSettings | None = None,
     clock: LiveClock | None = None,
     persistence_settings: PaperPersistenceSettings | None = None,
+    validation_report_path: str | None = None,
 ) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         # Importing the app has no side effects; environment is read at startup.
+        application.state.validation_snapshot = load_validation(
+            validation_report_path if validation_report_path is not None else os.getenv("VALIDATION_REPORT_PATH"))
         config = settings if settings is not None else MarketDataSettings()
         runtime_clock = clock or SystemLiveClock()
         hub = MarketDataHub(
@@ -171,6 +176,7 @@ def create_app(
     application.include_router(strategies_router)
     application.include_router(decisions_router)
     application.include_router(live_paper_router)
+    application.include_router(validation_router)
     application.add_api_route("/health", health, methods=["GET"])
     application.add_api_route("/system/config", system_config, methods=["GET"])
     return application

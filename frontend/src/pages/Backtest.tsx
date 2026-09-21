@@ -1,9 +1,12 @@
+import { lazy, Suspense } from "react";
 import { Card, Table } from "../components/Common";
 import { Label } from "../help/Help";
+const Validation = lazy(() => import("./Validation").then(module => ({ default: module.Validation })));
 
-export function Backtest() {
+export function Backtest({ advanced = false }: { advanced?: boolean }) {
   return (
     <>
+      <Suspense fallback={<p>Loading validation view…</p>}><Validation advanced={advanced} /></Suspense>
       <div className="intro-panel">
         <span className="eyebrow">VALIDATION, NOT OPTIMIZATION</span>
         <h2>Three views of the same evidence.</h2>

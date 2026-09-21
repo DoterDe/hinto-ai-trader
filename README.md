@@ -4,7 +4,7 @@ AI-assisted crypto market research and paper-trading workstation inspired by the
 
 > **Current scope: PAPER / VIRTUAL ONLY.** Public Binance observations, deterministic analytics, offline validation and virtual portfolio simulation. No private account access, real/testnet orders or AI provider is connected.
 
-## Run the Phase 9 dashboard
+## Run the Phase 10 dashboard
 
 Use Python 3.11+ and Node 22.12.0 (the tested frontend runtime). From two terminals:
 
@@ -38,6 +38,24 @@ Learn the screens in [the user guide](docs/USER_GUIDE.md), follow the
 [module map](docs/MODULE_MAP.md), and review [Phase 9 evidence](docs/PHASE_9_REPORT.md).
 The frontend polls read-only `/paper/snapshot` through its local `/api` proxy;
 Simple/Advanced is a local display preference, never a policy change.
+
+Phase 10 adds an offline Research Validation Lab and two read-only validation
+endpoints. Backtest & Validation displays a configured report with walk-forward
+windows, causal regimes, sample counts, missing outcomes and fixed cost sensitivity.
+Historical validation is not a prediction of future profit.
+
+Optional synthetic report example, run from `backend/` before starting the server:
+
+```powershell
+$env:VALIDATION_REPORT_PATH = Join-Path $env:TEMP 'hinto-validation-report.json'
+.\.venv\Scripts\python.exe scripts/export_validation_report.py --output $env:VALIDATION_REPORT_PATH
+.\.venv\Scripts\python.exe scripts/export_validation_report.py --check --output $env:VALIDATION_REPORT_PATH
+```
+
+For local historical research, add `--dataset CANONICAL_DATASET.json`; input must
+follow the canonical finalized-bar contract. The report is loaded once at startup.
+The browser cannot choose files, run validation or optimize rules. See the
+[Phase 10 report](docs/PHASE_10_REPORT.md) for rules, bounds and exact validation.
 
 ## Goals
 

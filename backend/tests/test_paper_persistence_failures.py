@@ -119,7 +119,8 @@ async def test_failed_fence_keeps_previous_durable_state_and_halts(tmp_path):
 
 def test_phase9_openapi_is_get_only_and_contains_no_execution_contract():
     schema = create_app().openapi()
-    assert len(schema['paths']) == 19
+    assert len(schema['paths']) == 21
+    assert {'/validation/status', '/validation/latest'} <= schema['paths'].keys()
     for path, operations in schema['paths'].items():
         assert set(operations) == {'get'}, path
     forbidden = {'TradeIntent', 'ApprovedTradeIntent', 'ExecutionResult', 'RiskLimits', 'AIDecision'}
